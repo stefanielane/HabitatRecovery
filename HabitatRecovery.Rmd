@@ -1,0 +1,1400 @@
+---
+title: "2021_MidIslandEstuaries_Analysis"
+output: html_document
+---
+```{r tips & tutorials}
+############################################################################
+# FACET WRAPS & CUSTOM AXES
+############################################################################
+
+#http://zevross.com/blog/2019/04/02/easy-multi-panel-plots-in-r-using-facet_wrap-and-facet_grid-from-ggplot2/
+
+# ggplot customization, esp. legends http://r-statistics.co/Complete-Ggplot2-Tutorial-Part2-Customizing-Theme-With-R-Code.html#Legend%20Labels%20and%20Point%20Color
+
+# https://www.datanovia.com/en/blog/ggplot-axis-ticks-set-and-rotate-text-labels/
+
+# http://www.sthda.com/english/wiki/ggplot2-axis-ticks-a-guide-to-customize-tick-marks-and-labels
+
+# https://www.datanovia.com/en/blog/ggplot-legend-title-position-and-labels/
+
+############################################################################
+# COLOR BREWER
+############################################################################
+
+#color brewer palettes for ggplot, including colorblind-friendly. See https://www.datanovia.com/en/blog/the-a-z-of-rcolorbrewer-palette/ or https://www.datanovia.com/en/blog/r-colors-amazing-resources-you-want-to-know/
+# https://www.datanovia.com/en/blog/ggplot-colors-best-tricks-you-will-love/
+
+# 1. Visualize a single RColorBrewer palette by specifying its name
+#display.brewer.pal(n, name)
+
+# 2. Return the hexadecimal color code of the palette
+#brewer.pal(n, name)
+
+#brewer.pal(n=12,"Set3")
+
+# Forb = "#BC80BD"
+# Non-native graminoid = "#FDB462"
+# Native graminoid = "#B3DE69"
+# Groundcover = "#80B1D3"
+#fn gps mycol = c("#80B1D3", "#B3DE69", "#FDB462", "#BC80BD")
+
+```
+
+```{r setup, include=FALSE}
+#install.packages("tidyr")
+library(tidyr)
+#install.packages("dplyr")
+library(dplyr)
+library(plyr)
+library(ggplot2)
+library(stats)
+library(ape)
+library(vegan)
+library(wesanderson)
+library(RColorBrewer)
+#update.packages(checkBuilt = TRUE)
+MIE_all <- read.csv("2021_MidIslandEstuaries.csv", header = TRUE)
+S <- read.csv("2021_salinity.csv") 
+avg_S <- S %>% 
+  group_by(Unique_plot_ID) %>% 
+  summarize(mean_EC_mS = mean(EC_mScm.1, na.rm = TRUE))
+
+#exclude ERE b/c data not representative
+MIE <- MIE_all %>% 
+  filter(!Estuary == "ERE") %>% 
+  left_join(avg_S, by = "Unique_plot_ID", na.rm = TRUE)
+  
+
+MIE$Exclosure_date <- factor(MIE$Exclosure_date, levels = c("Grubbed", "2020", "2016", "2010", "Reference"))
+MIE$Estuary <- factor(MIE$Estuary, levels = c("LQRE", "NRE"),
+                  labels = c("Little_Qualicum", "Nanaimo"))
+
+# pivot longer, classify endemic status, & convert cover values to relative abundance
+
+# colnames(MIE)
+# "Agropyron_repens" "Agrostis_gigantea" "Atriplex_patula"             
+# "Carex_lyngbyei" "Cotula_coronopifolia" "Daucus_carota" "Deschampsia_cespitosa"       
+# "Distichlis_spicata" "Glaux_maritima" "Isolepis_cernua" "Juncus_balticus"             
+# "Polygonum_fowlerii""Potentilla_anserina_pacifica" "Salicornia_depressa" "Scirpus_microcarpus"         
+# "Spergularia_canadensis" "Symphotrichium_subspicatum" "Trifolium_wormskioldii" "Triglochin_maritima" 
+
+MIE_long <- MIE %>% pivot_longer(Agropyron_repens:Triglochin_maritima, names_to = "Species", values_to = "Cover") %>% 
+  mutate(Endemic = ifelse(Species %in% c("Agropyron_repens", "Agrostis_gigantea", "Atriplex_patula", "Cotula_coronopifolia", "Daucus_carota"), "Invasive", "Native"))
+
+MIE_fn_gp <- MIE_long %>%
+mutate(Functional_groups =
+    ifelse(Species %in% c("Cotula_coronopifolia", "Glaux_maritima", "Isolepis_cernua", "Salicornia_depressa", "Spergularia_canadensis"), "Groundcover (< 15 cm tall)",
+    ifelse(Species %in% c("Carex_lyngbyei", "Deschampsia_cespitosa", "Distichlis_spicata", "Juncus_balticus", "Scirpus_microcarpus"), "Graminoid - Native",
+    ifelse(Species %in% c("Agropyron_repens", "Agrostis_gigantea"), "Graminoid - Non-native",
+   "Forb"))))
+
+ MIE_fn_gp$Functional_groups <- factor(MIE_fn_gp$Functional_groups,
+                                      levels = c("Groundcover (< 15 cm tall)", "Graminoid - Native",
+                                                 "Graminoid - Non-native", "Cespitose graminoid - Native",
+                                                 "Forb"))
+
+```
+
+``` {r setup, refined data}
+
+library(tidyr)
+library(dplyr)
+library(plyr)
+library(ggplot2)
+library(stats)
+library(ape)
+library(vegan)
+library(wesanderson)
+library(RColorBrewer)
+
+d_MIE <- read.csv("2021_MIE_data.csv")
+
+#exclude ERE b/c data not representative
+MIE2 <- d_MIE %>% 
+  filter(!Estuary == "ERE")
+
+MIE2$Exclosure_date <- factor(MIE2$Exclosure_date, levels = c("Grubbed", "2020", "2016", "2010", "Reference"))
+MIE2$Estuary <- factor(MIE2$Estuary, levels = c("LQRE", "NRE"),
+                  labels = c("Little Qualicum", "Nanaimo"))
+
+MIE2_long <- MIE2 %>% pivot_longer(Agropyron_repens:Unvegetated, names_to = "Species", values_to = "Cover") %>% 
+  mutate(Status = ifelse(Species %in% c("Agropyron_repens", "Agrostis_gigantea", "Atriplex_patula", "Cotula_coronopifolia", "Daucus_carota"), "Non-native",
+                  ifelse(Species %in% "Unvegetated", "Unvegetated","Native")))
+
+MIE2_fn_gp <- MIE2_long %>%
+mutate(Functional_groups =
+    ifelse(Species %in% c("Glaux_maritima", "Isolepis_cernua", "Salicornia_depressa", "Spergularia_canadensis"), "Groundcover (< 15 cm tall) - Native",
+    ifelse(Species %in% "Cotula_coronopifolia", "Groundcover (< 15 cm tall) - Non-native",       
+    ifelse(Species %in% c("Carex_lyngbyei", "Deschampsia_cespitosa", "Distichlis_spicata", "Juncus_balticus", "Scirpus_microcarpus"), "Graminoid - Native",
+    ifelse(Species %in% c("Agropyron_repens", "Agrostis_gigantea"), "Graminoid - Non-native",
+    ifelse(Species %in% "Unvegetated", "Unvegetated", 
+    ifelse(Species %in% c("Atriplex_patula","Daucus_carota"), "Forb - Non-native", "Forb - Native")))))))
+
+
+MIE2_fn_gp$Functional_groups <- factor(MIE2_fn_gp$Functional_groups,
+                  levels = c("Groundcover (< 15 cm tall) - Native", "Groundcover (< 15 cm tall) - Non-native", "Graminoid - Native",
+                          "Graminoid - Non-native", "Cespitose graminoid - Native", "Forb - Native", "Forb - Non-native", "Unvegetated"))
+
+#############################
+# Boxplots
+#############################
+#~~~~~~~~~~~~~~~~
+#total richness
+#~~~~~~~~~~~~~~~~
+
+# https://kembellab.ca/r-workshop/biodivR/SK_Biodiversity_R.html
+
+# select just species
+MIE2_pl <- MIE2 %>%  select(Estuary, Exclosure_date, Site_no, Agropyron_repens:Triglochin_maritima)
+
+# calculate richness
+MIE2_pl_rich <- ddply(MIE2_pl, ~Estuary*Exclosure_date*Site_no, function (x) (
+  data.frame(RICHNESS = sum(x [,-c(1:3)]>0))
+))
+
+mean_MIE2_pl_rich <- setNames(aggregate(MIE2_pl_rich[,4], list(MIE2_pl_rich$Estuary, MIE2_pl_rich$Exclosure_date), mean), c("Estuary", "Exclosure_date", "Mean_species_richness"))
+
+ggplot(data = MIE2_pl_rich, 
+    aes(x = Exclosure_date, y = RICHNESS, group = Exclosure_date))+
+    theme(text = element_text(size = 20)) +
+    geom_boxplot(size=1, alpha = 1/10)+ theme_classic()+
+    facet_grid(~Estuary, scales = "free", space = "free")+ 
+    theme(panel.spacing.x = unit(1.25, "lines")) +
+    theme(axis.text.x = element_text(angle=45, margin = margin(t=20, r=100)))+
+    labs(y="Species richness", x="Exclosure status", caption = "n = 4 per exclosure status") 
+ggsave("2021_Sp-richness_box.jpeg")
+
+#~~~~~~~~~~~~~~~~
+# Carex cover
+#~~~~~~~~~~~~~~~~
+CALY2 <- MIE2 %>% 
+  group_by(Estuary, Exclosure_date) %>% 
+  select(CALY_cover = "Carex_lyngbyei")
+
+ggplot(data=CALY2, 
+    aes(x= Exclosure_date,
+    y=CALY_cover, group=Exclosure_date)) +
+    theme(text = element_text(size = 20)) +
+    geom_boxplot(size=1, alpha = 1/10)+ theme_classic()+
+    facet_grid(~Estuary, scales = "free", space = "free")+ 
+    theme(panel.spacing.x = unit(1.25, "lines")) +
+    theme(axis.text.x = element_text(angle=45, margin = margin(t=20, r=100)))+
+    labs(y="Carex lyngbyei cover abundance (%)", x="Exclosure status", caption = "n = 4 per exclosure status 
+         (transplanting not performed in 2010 exclosures at Little Qualicum)") 
+ggsave("2021_CALY_box.jpg")
+
+#############################
+# Stacked barcharts
+#############################
+
+#~~~~~~~~~~~~~~~~
+## Functional groups
+#~~~~~~~~~~~~~~~~
+#brewer.pal(n=12,"Set2")
+
+ggplot(MIE2_fn_gp, aes(fill=Functional_groups, y=Cover, x=Exclosure_date)) + 
+    geom_bar(position="fill", stat="identity") + theme_classic()+
+    facet_grid(~Estuary, scales = "free", space = "free") + 
+    theme(text = element_text(size = 14)) +
+    theme(panel.spacing.x = unit(1.25, "lines")) +
+    theme(axis.text.x = element_text(margin = margin(t=20, r=100), angle = 45))+
+    theme(legend.position = "bottom") +
+    guides(fill = guide_legend(title = "Functional Group & Native Status", title.position = "top")) +
+    labs(y="Relative plot cover abundance", x="Exclosure status", caption = "n = 4 per exclosure status") +
+    scale_fill_brewer(palette = "Paired")  
+  #scale_fill_manual(name = "Functional Group & Native Status", values = c("#B3B3B3", "#66C2A5", "#E5C494", "#A6D854", "#FC8D62", "#E78AC3", "#FFD92F")) 
+ggsave("2021_FnGp_stacked_bar.jpeg", width = 9, height = 7, units = "in")
+
+#~~~~~~~~~~~~~~~~
+## Native vs. Non-native
+#~~~~~~~~~~~~~~~~
+
+ggplot(MIE2_long, aes(fill=Status, y=Cover, x=Exclosure_date)) + 
+  geom_bar(position="fill", stat="identity") + theme_classic()+
+  theme_classic() +
+  theme(axis.text.x = element_text(margin = margin(t=20, r=100), angle = 45))+
+  theme(text = element_text(size = 14)) +
+  theme(panel.spacing.x = unit(1.25, "lines")) +
+  facet_grid(~Estuary, scales = "free", space = "free") +
+  theme(legend.position = "bottom") +
+    guides(fill = guide_legend(title = "Native Status", title.position = "left")) +
+  labs(y="Relative plot cover abundance", x="Exclosure status") +
+  scale_fill_brewer(palette = "Set2")  
+ggsave("2021_Native-status_stacked_bar.jpeg",  width = 7, height = 6, units = "in")
+```
+
+```{r, CALY LM w/ refined data}
+#abbreviated workflow from Zurr et al, 2009
+
+# omit 10 y/o plots from LM
+CALY_cover2 <- MIE2_long %>% select(Estuary, Yrs_since_disturb, Elev_m_AMLL, Species, Cover, Site_no, Salinity_mS) %>% 
+  group_by(Estuary, Yrs_since_disturb) %>% 
+  mutate(Cover = Cover/100) %>% 
+  filter(Species == "Carex_lyngbyei", !Yrs_since_disturb == 10)
+
+#############################
+# Linear regression, no model testing
+#############################
+library(ggpubr)
+
+formula <- y ~ x
+
+ggplot(CALY_cover2, aes(x = Yrs_since_disturb, y = Cover, color = Estuary, add = "reg.line")) + 
+  geom_jitter() +
+  geom_smooth(method = "lm", formula = formula) +
+  labs(x = "Exclosure status", y = "Avg. plot proportion sedge cover", caption = "geom_jitter + geom_smooth(method = lm)") +
+  stat_regline_equation(aes(label =  paste(..eq.label.., ..adj.rr.label.., sep = "~~~~")),
+    formula = formula) +
+  theme_classic() +
+  theme(axis.text.x = element_text(margin = margin(t=20, r=100), angle = 45))+
+  theme(text = element_text(size = 14)) +
+  scale_x_continuous(breaks = c(0, 1, 5, 15), labels = c("Grubbed", "2020", "2016", "Reference")) 
+ggsave("2021_CALY_LM.png",  width = 9, height = 6, units = "in")
+
+#############################
+# A.2 Data Exploration
+#############################
+# Cleveland dotplots (pdf pg. 532)
+library(graphics)
+data(CALY_cover2)
+CALY_cover2$fYrs_since_disturb <- factor(CALY_cover2$Yrs_since_disturb)
+op <- par(mfrow = c(1, 3), mar = c(3, 3, 3, 1))
+dotchart(CALY_cover2$Elev_m_AMLL, main = "Elevation", group = CALY_cover2$fYrs_since_disturb)
+dotchart(CALY_cover2$Cover, main = "Carex cover", group = CALY_cover2$fYrs_since_disturb)
+dotchart(CALY_cover2$Salinity_mS, main = "Salinity", group = CALY_cover2$fYrs_since_disturb)
+par(op)
+
+ #############################
+ # A.3 Linear Regression
+ #############################
+ # Linear regression w/ no interactions
+ M1a <- lm(Cover ~ Yrs_since_disturb + Elev_m_AMLL + Salinity_mS, data = CALY_cover2)
+ 
+summary(M1a)
+drop1(M1a, test="F")
+anova(M1a)
+
+ #############################
+ # A.3.2 Model Validation
+ #############################
+
+# graphic output of residuals to assess homogeniety, QQ plot of residuals
+M2a <- M1a <- lm(Cover ~ fYrs_since_disturb + Elev_m_AMLL + Salinity_mS, data = CALY_cover2)
+op2a <- par(mfrow = c(2,2))
+plot(M2a) #site ID 15 & 25 appear to be outliers
+
+win.graph(); op <- par(mfrow = c(2, 2))
+#Check for normality
+E2 <- rstandard(M2a)
+list(E2)
+qqnorm(E2)
+#Check for independence and homogeneity: residuals
+#versus individual explanatory variables
+plot(y = E2, x = CALY_cover2$Yrs_since_disturb, xlab = "Exclosure Age",
+ylab = "Residuals")
+abline(0,0)
+plot(E2 ~ CALY_cover2$Elev_m_AMLL, xlab = "Elevation",
+ylab = "Residuals")
+abline(0, 0)
+par(op)
+
+##########################
+# GAM 
+##########################
+library(mgcv)
+
+## http://environmentalcomputing.net/intro-to-gams/
+CALY_GAM2 <- gam(Cover ~ Yrs_since_disturb + s(Elev_m_AMLL, k = 3), data = CALY_cover2, method = "REML")
+
+# residuals
+plot(CALY_GAM2, residuals = TRUE, pch = 1)
+
+par(mfrow = c(2,2))
+gam.check(CALY_GAM2)
+summary(CALY_GAM2)
+
+# plot
+
+ggplot(CALY_cover2, aes(x = Yrs_since_disturb+Elev_m_AMLL, y = Cover, color = Estuary)) +
+  geom_point() +
+  geom_smooth(method = "gam", formula = y~s(x), k = 3) +
+  labs(x = "Exclosure status", y = "Avg. proportion sedge plot cover ",caption = "geom_point() + geom_smooth(method = gam, formula = y~s(x), k = 3))") +
+  theme_classic() +
+  theme(axis.text.x = element_text(margin = margin(t=20, r=100), angle = 45))+
+  theme(text = element_text(size = 14)) 
+  #scale_x_continuous(breaks = c(0, 1, 5, 15), labels = c("Grubbed", "2020", "2016", "Reference")) 
+  # legend.key=element_blank() 
+ggsave("2021_CALY-GAM.png")
+
+```
+
+
+```{r, LM workflow following Zuur et al, 2009}
+
+# Appendix A: Data exploration
+# As with any analysis, before starting the linear regression, we apply a data exploration
+# focussing on the following points:
+# 1. Outliers in the response and explanatory variables.
+# 2. Collinearity of the explanatory variables.
+# 3. Relationships between the response variable and the explanatory variables.
+
+CALY_cover <- MIE_long %>% select(Estuary, Exclosure_age_yr, Plot_elev_m_AMLL, Species, Cover, Site_no, mean_EC_mS) %>% 
+  group_by(Exclosure_age_yr) %>% 
+  mutate(Cover = Cover/100) %>% 
+  mutate(Exclosure_age_yr=ifelse(Exclosure_age_yr==25, 20, Exclosure_age_yr)) %>% 
+  filter(Species == "Carex_lyngbyei")
+
+
+  
+
+#############################
+# A.2 Data Exploration
+#############################
+# Cleveland dotplots (pdf pg. 532)
+library(graphics)
+data(CALY_cover)
+CALY_cover$fExclosure_age_yr <- factor(CALY_cover$Exclosure_age_yr)
+op <- par(mfrow = c(1, 3), mar = c(3, 3, 3, 1))
+dotchart(CALY_cover$Plot_elev_m_AMLL, main = "Elevation", group = CALY_cover$fExclosure_age_yr)
+dotchart(CALY_cover$Cover, main = "Carex cover", group = CALY_cover$fExclosure_age_yr)
+dotchart(CALY_cover$mean_EC_mS, main = "Salinity", group = CALY_cover$fExclosure_age_yr)
+par(op)
+
+# Colinearity
+## To assess collinearity, we will use three tools: Pairwise scatterplots, correlation
+## coefficients, and variance inflation factors (VIF).
+
+ Z <- cbind(CALY_cover$Plot_elev_m_AMLL, CALY_cover$Exclosure_age_yr, CALY_cover$Cover, CALY_cover$mean_EC_mS)
+ colnames(Z) <- c("Elevation", "Exclosure Age", "Cover", "Salinity")
+ pairs(Z)
+ 
+ ## correlation & variance values
+ cor(Z)
+ var(Z)
+ #VIF won't run on atomic vector - can run on LM output (see Chunk 9 ("Lm"))
+ #vif(Z)
+ 
+ #############################
+ # A.3 Linear Regression
+ #############################
+ # Linear regression w/ no interactions
+ M1 <- lm(Cover ~ Exclosure_age_yr + Plot_elev_m_AMLL + mean_EC_mS, data = CALY_cover)
+ 
+summary(M1)
+drop1(M1, test="F")
+anova(M1) # order of interaction terms changes significance - try switching Elev & Salinity in lm() and observe change in ANOVA; see Zuur pg. 540 (pdf 546)
+
+
+ #############################
+ # A.3.2 Model Validation
+ #############################
+
+# graphic output of residuals to assess homogeniety, QQ plot of residuals
+M2 <- M1 <- lm(Cover ~ fExclosure_age_yr + Plot_elev_m_AMLL, data = CALY_cover)
+op2 <- par(mfrow = c(2,2))
+plot(M2)
+
+win.graph(); op <- par(mfrow = c(2, 2))
+#Check for normality
+E <- rstandard(M2)
+list(E)
+qqnorm(E)
+#Check for independence and homogeneity: residuals
+#versus individual explanatory variables
+plot(y = E, x = CALY_cover$Exclosure_age_yr, xlab = "Exclosure Age",
+ylab = "Residuals")
+abline(0,0)
+plot(E ~ CALY_cover$Plot_elev_m_AMLL, xlab = "Elevation",
+ylab = "Residuals")
+abline(0, 0)
+par(op)
+
+ #############################
+ # A.3.3 Model Interpretation
+ #############################
+# run from 'plot' to 'lines' 
+plot(CALY_cover$Plot_elev_m_AMLL, CALY_cover$Cover)
+D1 <- data.frame(Plot_elev_m_AMLL = CALY_cover$Plot_elev_m_AMLL[CALY_cover$Exclosure_age_yr==0], 
+    fExclosure_age_yr = "0")
+D2 <- data.frame(Plot_elev_m_AMLL = CALY_cover$Plot_elev_m_AMLL[CALY_cover$Exclosure_age_yr==1],
+    fExclosure_age_yr = "1")
+D3 <- data.frame(Plot_elev_m_AMLL = CALY_cover$Plot_elev_m_AMLL[CALY_cover$Exclosure_age_yr==5],
+    fExclosure_age_yr = "5")
+D4 <- data.frame(Plot_elev_m_AMLL = CALY_cover$Plot_elev_m_AMLL[CALY_cover$Exclosure_age_yr==10],
+    fExclosure_age_yr = "10")
+D5 <- data.frame(Plot_elev_m_AMLL = CALY_cover$Plot_elev_m_AMLL[CALY_cover$Exclosure_age_yr==20],
+    fExclosure_age_yr = "20")
+
+# fitted lines only cover that part of the gradient for which there are observed measurements for that age class
+P1 <- predict(M2, newdata = D1)
+P2 <- predict(M2, newdata = D2)
+P3 <- predict(M2, newdata = D3)
+P4 <- predict(M2, newdata = D4)
+P5 <- predict(M2, newdata = D5)
+
+#last bit of the code draws the lines
+lines(D1$Plot_elev_m_AMLL, P1, lty = 1)
+lines(D2$Plot_elev_m_AMLL, P2, lty = 2)
+lines(D3$Plot_elev_m_AMLL, P3, lty = 3)
+lines(D4$Plot_elev_m_AMLL, P4, lty = 4)
+lines(D5$Plot_elev_m_AMLL, P5, lty = 5)
+
+ #############################
+ # A.4 Additive Modeling
+ #############################
+# If the GAM indicates that the smoother is a straight line, then we know that the linear regression model is correct.
+library(mgcv)
+#fExclosure_age_yr is a factor
+AM1 <- gam(Cover ~ fExclosure_age_yr + s(Plot_elev_m_AMLL) + s(mean_EC_mS), data = CALY_cover)
+anova(AM1) #Note that smoothers are not significant at the 5% level; this means that we are back to the data selection process
+
+# The hypothesis testing approach is the easiest; just drop the least significant term from the model, refit the model, and repeat this process until all terms are significant.
+
+#smoother bs = "cs" tells R to use the cubic regression spline with shrinkage. 
+## adding Elev + Salinity w/ cs smoothers yields not significiance of smooth terms. -> Salinity not a strong interaction in the model (drop)
+## Elev w/ cs smoother yields significance of Elev as a smooth therm
+AM2 <- gam(Cover ~ fExclosure_age_yr + s(Plot_elev_m_AMLL, bs = "cs"), data = CALY_cover)
+anova(AM2)
+plot(AM2, residuals = TRUE, pch = 1)
+summary(AM2)
+
+ggplot(CALY_cover, aes(x = Exclosure_age_yr + Plot_elev_m_AMLL, y = Cover, color = Estuary)) + 
+  geom_point() + 
+  geom_smooth(method = "gam", formula = y ~ x + s(x, bs = "cs")) +
+  labs(x = "Time since exclosure (years)", y = "Avg. proportion sedge cover",caption = "gam(Sedge_Cover ~ Exclosure_age_yr + s(Plot_elev_m_AMLL, bs = cs),
+       geom_point() + geom_smooth(method = gam)") +
+  theme(axis.text.y = element_text(colour = "black", size = 14, face = "bold"),
+    axis.text.x = element_text(colour = "black", face = "bold", size = 14),
+    legend.text = element_text(size = 14, face ="bold", colour ="black"),
+    legend.position = "bottom", axis.title.y = element_text(face = "bold", size = 14),
+    axis.title.x = element_text(face = "bold", size = 14, colour = "black"),
+    legend.title = element_text(size = 14, colour = "black", face = "bold"),
+    panel.background = element_blank(), panel.border = element_rect(colour = "black", fill = NA, size = 1.2),
+  legend.key=element_blank()) +
+    scale_x_continuous(breaks = c(0,5,10,15,20), labels = c("0", "5", "10", "15", ">20")) 
+
+
+
+# model validation
+E.AM2 <- resid(AM2)
+Fit.AM2 <- fitted(AM2)
+plot(x = Fit.AM2, y = E.AM2, xlab = "Fitted values", ylab = "Residuals")
+
+M3 <- lm(Cover ~ Plot_elev_m_AMLL + fExclosure_age_yr, data = CALY_cover)
+anova(M3, AM2, test ="F")
+
+# The underlying null-hypothesis is that both models are the same or formulated
+# more mathematically that the smoother is a straight line (1 df). In this case, we
+# can reject this null hypothesis as the more complicated model from the GAM; it is
+# significantly better at the 5% level
+
+```
+
+``` {r, GAM}
+# http://environmentalcomputing.net/intro-to-gams/
+library(mgcv)
+
+CALY_prop_GAM <- MIE %>% select(Estuary, Exclosure_age_yr, Plot_elev_m_AMLL, Agropyron_repens:Triglochin_maritima) %>% pivot_longer(Agropyron_repens:Triglochin_maritima, names_to = "Species", values_to = "Cover") %>% 
+  group_by(Estuary) %>% 
+  #mutate(Sedge_Cover = Cover/100) %>% 
+  mutate(Exclosure_age_yr=ifelse(Exclosure_age_yr=="25", "20", Exclosure_age_yr)) %>% 
+  filter(Species == "Carex_lyngbyei")
+
+CALY_prop_GAM$Exclosure_age_yr <- as.integer(CALY_prop_GAM$Exclosure_age_yr)
+ 
+gam_CALY <- gam(Cover ~ s(Exclosure_age_yr, k = 3) + s(Plot_elev_m_AMLL, k = 3), data = CALY_prop_GAM, method = "REML")
+# Limit max df w/ k parameter; see https://www.r-bloggers.com/2021/03/how-to-solve-common-problems-with-gams/ 
+
+# residuals
+plot(gam_CALY, residuals = TRUE, pch = 1)
+
+ggplot(CALY_prop_GAM, aes(x = Exclosure_age_yr+Plot_elev_m_AMLL, y = Cover, color = Estuary)) + 
+  geom_point() + 
+  geom_smooth(method = "gam", formula = y~s(x, k = 3)) +
+  labs(x = "Time since exclosure (years)", y = "Avg. sedge cover (%)",caption = "gam(Sedge_Cover ~ s(Exclosure_age_yr, k = 3) + s(Plot_elev_m_AMLL, k = 3), method = REML,
+       geom_point() + geom_smooth(method = gam)") +
+  theme(axis.text.y = element_text(colour = "black", size = 12, face = "bold"),
+    axis.text.x = element_text(colour = "black", face = "bold", size = 12),
+    legend.text = element_text(size = 14, face ="bold", colour ="black"),
+    legend.position = "bottom", axis.title.y = element_text(face = "bold", size = 14),
+    axis.title.x = element_text(face = "bold", size = 14, colour = "black"),
+    legend.title = element_text(size = 14, colour = "black", face = "bold"),
+    panel.background = element_blank(), panel.border = element_rect(colour = "black", fill = NA, size = 1.2),
+  legend.key=element_blank()) +
+    scale_x_continuous(breaks = c(0,5,10,15,20), labels = c("0", "5", "10", "15", ">20")) 
+#ggsave("MIE_gam.svg")
+
+
+par(mfrow = c(2,2))
+gam.check(gam_CALY)
+summary(gam_CALY)
+
+```
+
+
+```{r, What are the changes in total richness over time?}
+# https://www.flutterbys.com.au/stats/tut/tut13.2.html
+# see also
+# https://kembellab.ca/r-workshop/biodivR/SK_Biodiversity_R.html
+
+# compare species richness between estuaries & exclosure dates 
+
+MIE_pl <- MIE %>%  select(Estuary, Exclosure_date, Site_no, Agropyron_repens:Triglochin_maritima)
+
+#uses library(plyr)
+
+#####################################
+# Species richness per exclosure age
+#####################################
+
+MIE_pl_rich <- ddply(MIE_pl, ~Estuary*Exclosure_date*Site_no, function (x) (
+  data.frame(RICHNESS = sum(x [,-c(1:3)]>0))
+))
+
+mean_MIE_pl_rich <- setNames(aggregate(MIE_pl_rich[,4], list(MIE_pl_rich$Estuary, MIE_pl_rich$Exclosure_date), mean), c("Estuary", "Exclosure_date", "Mean_species_richness"))
+
+# Englishman	Grubbed	3.625		
+# Little Qualicum	Grubbed	6.500		
+# Nanaimo	Grubbed	4.750		
+# Englishman	2020	5.250		
+# Little Qualicum	2020	7.000		
+# Nanaimo	2020	5.000		
+# Little Qualicum	2016	3.625		
+# Little Qualicum	2010	4.625		
+# Englishman	Reference	6.125		
+# Little Qualicum	Reference	4.375	
+# Nanaimo	Reference	5.625
+
+
+#####################################
+# Species abundance per exclosure age
+#####################################
+
+MIE_pl_abund <- MIE_pl_rich <- ddply(MIE_pl, ~Estuary*Exclosure_date*Site_no, function (x) (
+  data.frame(ABUNDANCE = sum(x [,-c(1:3)]))
+))
+  
+mean_MIE_pl_abund <- setNames(aggregate(MIE_pl_rich[,4], list(MIE_pl_rich$Estuary, MIE_pl_rich$Exclosure_date), mean), c("Estuary", "Exclosure_date", "Mean_species_abundance"))
+# why is abundance > 100%??
+Abund_box <- ggplot(data = MIE_pl_abund, 
+    aes(x = Exclosure_date, y = ABUNDANCE, group = Exclosure_date))+
+    theme(text = element_text(size = 20)) +
+    geom_boxplot(size=1, alpha = 1/10)+ theme_classic()+
+    facet_grid(~Estuary, scales = "free", space = "free")+ 
+    theme(panel.spacing.x = unit(1.25, "lines")) +
+    #theme(axis.text.x = element_text(angle=45, margin = margin(t=20, r=100)))+
+    labs(title="Abundance (% cover) over time", y="Abundance (% cover)", x="Time since exclosure (years)") +
+    scale_x_discrete(labels=c("Grubbed" = "0", "2020" = "1", "2016" = "5", "2010" = "10", "Reference" = "> 20"))
+Abund_box
+
+# Englishman	Grubbed	55.69750		
+# Little Qualicum	Grubbed	94.10875		
+# Nanaimo	Grubbed	45.12000		
+# Englishman	2020	96.55875		
+# Little Qualicum	2020	98.24625		
+# Nanaimo	2020	67.90250		
+# Little Qualicum	2016	91.87750		
+# Little Qualicum	2010	115.94875		
+# Englishman	Reference	90.09875		
+# Little Qualicum	Reference	103.75875
+# Nanaimo	Reference	94.11625	
+
+```
+
+```{r, species richness & abundance boxplots}
+
+MIE %>% 
+  group_by(Estuary, Exclosure_date)
+
+MIE_box <-ggplot(data=MIE, 
+    aes(x= Exclosure_date,
+    y=Richness, group=Exclosure_date)) +
+    theme(text = element_text(size = 20)) +
+    geom_boxplot(size=1, alpha = 1/10)+ theme_classic()+
+    facet_grid(~Estuary, scales = "free", space = "free")+ 
+    theme(panel.spacing.x = unit(1.25, "lines")) +
+    #theme(axis.text.x = element_text(angle=45, margin = margin(t=20, r=100)))+
+    labs(title="Total richness over time", y="Species Richness", x="Time since exclosure (years)") +
+    scale_x_discrete(labels=c("Grubbed" = "0", "2020" = "1", "2016" = "5", "2010" = "10", "Reference" = "> 20"))
+MIE_box
+#ggsave("MIE_TotalRichness_boxplot.svg")
+
+#########################################
+# native richness 
+#########################################
+
+
+MIE_native <-ggplot(data=MIE, 
+    aes(x= Exclosure_date,
+    y=Native_richness, group=Exclosure_date)) +
+    geom_boxplot(size=1, alpha = 1/10)+ theme_classic()+
+    facet_grid(~Estuary, scales = "free", space = "free")+ 
+    theme(panel.spacing.x = unit(1.25, "lines")) +
+    theme(axis.text.x = element_text(angle=45, margin = margin(t=20, r=100)))+
+    labs(title="Native richness over time", y="Native Species Richness", x="Time since exclosure") 
+MIE_native
+
+#########################################
+# non-native richness 
+#########################################
+
+MIE_invasive <-ggplot(data=MIE, 
+    aes(x= Exclosure_date,
+    y=Non_native_richness, group=Exclosure_date)) +
+    geom_boxplot(size=1, alpha = 1/10)+ theme_classic()+
+    facet_grid(~Estuary, scales = "free", space = "free")+ 
+    theme(panel.spacing.x = unit(1.25, "lines")) +
+    theme(axis.text.x = element_text(angle=45, margin = margin(t=20, r=100)))+
+    labs(title="Non-native richness over time", y="Non-native Species Richness", x="Time since exclosure") 
+MIE_invasive
+
+#########################################
+
+```
+
+``` {r, What are the changes in species cover (total, native, invasive) between estuaries over time?}
+
+MIE_long$Exclosure_date <- factor(MIE_long$Exclosure_date, levels = c("Grubbed", "2020", "2016", "2010", "Reference"))
+MIE_long$Estuary <- factor(MIE_long$Estuary, levels = c("Little_Qualicum", "Nanaimo"),
+                  labels = c("Little Qualicum", "Nanaimo"))
+
+# this file uses dplyr and plyr. plyr package is loaded second second, so R defaults to summarize function of the plyr package. Must specify which package (dplyr) to run function 'summarise'
+# MIE_abund <- MIE_long %>% 
+#   group_by(Estuary, Exclosure_date, Species) %>% 
+#   dplyr::summarise(
+#     n = n(),
+#     mean = mean(Cover, na.rm = TRUE),
+#     sd = sd(Cover, na.rm = TRUE),
+#     se = sd/sqrt(n))
+
+#########################################
+# stacked barchart with y-axis showing total % of species cover (position = "fill") 
+#########################################
+
+ggplot(MIE_fn_gp, aes(fill=Functional_groups, y=Cover, x=Exclosure_date)) + 
+    geom_bar(position="fill", stat="identity") + theme_classic()+
+    facet_grid(~Estuary, scales = "free", space = "free") + 
+    theme(text = element_text(size = 14)) +
+    theme(panel.spacing.x = unit(1.25, "lines")) +
+    #theme(axis.text.x = element_text(margin = margin(t=20, r=100)))+
+    labs(y="Relative Abundance 
+         (% cover)", x="Time since exclosure (years)") +
+    scale_fill_manual(name = "Plant Functional Group", values = c("#80B1D3", "#B3DE69", "#FDB462", "#BC80BD")) +
+    scale_x_discrete(labels=c("Grubbed" = "0", "2020" = "1", "2016" = "5", "2010" = "10", "Reference" = "> 20"))
+ggsave("MIE_FnGp_stacked_bar.svg")
+
+
+
+#########################################
+#native vs. non-native
+#########################################
+
+
+ggplot(MIE_long, aes(fill=Endemic, y=Cover, x=Exclosure_date)) + 
+    geom_bar(position="fill", stat="identity") + theme_classic()+
+  theme_classic() +
+  theme(text = element_text(size = 20)) +
+  theme(panel.spacing.x = unit(1.25, "lines")) +
+  facet_grid(~Estuary, scales = "free", space = "free") +
+  labs(y="Abundance (% cover)", x="Time since exclosure (years)") +
+  scale_x_discrete(labels=c("Grubbed" = "0", "2020" = "1", "2016" = "5", "2010" = "10", "Reference" = "> 20")) 
+ggsave("MIE_RelAbund_endemism_stacked_bar.svg")
+
+
+
+```
+
+``` {r, seed bank diversiy}
+
+# see figs at https://www.researchgate.net/figure/Relationship-between-seed-bank-a-species-richness-Yrichness-023Xage-3453-P00001_fig3_260161720
+
+seedling_data <- read.csv("2021_Seedlings_wider.csv", header = TRUE) 
+seedling_data$Estuary <- as.character(seedling_data$Estuary)
+seedling_data$Exclosure_date <- factor(seedling_data$Exclosure_date, levels = c("Grubbed", "2020", "2016", "2010", "Reference"))
+
+seedling_data$Estuary <- factor(seedling_data$Estuary, levels = c("Englishman", "Little_Qualicum", "Nanaimo"),
+                  labels = c("Englishman", "Little_Qualicum", "Nanaimo"))
+
+seedlings <- seedling_data %>%  select(Estuary, Exclosure_date, Replicate, Atriplex_patula:Species_L)
+
+#uses library(plyr)
+
+#####################################
+# Seed species richness per exclosure age
+#####################################
+
+seed_rich <- ddply(seedlings, ~Estuary*Exclosure_date*Replicate, function (x) (
+  data.frame(RICHNESS = sum(x [,-c(1:3)]>0))
+))
+
+mean_seed_rich <- setNames(aggregate(seed_rich[,4], list(seed_rich$Estuary, seed_rich$Exclosure_date), mean), c("Estuary", "Exclosure_date", "Mean_seed_richness"))
+
+# Englishman	Grubbed	3.166667		
+# Little_Qualicum	Grubbed	3.800000		
+# Nanaimo	Grubbed	3.166667		
+# Little_Qualicum	2020	4.333333		
+# Little_Qualicum	2016	4.166667		
+# Englishman	Reference	3.166667		
+# Little_Qualicum	Reference	5.333333		
+# Nanaimo	Reference	3.166667	
+
+#####################################
+# Seedling abundance per exclosure age
+#####################################
+
+seed_abund <- ddply(seedlings, ~Estuary*Exclosure_date*Replicate, function (x) (
+  data.frame(ABUNDANCE = sum(x [,-c(1:3)]))
+))
+
+mean_seed_abund <- setNames(aggregate(seed_abund[,4], list(seed_rich$Estuary, seed_abund$Exclosure_date), mean), c("Estuary", "Exclosure_date", "Mean_seed_abundance"))
+# Englishman	Grubbed	39.000000		
+# Little_Qualicum	Grubbed	45.000000		
+# Nanaimo	Grubbed	21.833333		
+# Little_Qualicum	2020	20.000000		
+# Little_Qualicum	2016	13.000000		
+# Englishman	Reference	6.833333		
+# Little_Qualicum	Reference	18.833333		
+# Nanaimo	Reference	8.666667	
+```
+
+```{r standing:seed richness}
+
+MIE_seed_pl_rich <- inner_join(mean_MIE_pl_rich, mean_seed_rich, by = c("Estuary" = "Estuary", "Exclosure_date" = "Exclosure_date"))
+
+MIE_seed_pl_rich$Exclosure_date <- factor(MIE_seed_pl_rich$Exclosure_date, levels = c("Grubbed", "2020", "2016", "2010", "Reference"))
+MIE_seed_pl_rich$Estuary <- factor(MIE_seed_pl_rich$Estuary, levels = c("Englishman", "Little_Qualicum", "Nanaimo"),
+                  labels = c("Englishman", "Little Qualicum", "Nanaimo"))
+
+ggplot(data = MIE_seed_pl_rich, 
+      aes(x = Mean_species_richness, y = Mean_seed_richness, color = Exclosure_date)) +
+      facet_wrap(~ Estuary) +
+      scale_y_continuous(name = "Mean seed bank species richness", limits = c(2.5, 6.5)) +
+      scale_x_continuous(name = "Mean mature vegetation species richness", limits = c(2.5, 7.5)) +
+      scale_color_discrete(name = "Time since exclosure (years)", labels = c("0", "1", "5", ">20")) +
+      geom_point(size = 6) + theme_classic() +
+      theme(panel.spacing = unit(2, "lines")) +
+      theme(text = element_text(size = 20)) +
+      theme(legend.position = "bottom", legend.box = "horizontal") 
+
+```
+
+```{r, LM}
+# tinkering - delete later
+###############################################
+##### https://www.statology.org/variance-inflation-factor-r/
+#fit the regression model
+
+CALY_LM <- MIE_long %>% select(Estuary, Exclosure_age_yr, Plot_elev_m_AMLL, Species, Cover, Site_no) %>% 
+  group_by(Exclosure_age_yr) %>% 
+  mutate(Sedge_Cover = Cover/100) %>% 
+  mutate(Exclosure_age_yr=ifelse(Exclosure_age_yr=="25", "20", Exclosure_age_yr)) %>% 
+  filter(Species == "Carex_lyngbyei")
+
+CALY_LM$Exclosure_age_yr <- as.integer(CALY_LM$Exclosure_age_yr)
+
+LM <- lm(Sedge_Cover ~ Exclosure_age_yr + Plot_elev_m_AMLL + Estuary, data = CALY_LM)
+
+#view the output of the regression model
+summary(LM)
+ 
+library(car)
+vif(LM) # Plot elev VIF > 5
+
+# visualize VIF values
+#create vector of VIF values
+vif_values <- vif(LM)
+
+#create horizontal bar chart to display each VIF value
+barplot(vif_values, main = "VIF Values", horiz = TRUE, col = "steelblue")
+
+#add vertical line at 5
+abline(v = 5, lwd = 3, lty = 2)
+
+###############################################
+
+```
+
+```{r, LM & GLMM - LQRE & NRE}
+# https://bbolker.github.io/mixedmodels-misc/ecostats_chap.html
+
+# pkgs_CRAN <- c("lme4","MCMCglmm","blme",
+#                "pbkrtest","coda","aods3","bbmle","ggplot2",
+#                "reshape2","plyr","numDeriv","Hmisc",
+#                "plotMCMC","gridExtra","R2admb",
+#                "broom.mixed","dotwhisker")
+# install.packages(pkgs_CRAN)
+# install.packages("glmmTMB")
+# rr <- "http://www.math.mcmaster.ca/bolker/R"
+# install.packages("glmmADMB",type="source",repos=rr)
+library("devtools") 
+library("lme4")
+#library("glmmADMB")      ## (not on CRAN)
+library("glmmTMB")
+
+
+CALY_prop <- MIE_long %>% select(Estuary, Exclosure_age_yr, Plot_elev_m_AMLL, Species, Cover, Site_no) %>% 
+  group_by(Exclosure_age_yr) %>% 
+  mutate(Sedge_Cover = Cover/100) %>% 
+  mutate(Exclosure_age_yr=ifelse(Exclosure_age_yr==25, 20, Exclosure_age_yr)) %>% 
+  filter(Species == "Carex_lyngbyei")
+
+CALY_prop$Exclosure_age_yr <- as.integer(CALY_prop$Exclosure_age_yr)
+
+library(ggpmisc)
+# adding regression eqn/r^2 w/ stat_poly_eq, see https://stackoverflow.com/questions/7549694/add-regression-line-equation-and-r2-on-graph, from Pedro (~1/3 down the page)
+my.formula <- y ~ x
+
+p <- ggplot(CALY_prop,aes(x=Exclosure_age_yr,y=Sedge_Cover,colour=Estuary)) +
+  geom_point()+
+  geom_smooth(method="lm",alpha=0.3) +
+  stat_poly_eq(formula = my.formula, 
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) +
+  labs(x = "Time since exclosure (years)", y = "Avg. proportion sedge cover", colour = "Estuary", caption = "geom_point() + geom_smooth(method = lm, alpha = 0.3)") +
+  theme(axis.text.y = element_text(colour = "black", size = 12, face = "bold"), 
+    axis.text.x = element_text(colour = "black", face = "bold", size = 12), 
+    legend.text = element_text(size = 14, face ="bold", colour ="black"), 
+    legend.position = "bottom", axis.title.y = element_text(face = "bold", size = 14), 
+    axis.title.x = element_text(face = "bold", size = 14, colour = "black"), 
+    legend.title = element_text(size = 14, colour = "black", face = "bold"), 
+    panel.background = element_blank(), panel.border = element_rect(colour = "black", fill = NA, size = 1.2),
+    legend.key=element_blank()) +
+  scale_x_continuous(breaks = c(0,5,10,15,20), labels = c("0", "5", "10", "15", ">20")) +
+  expand_limits(y = c(0, 1))
+p
+ggsave("MIE_lm.svg")
+
+
+# https://cran.r-project.org/web/packages/glmmTMB/vignettes/glmmTMB.pdf
+data("Owls")
+head(Owls)
+
+Owls <- transform(Owls,
+Nest=reorder(Nest,NegPerChick),
+NCalls=SiblingNegotiation,
+FT=FoodTreatment)
+
+fit_zipoisson <- glmmTMB(NCalls~(FT+ArrivalTime)*SexParent+
+offset(log(BroodSize))+(1|Nest),
+data=Owls,
+ziformula=~1,
+family=poisson)
+
+summary(fit_zipoisson)
+
+
+glmmTMB_poisson <- glmmTMB(Sedge_Cover ~ Exclosure_age_yr+Plot_elev_m_AMLL + (1|Estuary),
+                data=CALY_prop,
+                ziformula=~1,
+                family=poisson)
+summary(glmmTMB_poisson)
+
+library(ggeffects)
+glmmTMB_predict <- ggpredict(glmmTMB_poisson, c("Plot_elev_m_AMLL", "Exclosure_age_yr"))
+plot(glmmTMB_predict)
+
+ggplot(CALY_prop,aes(x=Exclosure_age_yr,y=Sedge_Cover,colour=Estuary)) +
+  geom_point()+
+  geom_smooth(method="lm",alpha=0.3) 
+
+
+# see also # https://easystats.github.io/see/articles/performance.html
+
+``` 
+
+```{r, GLMM - attempt 2}
+#https://quantdev.ssri.psu.edu/sites/qdev/files/ILD_Ch04_2017_GeneralizedMLM.html
+CALY_GLMM2 <- MIE_long %>% select(Estuary, Exclosure_age_yr, Plot_elev_m_AMLL, Species, Cover) %>% 
+  group_by(Exclosure_age_yr) %>% 
+  mutate(Sedge_Cover = Cover/100) %>% 
+  mutate(Exclosure_age_yr=ifelse(Exclosure_age_yr=="25", "20", Exclosure_age_yr)) %>% 
+  filter(Species == "Carex_lyngbyei")
+
+CALY_GLMM2$Exclosure_age_yr <- as.integer(CALY_GLMM2$Exclosure_age_yr)
+
+#faceted plot
+ggplot(data=CALY_GLMM2, aes(x=Exclosure_age_yr,y=Sedge_Cover)) +
+  geom_point() + #(position=position_jitter(h=.025)) + 
+  xlab("Time since exclosure") + 
+  ylab("Relative sedge abundance") + 
+  scale_x_continuous(labels = c("0", "5", "10", "15", ">20"),breaks=c(0,5,10, 15,20)) + 
+  scale_y_continuous(limits=c(0,1), breaks=c(0,1)) +
+  facet_wrap( ~ Estuary)
+
+# unconditional means model
+um.fit <- glmer(formula = Sedge_Cover ~ 1 + (1|Estuary), 
+              data=CALY_GLMM2,
+              family="binomial",
+              na.action=na.exclude)
+summary(um.fit)
+
+
+# Add predictor 'Exclosure age'
+model1.fit <- glmer(formula = Sedge_Cover ~ 1 + Exclosure_age_yr + 
+                      (1|Estuary), 
+                    data=CALY_GLMM2,
+                    family="binomial",
+                    na.action=na.exclude)
+summary(model1.fit)
+
+# Odds Ratio Estimates
+exp(fixef(model1.fit))
+
+#with confidence intervals 
+exp(cbind(OR = fixef(model1.fit), confint(model1.fit, method="Wald")[-1,]))
+
+# Lets look at predicted scores. This can be done in two ways.
+# 1. We can predict in the link scale (for us that is log odds), or
+# 2. We can predict in the response scale (for us that is probability).
+CALY_GLMM2$pred.m1logit <- predict(model1.fit, type="link")
+CALY_GLMM2$pred.m1prob <- predict(model1.fit, type="response")
+
+#Logit predictions
+ggplot(data=CALY_GLMM2, aes(x=Exclosure_age_yr,y=pred.m1logit, group=Estuary)) +
+  geom_line() + 
+  xlab("Time since exclosure (years)") + 
+  ylab("Sedge Cover") 
+
+#Probability predictions
+ggplot(data=CALY_GLMM2, aes(x=Exclosure_age_yr,y=pred.m1prob, group=Estuary)) +
+  geom_line() + 
+  xlab("Time since exclosure (years)") + 
+  ylab("Sedge Cover") 
+
+# We solve for p, which is easily calculated in R using an inv.logit() function in the gtools package.
+#install.packages("gtools")
+library("gtools")
+inv.logit(fixef(model1.fit)[1])
+
+# expand the model to include all the predcitors and covariates
+model2.fit <- glmer(formula = Sedge_Cover ~ 1 + Exclosure_age_yr + Plot_elev_m_AMLL +
+                      (1|Estuary), 
+                    data=CALY_GLMM2,
+                    family="binomial",
+                    na.action=na.exclude)
+summary(model2.fit)
+
+#Using the glmmTMB function in the glmmTMB package.
+
+model2.check <- glmmTMB(formula = Sedge_Cover ~ 1 + Exclosure_age_yr + Plot_elev_m_AMLL + (1|Estuary),
+                    family = binomial, 
+                    data = CALY_GLMM2
+                    #na.action=na.exclude
+                    )
+summary(model2.check)
+
+# generate predicted scores
+CALY_GLMM2$pred.m2logit <- predict(model2.fit, type="link")
+CALY_GLMM2$pred.m2prob <- predict(model2.fit, type="response")
+
+#Logit predictions
+ggplot(data=CALY_GLMM2, aes(x=Exclosure_age_yr,y=pred.m2logit, group=Estuary)) +
+  geom_line() + 
+  xlab("Time since exclosure (years)") + 
+  ylab("Sedge Cover") 
+
+#Probability predictions
+ggplot(data=CALY_GLMM2, aes(x=Exclosure_age_yr,y=pred.m2prob, group=Estuary)) +
+  geom_line() + 
+  xlab("Time since exclosure (years)") + 
+  ylab("Sedge Cover") 
+
+
+```
+
+```{r, GLM - attempt 1)}
+
+# http://r-eco-evo.blogspot.com/2017/05/generalized-linear-models.html 
+## good basic English explanation explains concepts like error; 
+##regular linear models have limits [-oo; oo], but this won't work for data w/ probabilities restricted [0;1] like proportions
+## predictions are made through a predictor function (which is non-linear), which requires a link function (which linearizes the predictor function)
+## "family defines the distribution of the errors and chooses the appropriate link function. In R the two most commonly used families are Poisson and Binomial. Poisson is commonly used for counts, while the Binomial family is used in proportions or dichotomous response variables"
+## "If the data shows a greater variance than expected by the (Poisson/Binomial) distribution, we have overdispersion. When over dispersion occurs the fitted model  and the estimated parameters are biased and should not be used."  
+### Overdispersion usually means that a covariate which has an important effect on the response variable was omitted. 
+
+
+########################################
+# CALY
+########################################
+
+# Select relevant data for glm of just CALY cover, convert cover values % to proportion
+LQRE_CALY_prop <- MIE %>% select(Estuary, Exclosure_date, Plot_elev_m_AMLL, Agropyron_repens:Triglochin_maritima) %>% pivot_longer(Agropyron_repens:Triglochin_maritima, names_to = "Species", values_to = "Cover") %>% 
+  group_by(Exclosure_date) %>% 
+  mutate(Cover = Cover/100) %>% 
+  filter(Species == "Carex_lyngbyei", Estuary == "Little_Qualicum")
+
+# fit model of effect of exclosure age on CALY cover using Poisson distribution, which uses log link function. 
+CALY_glm <- glm(Cover~Exclosure_date*Plot_elev_m_AMLL, data=LQRE_CALY_prop, family=poisson)
+summary(CALY_glm) # all age classes significant - should be compared to Grubbed (?)
+
+# Need to check dispersions
+1-pchisq(CALY_glm$deviance,CALY_glm$df.residual) # 1 ??
+
+# check significance of model by deviance test: 
+anova(CALY_glm, test = "Chisq") #interaction of exclosure age & elevation significant
+
+#recall coefficients
+coef(CALY_glm)
+
+## this thing takes forever 
+# get 95% CIs for coefficients
+#exp(confint(CALY_glm))
+
+# Estimate R^2 as ratio of null and residual deviances. 
+1 - (CALY_glm$dev/ CALY_glm$null) # Approx. 74% of variance in CALY cover is explained by variance in plot age and elev. 
+
+# "In order to plot the observed and the expected curve, we need to calculated predicted values as we did in the post where we calculated confidence intervals for regression lines. "
+xv <- seq(0,30, length=1000)
+su.pre <- predict(CALY_glm, list(area=xv), type="response") # removed argument "se=T"
+plot(Cover~Exclosure_date*Plot_elev_m_AMLL, data=LQRE_CALY_prop, xlim=c(0,30), ylab="Carex cover (proportion)", xlab="Years since exclosure") # can't find object 'Exclosure_age_yr' ??
+lines(su.pre$fit~xv) # get an error here - 'variable lengths differ'
+lines(su.pre$fit+su.pre$se.fit ~ xv, lty=2)
+lines(su.pre$fit-su.pre$se.fit ~xv, lty=2)
+
+# See other tutorials 
+# http://environmentalcomputing.net/linear-regression/
+# https://www.umass.edu/landeco/teaching/ecodata/schedule/methods1.pdf
+
+
+#http://environmentalcomputing.net/generalised-linear-models/
+#http://environmentalcomputing.net/generalised-linear-models-1/
+#http://environmentalcomputing.net/intro-to-gams/
+
+```
+
+
+
+```{r maps - tutorial}
+
+# tutorial from https://r-spatial.org/r/2018/10/25/ggplot2-sf.html
+
+#install.packages(c("cowplot", "googleway", "ggplot2", "ggrepel", "ggspatial", "libwgeom", "rgeos" "sf", "rnaturalearth", "rnaturalearthdata"))
+
+
+# library("ggplot2")
+# theme_set(theme_bw())
+# library("sf")
+# 
+# library("rnaturalearth")
+# library("rnaturalearthdata")
+# 
+# world <- ne_countries(scale = "medium", returnclass = "sf")
+# class(world)
+# 
+# ggplot(data = world) +
+#     geom_sf()
+# 
+# ggplot(data = world) +
+#     geom_sf() +
+#     xlab("Longitude") + ylab("Latitude") +
+#     ggtitle("World map", subtitle = paste0("(", length(unique(world$NAME)), " countries)"))
+# 
+# ggplot(data = world) + 
+#     geom_sf(color = "black", fill = "lightgreen")
+# 
+# ggplot(data = world) +
+#     geom_sf(aes(fill = pop_est)) +
+#     scale_fill_viridis_c(option = "plasma", trans = "sqrt")
+# 
+# # change projection & extent
+# ggplot(data = world) +
+#     geom_sf() +
+#     coord_sf(crs = "+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs ")
+# 
+# # extent of the map can also be set in coord_sf, in practice allowing to “zoom” in the area of interest, provided by limits on the x-axis (xlim), and on the y-axis (ylim). Note that the limits are automatically expanded by a fraction to ensure that data and axes don’t overlap; it can also be turned off to exactly match the limits provided with expand = FALSE
+# 
+# ggplot(data = world) +
+#     geom_sf() +
+#     coord_sf(xlim = c(-123.20, -123.00), ylim = c(49.15, 49.05), expand = TRUE)
+# 
+# # stopped tutorial b/c not high enough resolution 
+# 
+# # see blog https://www.molecularecologist.com/2012/09/18/making-maps-with-r/
+# #install.packages("RgoogleMaps")
+# #library(RgoogleMaps)
+# lat <- c(48, 50) #define our map's ylim
+# lon <- c(-125,-118) #define our map's xlim
+# center = c(mean(lat), mean(lon))  #tell what point to center on
+# zoom <- 5  #zoom: 1 = furthest out (entire globe), larger numbers = closer in
+# terrmap <- GetMap(center=center, zoom=zoom, maptype= "terrain", destfile = "terrain.png") #lots of visual options, just like google maps: maptype = c("roadmap", "mobile", "satellite", "terrain", "hybrid", "mapmaker-roadmap", "mapmaker-hybrid")
+# 
+# lat <- c(49,49.15)  #now we are plotting the map
+# lon <- c(-123.3,-123.1)
+# terrain_close <- GetMap.bbox(lonR= range(lon), latR= range(lat), center= c(49.1, -123.13), destfile= "terrclose.png", zoom=13, maptype="terrain")
+# # this doesn't make a map; only spits out a matrix. 
+# 
+# 
+# # see https://journal.r-project.org/archive/2013-1/kahle-wickham.pdf 
+
+
+
+
+
+```
+
+```{r prep for ANCOVA of Carex cover - test for normality}
+# modified from https://www.rpubs.com/cwoods/ancova
+
+#from example: "epiphyte abundance" = "Carex_lyngbyei" or "Richness"
+#               "tree size" = "Time_since_exclosure"
+#               "location" = "Estuary"
+
+#questions: does the (1) abundance of Carex, (2) species richness vary with time since exclosure and location on the island?
+#response (dependent) variable: Carex abundance (continuous), species richness (continuous)
+#explanatory (covariate) variable 1: time (continuous)
+#explanatory (independent) variable 2: location (categorical)
+#test name: ANCOVA
+
+## untransformed data are not normal. Note that raw data were entered as a proportion, so range of data is 0-1. Sqrt transformation only marginally compresses data distribution, but could be used to transform to test a normal distribution (see chunk 'sqrt transformed')
+
+
+
+
+#create a scatterplot with a line for each group of the categorical variable
+#################
+# CALY cover in all sites 
+#################
+View(MIE)
+p_CALY <- ggplot(MIE, (aes(x=Exclosure_age_yr, y=Carex_lyngbyei, color=Estuary, shape=Estuary))) + theme_classic() +ylab("Carex Abundance") + xlab("Time since exclosure (years)") 
+p_CALY + geom_jitter() + geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+
+CALY <- MIE %>% 
+  group_by(Estuary, Exclosure_date) %>% 
+  select(CALY_cover = "Carex_lyngbyei")
+
+CALY_box <-ggplot(data=CALY, 
+    aes(x= Exclosure_date,
+    y=CALY_cover, group=Exclosure_date)) +
+    theme(text = element_text(size = 20)) +
+    geom_boxplot(size=1, alpha = 1/10)+ theme_classic()+
+    facet_grid(~Estuary, scales = "free", space = "free")+ 
+    theme(panel.spacing.x = unit(1.25, "lines")) +
+    #theme(axis.text.x = element_text(angle=45, margin = margin(t=20, r=100)))+
+    labs(title = "Carex cover abundance over time", y="Carex lyngbyei cover abundance (%)", x="Time since exclosure (years)") +
+    scale_x_discrete(labels=c("Grubbed" = "0", "2020" = "1", "2016" = "5", "2010" = "10", "Reference" = "> 20"))
+CALY_box
+#ggsave("CALY_abund_box.svg")
+
+#run a 2-way anova for the data to test model assumptions
+ancova_CALY <- lm(Carex_lyngbyei~Exclosure_age_yr*Estuary*Plot_elev_m_AMLL, data=MIE)
+
+#code to create the density plot of residuals
+plot(density(ancova_CALY$residuals))
+
+#library(stats)
+#create a Q-Q plot
+qqnorm(ancova_CALY$residuals)
+qqline(ancova_CALY$residuals, datax = FALSE, distribution = qnorm, probs = c(0.25, 0.75)) 
+
+#create a fitted values vs residuals plot
+plot(ancova_CALY$residuals~ancova_CALY$fitted.values)
+lines(lowess(ancova_CALY$fitted.values,ancova_CALY$residuals), col="blue")
+text(ancova_CALY$fitted.values, ancova_CALY$residuals, row.names(MIE), cex=0.6, pos=4, col="red")
+
+#################
+# Richness
+#################
+
+p_richness <- ggplot(MIE, (aes(x=Exclosure_age_yr, y=Richness, color=Estuary, shape=Estuary))) + theme_classic() +ylab("Species Richness") + xlab("Time since exclosure (years)") 
+p_richness + geom_jitter() + geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+
+#run a 2-way anova for the data to test model assumptions
+ancova_richness <- lm(Richness~Exclosure_age_yr*Estuary*Plot_elev_m_AMLL, data=MIE)
+
+#code to create the density plot of residuals
+plot(density(ancova_richness$residuals))
+
+#library(stats)
+#create a Q-Q plot
+qqnorm(ancova_richness$residuals)
+qqline(ancova_richness$residuals, datax = FALSE, distribution = qnorm, probs = c(0.25, 0.75)) 
+
+#create a fitted values vs residuals plot
+plot(ancova_richness$residuals~ancova_richness$fitted.values)
+lines(lowess(ancova_richness$fitted.values,ancova_richness$residuals), col="blue")
+text(ancova_richness$fitted.values, ancova_richness$residuals, row.names(MIE), cex=0.6, pos=4, col="red")
+
+anova(ancova_CALY) # very important to note that planting restoration has been done in only the 1-year old plots (2020 exclosures), therefore unsurprising that Exclosure_age_yr is highly significant in ANCOVA results
+
+anova(ancova_richness)
+
+```
+
+``` {r linear regression of ANCOVA - richness }
+
+#https://bookdown.org/ndphillips/YaRrr/linear-regression-with-lm.html 
+
+# Create a linear model of richness given age of exclosure, estuary location, and elevation
+
+MIE_elev <- select(MIE, Plot_elev_m_AMLL, Estuary, Site_no)
+
+MIE_rich_elev <- inner_join(MIE_pl_rich, MIE_elev, by = c("Estuary", "Site_no"))
+
+# MIE_pl_rich must be two objects - RICHNESS changes to ABUNDANCE
+richness_lm <- lm(formula = RICHNESS~Exclosure_date*Estuary*Plot_elev_m_AMLL, data=MIE_rich_elev)
+summary(richness_lm)
+
+
+# The coefficients of richness model
+summary(richness_lm)$coefficients
+
+# Add the fitted values as a new column in the dataframe
+MIE_rich_elev$value_lm <- richness_lm$fitted.values
+
+# Plot the relationship between true estuary richness and linear model fitted values
+
+plot(x = MIE_rich_elev$RICHNESS, 
+     y = richness_lm$fitted.values, 
+     xlab = "Observed Richness",
+     ylab = "Model Fitted Values", 
+     main = "Regression fits of species richness")
+abline(b = 1, a = 0)
+
+
+
+LQRE_richness<-MIE_rich_elev[which(MIE_rich_elev$Estuary=='Little_Qualicum'),]
+#ERE_richness<-MIE_rich_elev[which(MIE_rich_elev$Estuary=='Englishman'),]
+NRE_richness<-MIE_rich_elev[which(MIE_rich_elev$Estuary=='Nanimo'),]
+
+#explore data (look for outliers)
+
+p_LQRE_richness <- ggplot(LQRE_richness, (aes(x=Exclosure_date, y=RICHNESS))) + theme_classic() +ylab("Species Richness") + xlab("Time since exclosure (years)") 
+p_LQRE_richness + geom_smooth(method=lm, se=FALSE, fullrange=TRUE) + geom_abline()
+
+
+attach(LQRE_richness)
+plot(LQRE_richness$Exclosure_date, LQRE_richness$RICHNESS, xlab="Time since exclosure (years)", ylab="Species Richness", pch=19)
+
+
+#run the linear regression
+LQRE_richness_fit<-lm(RICHNESS~Exclosure_date, data=LQRE_richness)
+
+summary(LQRE_richness_fit)$r.squared
+#0.1791
+
+#create a density plot of residuals
+plot(density(LQRE_richness_fit$residuals))
+
+###############################################################################
+# Alternate method from http://www.sthda.com/english/articles/40-regression-analysis/168-multiple-linear-regression-in-r/ 
+###############################################################################
+
+MIE_elev <- select(MIE, Estuary, Site_no, Plot_elev_m_AMLL) 
+
+MIE_rich_elev <- inner_join(MIE_pl_rich, MIE_elev, by = c("Estuary", "Site_no"))
+
+richness_lm <- lm(formula = RICHNESS~Exclosure_date*Estuary*Plot_elev_m_AMLL, data=MIE_rich_elev)
+summary(richness_lm)
+
+
+
+model <- lm(RICHNESS ~ Estuary + Exclosure_date + Plot_elev_m_AMLL, data = MIE_rich_elev)
+# any significant p-value indicates the predictor variable (Estuary, Exclosure_date, Plot_elev) is significantly related to the outcome variable (RICHNESS)
+summary(model)
+
+#For a given the predictor, the t-statistic evaluates whether or not there is significant association between the predictor and the outcome variable, that is whether the beta coefficient of the predictor is significantly different from zero.
+summary(model)$coefficient
+
+
+#confidence interval of the model coefficient can be extracted
+confint(model)
+
+
+
+```
+
+``` {r ANCOVA - sqrt transformed data}
+
+############################################
+# Square root transformation yields (marginally more) normally distributed residuals
+############################################
+
+#square-root transform your response variable Carex_lyngbyei
+sqrtCarex = sqrt(MIE$Carex_lyngbyei)
+
+#run the ancova test on the transformed data
+ancova_sqrt <-lm(sqrtCarex~Exclosure_age_yr*Estuary*Plot_elev_m_AMLL, data=MIE)
+
+
+#create the density plot of residuals
+plot(density(ancova_sqrt$residuals)) 
+
+
+#create a Q-Q plot
+qqnorm(ancova_sqrt$residuals)
+qqline(ancova_sqrt$residuals, datax = FALSE, distribution = qnorm, probs = c(0.25, 0.75)) # better, but not great - residuals don't leap off the top of qq line as far
+
+
+#create a fitted values vs. residuals plot
+plot(ancova_sqrt$residuals~ancova_sqrt$fitted.values)
+lines(lowess(ancova_sqrt$fitted.values,ancova_sqrt$residuals), col="blue")
+text(ancova_sqrt$fitted.values, ancova_sqrt$residuals, row.names(sqrtCarex), cex=0.6, pos=4, col="red")
+
+
+
+############################################
+# Add transformed data to dataset
+############################################
+
+MIE_xform <- mutate(MIE, 
+       Carex_sqrt = sqrtCarex)
+#head(estuaries_xform)
+
+#View(MIE_xform)
+
+
+############################################
+# Interpreting ANCOVA Output
+############################################
+
+anova(ancova_sqrt)
+
+
+
+```
+
+``` {r linear regression of ANCOVA - CALY }
+
+
+#To report the results of each of your explanatory variables (Exclosure_age_yr and Estuary separately), you need to conduct and report the results of separate simple linear regressions for each group individually.
+
+LQRE<-MIE_xform[which(MIE_xform$Estuary=='Little_Qualicum'),]
+#ERE<-MIE_xform[which(MIE_xform$Estuary=='ERE'),]
+NRE<-MIE_xform[which(MIE_xform$Estuary=='Nanaimo'),]
+
+#explore data (look for outliers)
+attach(LQRE)
+plot(LQRE$Exclosure_age_yr, LQRE$Carex_sqrt, xlab="Time since exclosure (years)", ylab="Carex lyngbyei abundance (square root)", pch=19)
+abline(lm(Carex_sqrt~Exclosure_age_yr), col="red")
+
+#run the linear regression
+fit<-lm(Carex_sqrt~Exclosure_age_yr, data=LQRE)
+
+summary(fit)$r.squared
+#0.0785
+
+#create a density plot of residuals
+plot(density(fit$residuals))
+
+#####
+# note - repeat this for each estuary location
+#####
+
+
+############################################
+# plot the sqaure root transformed cover data  
+############################################
+p_sqrt <- ggplot(MIE_xform, (aes(x=Exclosure_age_yr, y=Carex_sqrt, color=Estuary, shape=Estuary))) + theme_classic() +ylab("Carex Abundance (square root)") + xlab("Time since exclosure (years)") 
+p_sqrt + geom_point() + geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
+
+# How to handle/characterize transplanting 
+
+
+
+```
+
+
+
+
+
+
