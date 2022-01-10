@@ -1,5 +1,5 @@
 ---
-title: "2021_MidIslandEstuaries_Analysis"
+title: "Habitat Recovery"
 output: html_document
 ---
 ```{r tips & tutorials}
@@ -30,7 +30,7 @@ output: html_document
 # 2. Return the hexadecimal color code of the palette
 #brewer.pal(n, name)
 
-#brewer.pal(n=12,"Set3")
+brewer.pal(n=7,"Spectral")
 
 # Forb = "#BC80BD"
 # Non-native graminoid = "#FDB462"
@@ -40,74 +40,153 @@ output: html_document
 
 ```
 
-```{r setup, include=FALSE}
-#install.packages("tidyr")
-library(tidyr)
-#install.packages("dplyr")
+```{r library setup, include=FALSE}
 library(dplyr)
 library(plyr)
+library(tidyr)
 library(ggplot2)
 library(stats)
 library(ape)
 library(vegan)
-library(wesanderson)
 library(RColorBrewer)
-#update.packages(checkBuilt = TRUE)
-MIE_all <- read.csv("2021_MidIslandEstuaries.csv", header = TRUE)
-S <- read.csv("2021_salinity.csv") 
-avg_S <- S %>% 
-  group_by(Unique_plot_ID) %>% 
-  summarize(mean_EC_mS = mean(EC_mScm.1, na.rm = TRUE))
 
-#exclude ERE b/c data not representative
-MIE <- MIE_all %>% 
-  filter(!Estuary == "ERE") %>% 
-  left_join(avg_S, by = "Unique_plot_ID", na.rm = TRUE)
-  
-
-MIE$Exclosure_date <- factor(MIE$Exclosure_date, levels = c("Grubbed", "2020", "2016", "2010", "Reference"))
-MIE$Estuary <- factor(MIE$Estuary, levels = c("LQRE", "NRE"),
-                  labels = c("Little_Qualicum", "Nanaimo"))
-
-# pivot longer, classify endemic status, & convert cover values to relative abundance
-
-# colnames(MIE)
-# "Agropyron_repens" "Agrostis_gigantea" "Atriplex_patula"             
-# "Carex_lyngbyei" "Cotula_coronopifolia" "Daucus_carota" "Deschampsia_cespitosa"       
-# "Distichlis_spicata" "Glaux_maritima" "Isolepis_cernua" "Juncus_balticus"             
-# "Polygonum_fowlerii""Potentilla_anserina_pacifica" "Salicornia_depressa" "Scirpus_microcarpus"         
-# "Spergularia_canadensis" "Symphotrichium_subspicatum" "Trifolium_wormskioldii" "Triglochin_maritima" 
-
-MIE_long <- MIE %>% pivot_longer(Agropyron_repens:Triglochin_maritima, names_to = "Species", values_to = "Cover") %>% 
-  mutate(Endemic = ifelse(Species %in% c("Agropyron_repens", "Agrostis_gigantea", "Atriplex_patula", "Cotula_coronopifolia", "Daucus_carota"), "Invasive", "Native"))
-
-MIE_fn_gp <- MIE_long %>%
-mutate(Functional_groups =
-    ifelse(Species %in% c("Cotula_coronopifolia", "Glaux_maritima", "Isolepis_cernua", "Salicornia_depressa", "Spergularia_canadensis"), "Groundcover (< 15 cm tall)",
-    ifelse(Species %in% c("Carex_lyngbyei", "Deschampsia_cespitosa", "Distichlis_spicata", "Juncus_balticus", "Scirpus_microcarpus"), "Graminoid - Native",
-    ifelse(Species %in% c("Agropyron_repens", "Agrostis_gigantea"), "Graminoid - Non-native",
-   "Forb"))))
-
- MIE_fn_gp$Functional_groups <- factor(MIE_fn_gp$Functional_groups,
-                                      levels = c("Groundcover (< 15 cm tall)", "Graminoid - Native",
-                                                 "Graminoid - Non-native", "Cespitose graminoid - Native",
-                                                 "Forb"))
 
 ```
 
-``` {r setup, refined data}
 
-library(tidyr)
-library(dplyr)
-library(plyr)
-library(ggplot2)
-library(stats)
-library(ape)
-library(vegan)
-library(wesanderson)
-library(RColorBrewer)
+```{r setup, ABOVE GROUND summary stats}
 
-d_MIE <- read.csv("2021_MIE_data.csv")
+dMIE <- read.csv("2021_dMIE.csv")
+#View(dMIE)
+
+dMIE$Exclosure_date <- factor(dMIE$Exclosure_date, levels = c("Grubbed", "2020", "2016", "2010", "Reference"))
+dMIE$Estuary <- factor(dMIE$Estuary, levels = c("LQRE", "ERE", "NRE"),
+                  labels = c("Little Qualicum", "Englishman", "Nanaimo"))
+
+# Species info
+# "Agropyron_repens" graminoid, non-native, perennial, rhizomatous    NOMENCLATURE UPDATE: Elymus repens
+# "Agrostis_gigantea" graminoid, non-native, perennial, rhizomatous   NOMENCLATURE UPDATE: Agrostis stolonifera
+# "Atriplex_patula" forb, non-native, annual, taproot
+# "Carex_lyngbyei" graminoid, native, perennial, rhizomatous
+# "Cotula_coronopifolia" forb, non-native, perennial, fibrous
+# "Daucus_carota" forb, non-native, biennial (perennial), taproot
+# "Deschampsia_cespitosa" graminoid, native, perennial, fibrous
+# "Distichlis_spicata" graminoid, native, perennial, rhizomatous
+# "Glaux_maritima" forb, native, perennial, rhizomatous
+# "Isolepis_cernua" graminoid, native, annual, fibrous
+# "Juncus_balticus" graminoid, native, perennial, rhizomatous
+# "Polygonum_fowlerii" forb, native, annual, taproot                  SPELLING: Polygonum fowleri
+# "Potentilla_anserina_pacifica" forb, native, perennial, rhizomatous
+# "Salicornia_depressa" forb, native, annual, fibrous
+# "Scirpus_microcarpus" graminoid, native, perennial, rhizomatous
+# "Spergularia_canadensis" forb, native, annual, taproot
+# "Symphotrichium_subspicatum" forb, native, perennial, rhizomatous   SPELLING : Sympohtricum 
+# "Trifolium_wormskioldii" forb, native, perennial, taproot
+# "Triglochin_maritima" forb, native, perennial, rhizomatous
+
+MIE_long <- dMIE %>% 
+  filter(!(ID==7)) %>% 
+  pivot_longer(Agropyron_repens:No_cover, names_to = "Species", values_to = "Cover") %>%
+  mutate(Endemic = ifelse(Species %in% c("Agropyron_repens", "Agrostis_gigantea", "Atriplex_patula", "Cotula_coronopifolia", "Daucus_carota"), "Invasive",
+                   ifelse(Species %in% "No_cover", "NA", "Native"))) %>% 
+  mutate(LifeHistory = ifelse(Species %in% c("Atriplex_patula", "Isolepis_cernua", "Polygonum_fowlerii", "Salicornia_depressa", "Spergularia_canadensis"), 
+                              "Annual", ifelse(Species %in% "No_cover", "NA", "Perennial"))) %>% 
+  mutate(Root = ifelse(Species %in% c("Atriplex_patula", "Daucus_carota", "Polygonum_fowlerii", "Trifolium_wormskioldii"), "Taproot", 
+                ifelse(Species %in% c("Cotula_coronopifolia", "Deschampsia_cespitosa", "Isolepis_cernua", "Salicornia_depressa"), "Fibrous",
+                ifelse(Species %in% "No_cover", "NA", "Rhizomatous")))) %>% 
+  mutate(Clade = ifelse(Species %in% c("Agropyron_repens", "Agrostis_gigantea", "Carex_lyngbyei", "Deschampsia_cespitosa", "Distichlis_spicata", 
+                                      "Isolepis_cernua", "Juncus_balticus", "Scirpus_microcarpus"), "Graminoid",
+                ifelse(Species %in% "No_cover", "NA", "Forb"))) %>% 
+  mutate(Fn_gp = ifelse(Species %in% c("Agropyron_repens", "Agrostis_gigantea", "Carex_lyngbyei", "Distichlis_spicata", "Juncus_balticus", "Scirpus_microcarpus"), "Perennial graminoid, rhizomatous roots",
+                  ifelse(Species %in% c("Isolepis_cernua"), "Annual graminoid, fibrous roots", 
+                  ifelse(Species %in% c("Deschampsia_cespitosa"), "Perennial graminoid, fibrous roots",
+                  ifelse(Species %in% c("Atriplex_patula", "Polygonum_fowlerii", "Salicornia_depressa", "Spergularia_canadensis"), "Annual forb", 
+                  ifelse(Species %in% c("Cotula_coronopifolia", "Daucus_carota", "Trifolium_wormskioldii"), "Perennial forb, fibrous roots",
+                  ifelse(Species %in% c("Triglochin_maritima", "Glaux_maritima", "Potentilla_anserina_pacifica", "Symphotrichium_subspicatum"), 
+                         "Perennial forb, rhizomatous roots", "Unvegetated")))))))
+                  
+# want to show: relative cover abundance of native, rhizomatous, graminoids over time
+
+
+MIE_long$Fn_gp <- factor(MIE_long$Fn_gp, levels = c("Annual forb", "Annual graminoid, fibrous roots", "Perennial forb, fibrous roots", "Perennial forb, rhizomatous roots",  "Perennial graminoid, fibrous roots", "Perennial graminoid, rhizomatous roots", "Unvegetated"))
+
+ggplot(MIE_long, aes(fill=Fn_gp, y=Cover, x=Exclosure_date)) + 
+    geom_bar(position="fill", stat="identity") +
+    theme_classic()+
+    facet_grid(~Estuary, scales = "free", space = "free") + 
+    theme(text = element_text(size = 20), 
+          panel.spacing.x = unit(1.25, "lines"), 
+          axis.text.x = element_text(angle = 45, hjust = 1)) +
+    labs(y="Relative Abundance 
+         (% cover)", x="Disturbance condition", fill = "Plant Functional Group") +
+    scale_fill_brewer(palette = "Spectral")  
+   #scale_x_discrete(labels=c("Grubbed" = "0", "2020" = "1", "2016" = "5", "2010" = "10", "Reference" = "Undisturbed"))
+
+
+
+
+```
+
+```{r setup, SEEDS summary stats}
+
+d_seed <- read.csv("2021_Seedlings_wider.csv")
+## "Atriplex_patula"             
+## "Agrostis_stolonifera"         
+## "Salicornia_depressa"          
+## "Spergularia_canadensis"       
+## "Cotula_coronopifolia"        
+## "Isolepis_cernua"              
+##"Deschampsia_cespitosa"        
+# "Potentilla_anserina_pacifica" 
+# "Carex_lyngbyei"               
+# "Symphyotrichum_subspicatum"   
+# "Achillea_millefolium"        
+# "Cirsium_sp"                   
+# "Glaux_maritima"   
+
+#long data
+seeds <- d_seed %>% 
+  #filter(!(Estuary == "Englishman")) %>% 
+  pivot_longer(Atriplex_patula:Glaux_maritima, names_to = "Species", values_to = "Seedlings_ct") %>% 
+  filter(Seedlings_ct > 0) %>% 
+  group_by(Estuary, Exclosure_date) %>% 
+   mutate(Fn_gp_seed = ifelse(Species %in% c("Agrostis_stolonifera", "Carex_lyngbyei"), "Perennial graminoid, rhizomatous roots",
+                  ifelse(Species %in% c("Isolepis_cernua"), "Annual graminoid, fibrous roots", 
+                  ifelse(Species %in% c("Deschampsia_cespitosa"), "Perennial graminoid, fibrous roots",
+                  ifelse(Species %in% c("Atriplex_patula", "Salicornia_depressa", "Spergularia_canadensis"), "Annual forb", 
+                  ifelse(Species %in% c("Cotula_coronopifolia", "Cirsium_sp", "Achillea_millefolium"), "Perennial forb, fibrous roots", "Perennial forb, rhizomatous roots")))))) 
+
+sum_fn <- seeds %>% 
+  group_by(Estuary, Exclosure_date, Fn_gp_seed) %>% 
+  dplyr::summarise(Seed_ct = sum(Seedlings_ct))
+
+#Number seedlings per 0.02 m2
+# see http://www.sthda.com/english/wiki/ggplot2-dot-plot-quick-start-guide-r-software-and-data-visualization 
+sum_fn$Exclosure_date <- factor(sum_fn$Exclosure_date, levels = c("Grubbed", "2020", "2016", "Reference"))
+ggplot(sum_fn, aes(x = Exclosure_date, y=Seed_ct, shape = Estuary, color = Fn_gp_seed))+
+  geom_point(size = 8, position =  position_dodge(0.75)) +
+  theme_classic() +           
+  theme(text = element_text(size = 20)) +
+  labs(y="Seedlings (total sum)", x="Disturbance condition", color = "Plant Functional Group", caption = "Pilot germination: sum of seeds by species in 0.02 m2 no-drain trays (n = 6 per age class & estuary)") +
+  scale_color_manual(values = c("#D53E4F", "#FC8D59", "#FEE08B", "#FFFFBF", "#E6F598", "#99D594")) 
+```
+
+```{r setup, SALINITY summary stats}
+
+S <- read.csv("2021_salinity.csv")
+avg_S <- S %>%
+  group_by(Unique_plot_ID) %>%
+  summarize(mean_EC_mS = mean(EC_mScm.1, na.rm = TRUE))
+
+#exclude ERE b/c data not representative
+sMIE <- dMIE %>%
+  left_join(avg_S, by = "Unique_plot_ID", na.rm = TRUE)
+#Species presence/absence
+
+
+```
+
+```{r, richness & CALY boxplots}
 
 #exclude ERE b/c data not representative
 MIE2 <- d_MIE %>% 
@@ -117,9 +196,9 @@ MIE2$Exclosure_date <- factor(MIE2$Exclosure_date, levels = c("Grubbed", "2020",
 MIE2$Estuary <- factor(MIE2$Estuary, levels = c("LQRE", "NRE"),
                   labels = c("Little Qualicum", "Nanaimo"))
 
-MIE2_long <- MIE2 %>% pivot_longer(Agropyron_repens:Unvegetated, names_to = "Species", values_to = "Cover") %>% 
+MIE2_long <- MIE2 %>% pivot_longer(Agropyron_repens:No_cover, names_to = "Species", values_to = "Cover") %>% 
   mutate(Status = ifelse(Species %in% c("Agropyron_repens", "Agrostis_gigantea", "Atriplex_patula", "Cotula_coronopifolia", "Daucus_carota"), "Non-native",
-                  ifelse(Species %in% "Unvegetated", "Unvegetated","Native")))
+                  ifelse(Species %in% "No_cover", "No_cover","Native")))
 
 MIE2_fn_gp <- MIE2_long %>%
 mutate(Functional_groups =
@@ -127,13 +206,13 @@ mutate(Functional_groups =
     ifelse(Species %in% "Cotula_coronopifolia", "Groundcover (< 15 cm tall) - Non-native",       
     ifelse(Species %in% c("Carex_lyngbyei", "Deschampsia_cespitosa", "Distichlis_spicata", "Juncus_balticus", "Scirpus_microcarpus"), "Graminoid - Native",
     ifelse(Species %in% c("Agropyron_repens", "Agrostis_gigantea"), "Graminoid - Non-native",
-    ifelse(Species %in% "Unvegetated", "Unvegetated", 
+    ifelse(Species %in% "No_cover", "No_cover", 
     ifelse(Species %in% c("Atriplex_patula","Daucus_carota"), "Forb - Non-native", "Forb - Native")))))))
 
 
 MIE2_fn_gp$Functional_groups <- factor(MIE2_fn_gp$Functional_groups,
                   levels = c("Groundcover (< 15 cm tall) - Native", "Groundcover (< 15 cm tall) - Non-native", "Graminoid - Native",
-                          "Graminoid - Non-native", "Cespitose graminoid - Native", "Forb - Native", "Forb - Non-native", "Unvegetated"))
+                          "Graminoid - Non-native", "Cespitose graminoid - Native", "Forb - Native", "Forb - Non-native", "No_cover"))
 
 #############################
 # Boxplots
@@ -221,6 +300,7 @@ ggplot(MIE2_long, aes(fill=Status, y=Cover, x=Exclosure_date)) +
   labs(y="Relative plot cover abundance", x="Exclosure status") +
   scale_fill_brewer(palette = "Set2")  
 ggsave("2021_Native-status_stacked_bar.jpeg",  width = 7, height = 6, units = "in")
+
 ```
 
 ```{r, CALY LM w/ refined data}
