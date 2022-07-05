@@ -143,7 +143,7 @@ seed <- d.seed %>%
                     ifelse (species %in% c("achmi", "agsp", "atpa", "forb", "forb1", "forb2", "juar", "juba", "juen", "sysu", "trma"), "med", "tall"))) %>%  # short = < 50 cm; med = 50 - 1 m, tall = > 1 m, per eflora BC
   mutate(abund.m2 = count*85.5) %>%  # 85.5 multiplier estimates sample area of ~ 117 cm2 to fill 1 m2 (10,000 cm2) 
   group_by(estuary, disturbance, replicate, species) %>% 
-  dplyr::rename(id = replicate) %>% 
+  dplyr::mutate(id = replicate + 100) %>% 
   dplyr::rename(ct = count)
 
 seed$id <- as.character(seed$id)
@@ -1153,9 +1153,9 @@ nmds.compare.ra.lqre
 
 #extract NMDS data scores (x and y coordinates)
 
-ds.compare.ra.ere = as.data.frame(scores(nmds.compare.ra.ere))
-ds.compare.ra.nre = as.data.frame(scores(nmds.compare.ra.nre))
-ds.compare.ra.lqre = as.data.frame(scores(nmds.compare.ra.lqre))
+ds.compare.ra.ere = as.data.frame(scores(nmds.compare.ra.ere)$sites)
+ds.compare.ra.nre = as.data.frame(scores(nmds.compare.ra.nre)$sites)
+ds.compare.ra.lqre = as.data.frame(scores(nmds.compare.ra.lqre)$sites)
 
 
 #add columns to data frame 
@@ -1269,6 +1269,135 @@ compare.ra.nmds.panel <- ggarrange(compare.ra.nmds.ere, compare.ra.nmds.nre, com
 compare.ra.nmds.panel
 
 #ggsave("fig-nmds-compare-ra-panel.jpg", compare.ra.nmds.panel, width = 20, height = 6)
+
+
+```
+
+```{r lm of rel.abund}
+
+
+
+ra.model <- ra.join %>% 
+  ungroup() %>% 
+  filter(!obs == "bare") %>% 
+  select(-sum.seed, -endemic.fngp2) %>% 
+  replace(is.na(.), 0) 
+#View(ra.model)
+
+# http://www.sthda.com/english/articles/40-regression-analysis/163-regression-with-categorical-variables-dummy-coding-essentials-in-r/#categorical-variables-with-more-than-two-levels
+library(car)
+model <- lm(rel.abund ~ disturbance + estuary + obs + season + structure, data = ra.model)
+Anova(model)
+summary(model)
+
+# https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/predict.lm
+pred.lm <- predict(model, ra.model, se.fit = FALSE, scale = NULL, df = Inf,
+        interval = c("confidence"),
+        level = 0.95, type = c("response"),
+        terms = NULL, na.action = na.pass)
+
+pred.lm <- as.data.frame(pred.lm)
+
+####### 
+# Plot
+#######
+
+ra.model$disturbance <- factor(ra.model$disturbance , levels = c("grubbed", "excl1", "excl10", "reference"), labels = c("Grubbed", "Heavily Grazed, \nExclosed 1 year", "Heavily Grazed, \nExclosed 10 years", "Undisturbed"))
+
+ra.model$structure <- factor(ra.model$structure , levels = c("short", "med", "tall"), labels = c("Short (< 50 cm)", "Medium (50-100 cm)", "Tall (> 100 cm)"))
+
+ra.model$obs <- factor(ra.model$obs , levels = c("veg", "seed"), labels = c("Above-Ground \nVegetation", "Surface Seed Bank"))
+
+
+#https://sejohnston.com/2012/08/09/a-quick-and-easy-function-to-plot-lm-results-in-r/
+ggplotRegression <- function (fit) {
+require(ggplot2)
+ggplot(fit$model, aes_string(x = names(fit$model)[2], y = names(fit$model)[1])) +
+  geom_point() +
+  #geom_pointrange(data = pred.lm , aes(x = x, y = fit, ymin = lwr, ymax = upr), size = 0.8, colour = "black") +
+  ylab("Relative abundance\nof species observed") +
+  xlab("Disturbance") +
+  theme_classic(base_size = 12)+
+  theme(panel.spacing.x = unit(1.25, "lines"),
+        axis.text.x = element_text(angle = 25, hjust = 1)) + # text = element_text(size = 16)
+  facet_grid(obs~structure) +
+  theme(panel.spacing = unit(2, "lines")) #+
+  #stat_smooth(method = "lm", col = "red") # +
+  #labs(title = paste("Adj R2 = ",signif(summary(fit)$adj.r.squared, 5),
+                    # "Intercept =",signif(fit$coef[[1]],5 ),
+                    # " Slope =",signif(fit$coef[[2]], 5),
+                    # " P =",signif(summary(fit)$coef[2,4], 5)))
+}
+
+ggplotRegression(lm(rel.abund ~ disturbance + estuary + obs + season + structure, data = ra.model))
+
+
+
+
+
+
+```
+
+
+```{r glm of rel.abund}
+# https://lmudge13.github.io/sample_code/mixed_effects.html
+
+# uses ra.model from preceding code
+#View(ra.model)
+
+
+library(tidyverse) #for all data wrangling
+library(cowplot) #for manuscript ready figures
+library(lme4) #for lmer & glmer models
+library(sjPlot) #for plotting lmer and glmer mods
+library(sjmisc) 
+library(effects)
+library(sjstats) #use for r2 functions
+
+#use the lme4 package
+
+mod <- lme4::lmer(rel.abund ~ disturbance + estuary + obs + season + structure + (1|id), REML= FALSE, data= ra.model)
+
+summary(mod)
+
+# plot effect sizes
+sjPlot::plot_model(mod)
+
+sjPlot:: tab_model(mod)
+
+## Plot model w/ data
+
+# Step 1: Save the effect size estimates into a data.frame
+
+# Use the effects package --> effect function. term= the fixed effect you want to get data on, mod= name of your model.
+
+effects_disturb <- effects::effect(term= "disturbance", mod= mod)
+summary(effects_disturb) #output of what the values are
+
+# Save the effects values as a df:
+x_disturb <- as.data.frame(effects_disturb)
+
+
+# Step 2: Use the effects value df (created above) to plot the estimates
+
+#Basic steps:
+  #1 Create empty plot
+  #2 Add geom_points() from the DATA: urchin data on the x axis (independent va= disturbance) and coral data on the y-axis (response var= rel.abund)
+  #3 Add geom_point for the MODEL estimates (data= x_disturb)
+  #4 Add geom_line for the MODEL estimates. Change the color to match the estimate points (ie whatever color you chose for step3)
+  #5 Add geom_ribbon that has the CI limits for the model estimates
+  #6 Edit the labels as you see fit!
+
+
+disturb_plot <- ggplot() + 
+  geom_point(data=ra.model, aes(disturbance, rel.abund)) + 
+  geom_point(data=x_disturb, aes(x=disturbance, y=fit), color="blue") + 
+  geom_line(data=x_disturb, aes(x=disturbance, y=fit), color="blue") +
+  geom_ribbon(data= x_disturb, aes(x=disturbance, ymin=lower, ymax=upper), alpha= 0.3, fill="blue") +
+  labs(x="Grazing Disturbance", y="Relative Abundance") +
+  facet_grid(obs~structure) +
+  theme(panel.spacing = unit(2, "lines")) 
+disturb_plot
 
 
 ```
@@ -1727,7 +1856,7 @@ View(veg)
 #################################
 
 # matrix of species presence/absence
-veg.pa = veg[,4:ncol(veg)]
+veg.pa = veg[,5:ncol(veg)]
 
 ############################################
 #turn abundance data frame into a matrix
@@ -1746,7 +1875,7 @@ nmds.veg
 ############################################
 #extract NMDS scores (x and y coordinates)
 ############################################
-ds.veg = as.data.frame(scores(nmds.veg))
+ds.veg = as.data.frame(scores(nmds.veg)$sites)
 View(ds.veg)
 #any(is.na(ds.veg))
 
