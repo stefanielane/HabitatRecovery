@@ -68,6 +68,9 @@ library(ape)
 library(vegan)
 library(lme4)
 library(RColorBrewer)
+library(RVAideMemoire)
+library(reshape2)
+library(kableExtra)
 
 
 ```
@@ -217,7 +220,7 @@ mie.ra$estuary <- as.character(mie.ra$estuary)
 # colnames(seed.ra)
 
 ra.join <- mie.ra %>% 
-  full_join(seed.ra, by = c("estuary", "disturbance", "id","species","obs","endemic.fngp2", "endemic","fngp", "fngp2","rel.abund", "season", "structure")) %>% 
+  full_join(seed.ra, by = c("estuary", "disturbance", "id","species","clade", "obs","endemic.fngp2", "endemic","fngp", "fngp2","rel.abund", "season", "structure")) %>% 
   unite(endemic.fngp2, c(endemic, fngp2), sep = " ", remove = FALSE) %>% 
   ungroup() %>% 
    select(-c("ct", "endemic","fngp","fngp2"))
@@ -1031,7 +1034,7 @@ pa.nmds
 
 ```
  
-```{r relabund PERMANOVA & NMDS all seed vs. veg}
+```{r veg relabund PERMANOVA}
 
 #View(ra.join)
 # tutorials: 
@@ -1041,22 +1044,53 @@ pa.nmds
 compare.ra <- ra.join %>% 
   ungroup() %>% 
   filter(!obs == "bare") %>% 
-  select(-sum.seed, -sum.veg, -endemic, -fngp2, -endemic.fngp2) %>% 
+  select(-sum.seed, -endemic.fngp2) %>% 
   pivot_wider(names_from = species, values_from = rel.abund) %>%
   replace(is.na(.), 0) 
 #View(compare.ra)
 
 # PERMANOVA
-sp.compare.ra = compare.ra[,9:ncol(compare.ra)]
+sp.compare.ra = compare.ra[,8:ncol(compare.ra)]
 comp.ra.matrix <- vegdist(sp.compare.ra, method = 'bray')
 
 # is.na(comp.matrix)
 # which(is.na(comp.matrix))
 
 set.seed(42)
-permanova.compare.ra <- adonis2(comp.ra.matrix ~ disturbance + obs + estuary + season, data = compare.ra, permutations = 99, method = "bray")
+permanova.compare.ra <- adonis2(comp.ra.matrix ~ disturbance + estuary + obs + season + structure, data = compare.ra, permutations = 99, method = "bray")
+permanova.compare.ra
 
 
+permtst.struc <- RVAideMemoire::pairwise.perm.manova(resp = comp.ra.matrix, fact = compare.ra$structure, 
+    test = "Pillai", nperm = 999, progress = TRUE, p.method = "none")
+df.structure <- reshape2::melt(permtst.struc$p.value)
+colnames(df.structure) <- c("structure1", "structure2", "pvalue")
+df.structure <- df.structure[-which(is.na(df.structure$pvalue)), ]
+df.structure$pvalue.adj <- p.adjust(p = df.structure$pvalue, method = "bonferroni", n = length(df.structure$pvalue))
+
+kable(df.structure)
+
+
+permtst.disturb <- RVAideMemoire::pairwise.perm.manova(resp = comp.ra.matrix, fact = compare.ra$disturbance, 
+    test = "Pillai", nperm = 999, progress = TRUE, p.method = "none")
+df.disturb <- reshape2::melt(permtst.disturb$p.value)
+colnames(df.disturb) <- c("disturb1", "disturb2", "pvalue")
+df.disturb <- df.disturb[-which(is.na(df.disturb$pvalue)), ]
+df.disturb$pvalue.adj <- p.adjust(p = df.disturb$pvalue, method = "bonferroni", n = length(df.disturb$pvalue))
+
+kable(df.disturb)
+
+
+kable(df.disturb, 
+   col.names = c("Disturbance 1", "Disturbance 2", "p-value", "p-value (Bonferroni)"),
+   align = "c",  digits = 3) %>% #booktabs = TRUE,
+   #row_spec(1:6, color = 'black') %>%
+   kable_styling(font_size = 16, latex_options = "scale_down") %>%
+    save_kable("permanova-pairwise-disturb.jpeg")
+
+```
+
+```{r NMDS of relative abundance}
 
 #################################
 ## NMDS of species relative abundance 
@@ -1064,33 +1098,33 @@ permanova.compare.ra <- adonis2(comp.ra.matrix ~ disturbance + obs + estuary + s
 
 compare.ra.ere <- compare.ra %>% filter(estuary == "ere") 
 #View(compare.ra.ere)
-#nrow(compare.ra.ere) #63
-#ncol(compare.ra.ere) #33
+#nrow(compare.ra.ere) #164
+#ncol(compare.ra.ere) #35
 #compare.ra.ere <- compare.ra.ere[which(rowSums(compare.ra.ere[,6:33]) > 0), ]
 
 
 compare.ra.nre <- compare.ra %>% filter(estuary == "nre") 
 #View(compare.ra.nre)
-#nrow(compare.ra.nre) #96
-#ncol(compare.ra.nre) #33
+#nrow(compare.ra.nre) #281
+#ncol(compare.ra.nre) #35
 
 compare.ra.lqre <- compare.ra %>% filter(estuary == "lqre")
 #View(compare.ra.lqre)
-#nrow(compare.ra.lqre) #96
-#ncol(compare.ra.lqre) #33
+#nrow(compare.ra.lqre) #258
+#ncol(compare.ra.lqre) #35
 
 # matrix of species relative abundance
 
-ra.compare.ere = compare.ra.ere[,6:ncol(compare.ra.ere)]
-ra.compare.nre = compare.ra.nre[,6:ncol(compare.ra.nre)]
-ra.compare.lqre = compare.ra.lqre[,6:ncol(compare.ra.lqre)]
+ra.compare.ere = compare.ra.ere[,8:ncol(compare.ra.ere)]
+ra.compare.nre = compare.ra.nre[,8:ncol(compare.ra.nre)]
+ra.compare.lqre = compare.ra.lqre[,8:ncol(compare.ra.lqre)]
 #View(compare.ra.nre)
 
 #turn abundance data frame into a matrix
 mat.ra.ere = as.matrix(ra.compare.ere)
-# nrow(m.ra.ere) #63
-# ncol(m.ra.ere) #28
-# View(m.ra.ere)
+# nrow(mat.ra.ere) #63
+# ncol(mat.ra.ere) #28
+# View(mat.ra.ere)
 #m.ra.ere <- m.ra.ere[which(rowSums(m.ra.ere) > 0), ] # remove rows where all species columns = 0
 
 mat.ra.nre = as.matrix(ra.compare.nre)
@@ -1103,20 +1137,22 @@ mat.ra.lqre = as.matrix(ra.compare.lqre)
 set.seed(123)
 nmds.compare.ra.ere = metaMDS(mat.ra.ere, distance = "euclidean")
 nmds.compare.ra.ere
-# stress = 0.133
+# stress = 0.132
+
 
 set.seed(123)
 nmds.compare.ra.nre = metaMDS(mat.ra.nre, distance = "euclidean")
 nmds.compare.ra.nre
-# stress = 0.121
+# stress = 0.103
 
 set.seed(123)
 nmds.compare.ra.lqre = metaMDS(mat.ra.lqre, distance = "euclidean")
 nmds.compare.ra.lqre
-# stress = 0.157
+# stress = 0.139
 
 
 #extract NMDS data scores (x and y coordinates)
+
 ds.compare.ra.ere = as.data.frame(scores(nmds.compare.ra.ere))
 ds.compare.ra.nre = as.data.frame(scores(nmds.compare.ra.nre))
 ds.compare.ra.lqre = as.data.frame(scores(nmds.compare.ra.lqre))
@@ -1145,6 +1181,10 @@ ds.compare.ra.lqre$estuary = compare.ra.lqre$estuary
 ds.compare.ra.ere$season = compare.ra.ere$season
 ds.compare.ra.nre$season = compare.ra.nre$season
 ds.compare.ra.lqre$season = compare.ra.lqre$season
+
+ds.compare.ra.ere$structure = compare.ra.ere$structure
+ds.compare.ra.nre$structure = compare.ra.nre$structure
+ds.compare.ra.lqre$structure = compare.ra.lqre$structure
 
 ########~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~``
 ### Plot

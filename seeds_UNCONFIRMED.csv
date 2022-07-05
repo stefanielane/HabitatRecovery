@@ -127,7 +127,7 @@ fall,ere,reference,5,5a,1,dece,deschampsia caespitosa,to 38P May 1
 fall,ere,reference,6,6a,1,isce,isolepis cernua,to 38P May 1
 fall,ere,reference,6,6b,1,juar,juncus articulatus,to 38P May 1
 fall,ere,reference,6,6c,1,dece,deschampsia caespitosa,to 38P May 1
-fall,ere,reference,6,6d,1,jubu,juncus bufonius,to 38P May 1
+fall,ere,reference,6,6d,1,jute,juncus tenuis,to 38P May 1
 fall,ere,reference,6,6e,1,juba,juncus balticus,to 38P May 1
 fall,ere,reference,7,7d,1,cirsp,cirsium sp,to 38P May 1
 fall,ere,reference,7,7a,1,dece,deschampsia caespitosa,to 38P May 1
@@ -138,8 +138,8 @@ fall,ere,reference,8,na,1,agsp,agrostis stolonifera,removed
 fall,ere,reference,8,na,1,spca,spergularia canadensis,removed
 fall,ere,reference,8,8a,1,dece,deschampsia caespitosa,to 38P May 1
 fall,ere,reference,8,8b; 8d,1,juba,juncus balticus,to 38P May 1
-fall,ere,reference,8,8c,1,jubu,juncus bufonius,to 38P May 1
-fall,nre,excl1,4,4a,1,jubu,juncus bufonius,to 38P May 1
+fall,ere,reference,8,8c,1,jute,juncus tenuis,to 38P May 1
+fall,nre,excl1,4,4a,1,jute,juncus tenuis,to 38P May 1
 fall,nre,excl1,4,na,1,caly,carex lyngbyei,to 'extras' tray May 1
 fall,nre,excl1,4,na,25,spca,spergularia canadensis,removed
 fall,nre,excl1,4,na,243,elpar,eleocharis parvula,removed
@@ -155,7 +155,7 @@ fall,nre,excl1,5,na,258,elpar,eleocharis parvula,removed
 fall,nre,excl1,6,na,20,spca,spergularia canadensis,removed
 fall,nre,excl1,6,na,227,elpar,eleocharis parvula,removed
 fall,nre,excl1,6,6a,1,juba,juncus balticus,to 38P May 1
-fall,nre,excl1,6,6b,1,jubu,juncus bufonius,to 38P May 1
+fall,nre,excl1,6,6b,1,jute,juncus tenuis,to 38P May 1
 fall,nre,excl1,3,na,29,spca,spergularia canadensis,removed
 fall,nre,excl1,3,na,192,elpar,eleocharis parvula,removed
 fall,nre,excl1,3,3a,1,agsp,agrostis stolonifera,to 38P May 1
@@ -165,21 +165,21 @@ fall,nre,excl1,1,1a,1,juba,juncus balticus,to 38P May 1
 fall,nre,excl1,2,na,24,spca,spergularia canadensis,removed
 fall,nre,excl1,2,na,156,elpar,eleocharis parvula,removed
 fall,nre,excl1,2,2a,1,juba,juncus balticus,to 38P May 1
-fall,nre,excl1,2,2b,1,jubu,juncus bufonius,to 38P May 1
+fall,nre,excl1,2,2b,1,jute,juncus tenuis,to 38P May 1
 fall,nre,grubbed,1,na,15,spca,spergularia canadensis,removed
 fall,nre,grubbed,1,na,1,coco,cotula cornopifolia,removed
-fall,nre,grubbed,1,1a,1,jubu,juncus bufonius,to 38P May 1
+fall,nre,grubbed,1,1a,1,jute,juncus tenuis,to 38P May 1
 fall,nre,grubbed,1,1b,1,caly,carex lyngbyei,to 38P May 1
 fall,nre,grubbed,1,na,165,elpar,eleocharis parvula,removed
 fall,nre,grubbed,2,na,9,spca,spergularia canadensis,removed
-fall,nre,grubbed,2,2a-2b,2,jubu,juncus bufonius,to 38P May 1
+fall,nre,grubbed,2,2a-2b,2,jute,juncus tenuis,to 38P May 1
 fall,nre,grubbed,2,na,156,elpar,eleocharis parvula,removed
 fall,nre,grubbed,2,na,1,glma,glaux maritima,removed
-fall,nre,grubbed,3,3a,1,jubu,juncus bufonius,to 38P May 1
+fall,nre,grubbed,3,3a,1,jute,juncus tenuis,to 38P May 1
 fall,nre,grubbed,3,3b,1,juar,juncus articulatus,to 38P May 1
 fall,nre,grubbed,3,na,9,spca,spergularia canadensis,removed
 fall,nre,grubbed,3,na,173,elpar,eleocharis parvula,removed
-fall,nre,grubbed,4,4a-4c,3,jubu,juncus bufonius,to 38P May 1
+fall,nre,grubbed,4,4a-4c,3,jute,juncus tenuis,to 38P May 1
 fall,nre,grubbed,4,na,165,elpar,eleocharis parvula,removed
 fall,nre,grubbed,4,na,7,spca,spergularia canadensis,removed
 fall,nre,grubbed,4,na,1,glma,glaux maritima,removed
@@ -194,10 +194,10 @@ fall,nre,reference,2,na,1,spca,spergularia canadensis,removed
 fall,nre,reference,2,na,50,elpar,eleocharis parvula,removed
 fall,nre,reference,2,2c,1,epci,epilobium ciliatum,to 38P May 1
 fall,nre,reference,3,3a,1,juba,juncus balticus,to 38P May 1
-fall,nre,reference,3,3b,1,jubu,juncus bufonius,to 38P May 1
+fall,nre,reference,3,3b,1,jute,juncus tenuis,to 38P May 1
 fall,nre,reference,3,na,57,elpar,eleocharis parvula,removed
 fall,nre,reference,4,4a-4c,3,juba,juncus balticus,to 38P May 1
-fall,nre,reference,4,4d,1,jubu,juncus bufonius,to 38P May 1
+fall,nre,reference,4,4d,1,jute,juncus tenuis,to 38P May 1
 fall,nre,reference,4,na,1,spca,spergularia canadensis,removed
 fall,nre,reference,4,na,60,elpar,eleocharis parvula,removed
 fall,nre,reference,5,na,1,sysu,symphotrichium subspicatum,removed
@@ -208,7 +208,7 @@ fall,nre,reference,5,na,61,elpar,eleocharis parvula,removed
 fall,nre,reference,5,5a-5d,4,juba,juncus balticus,to 38P May 1
 fall,nre,reference,6,na,2,agsp,agrostis stolonifera,removed
 fall,nre,reference,6,"6a, 6b, 6d",3,juba,juncus balticus,to 38P May 1
-fall,nre,reference,6,6c,1,jubu,juncus bufonius,to 38P May 1
+fall,nre,reference,6,6c,1,jute,juncus tenuis,to 38P May 1
 fall,nre,reference,6,na,3,spca,spergularia canadensis,removed
 fall,nre,reference,6,na,55,elpar,eleocharis parvula,removed
 fall,nre,reference,7,na,1,agsp,agrostis stolonifera,removed
@@ -219,15 +219,15 @@ fall,nre,reference,8,na,1,spca,spergularia canadensis,removed
 fall,nre,reference,8,8a-8b,2,juba,juncus balticus,to 38P May 1
 fall,nre,reference,8,8c,1,glma,glaux maritima,to 38P May 1; 8c suspect glaux
 fall,nre,grubbed,5,na,7,spca,spergularia canadensis,removed
-fall,nre,grubbed,5,5a-5b,2,jubu,juncus bufonius,to 38P May 1
+fall,nre,grubbed,5,5a-5b,2,jute,juncus tenuis,to 38P May 1
 fall,nre,grubbed,5,na,141,elpar,eleocharis parvula,removed
-fall,nre,grubbed,6,6a,1,jubu,juncus bufonius,to 38P May 1
+fall,nre,grubbed,6,6a,1,jute,juncus tenuis,to 38P May 1
 fall,nre,grubbed,6,na,7,spca,spergularia canadensis,removed
 fall,nre,grubbed,6,na,162,elpar,eleocharis parvula,removed
 fall,nre,grubbed,7,na,1,glma,glaux maritima,removed
 fall,nre,grubbed,7,na,13,spca,spergularia canadensis,removed
 fall,nre,grubbed,7,na,165,elpar,eleocharis parvula,removed
-fall,nre,grubbed,8,8a-8c,3,jubu,juncus bufonius,to 38P May 1
+fall,nre,grubbed,8,8a-8c,3,jute,juncus tenuis,to 38P May 1
 fall,nre,grubbed,8,na,9,spca,spergularia canadensis,removed
 fall,nre,grubbed,8,na,156,elpar,eleocharis parvula,removed
 fall,ere,grubbed,1,na,8,spca,spergularia canadensis,removed
@@ -275,7 +275,7 @@ summer,ere,grubbed,8,na,47,elpar,eleocharis parvula,removed
 summer,ere,grubbed,8,na,13,spca,spergularia canadensis,removed
 summer,ere,grubbed,8,na,24,sade,salicornia depressa,removed
 summer,ere,reference,1,na,3,elpar,eleocharis parvula,removed
-summer,ere,reference,1,1a,1,jubu,juncus bufonius,"to 4"" Apr. 23; ID confirmed May 7"
+summer,ere,reference,1,1a,1,jute,juncus tenuis,"to 4"" Apr. 23; ID confirmed May 7"
 summer,ere,reference,1,1b,1,graminoid,graminoid,"to 4"" Apr. 23"
 summer,ere,reference,1,1c,1,graminoid,graminoid,"to 4"" Apr. 23"
 summer,ere,reference,3,na,1,elpar,eleocharis parvula,removed
@@ -288,17 +288,17 @@ summer,ere,reference,5,5a,1,graminoid,graminoid,"to 4"" Apr. 23"
 summer,ere,reference,5,na,1,spca,spergularia canadensis,removed
 summer,ere,reference,6,na,5,elpar,eleocharis parvula,removed
 summer,ere,reference,7,7a,1,juen,juncus ensifolius,"to 4"" Apr. 23; juox?"
-summer,ere,reference,7,7b-7d,3,jubu,juncus bufonius,"to 4"" Apr. 23"
+summer,ere,reference,7,7b-7d,3,jute,juncus tenuis,"to 4"" Apr. 23"
 summer,ere,reference,8,na,4,elpar,eleocharis parvula,removed
 summer,ere,reference,8,na,1,spca,spergularia canadensis,removed
 summer,ere,reference,8,8a,1,graminoid,graminoid,"to 4"" Apr. 23"
 summer,nre,excl1,1,na,147,elpar,eleocharis parvula,removed
 summer,nre,excl1,1,na,29,spca,spergularia canadensis,removed
 summer,nre,excl1,1,na,1,glma,glaux maritima,removed
-summer,nre,excl1,1,1a,1,jubu,juncus bufonius,"to 4"" Apr. 23"
+summer,nre,excl1,1,1a,1,jute,juncus tenuis,"to 4"" Apr. 23"
 summer,nre,excl1,2,na,163,elpar,eleocharis parvula,removed
 summer,nre,excl1,2,na,25,spca,spergularia canadensis,removed
-summer,nre,excl1,2,2a,1,jubu,juncus bufonius,"to 4"" Apr. 23"
+summer,nre,excl1,2,2a,1,jute,juncus tenuis,"to 4"" Apr. 23"
 summer,nre,excl1,3,na,123,elpar,eleocharis parvula,removed
 summer,nre,excl1,3,na,19,spca,spergularia canadensis,removed
 summer,nre,excl1,4,na,165,elpar,eleocharis parvula,removed
@@ -307,34 +307,34 @@ summer,nre,excl1,4,na,1,sade,salicornia depressa,removed
 summer,nre,excl1,4,4a,1,juba,juncus balticus,"to 4"" Apr. 23"
 summer,nre,excl1,5,na,111,elpar,eleocharis parvula,removed
 summer,nre,excl1,5,na,31,spca,spergularia canadensis,removed
-summer,nre,excl1,5,5a,1,jubu,juncus bufonius,"to 4"" Apr. 23"
+summer,nre,excl1,5,5a,1,jute,juncus tenuis,"to 4"" Apr. 23"
 summer,nre,excl1,6,na,156,elpar,eleocharis parvula,removed
 summer,nre,excl1,6,na,34,spca,spergularia canadensis,removed
-summer,nre,excl1,6,6a-6b,2,jubu,juncus bufonius,"to 4"" Apr. 23"
+summer,nre,excl1,6,6a-6b,2,jute,juncus tenuis,"to 4"" Apr. 23"
 summer,nre,excl1,7,na,102,elpar,eleocharis parvula,removed
 summer,nre,excl1,7,na,31,spca,spergularia canadensis,removed
-summer,nre,excl1,7,7a,1,jubu,juncus bufonius,"to 4"" Apr. 23"
+summer,nre,excl1,7,7a,1,jute,juncus tenuis,"to 4"" Apr. 23"
 summer,nre,excl1,8,na,147,elpar,eleocharis parvula,removed
 summer,nre,excl1,8,na,26,spca,spergularia canadensis,removed
 summer,nre,excl1,8,na,1,agsp,agrostis stolonifera,removed
 summer,nre,excl1,8,8a,1,caly,carex lyngbyei,"to 4"" Apr. 23"
-summer,nre,excl1,8,8b-8d,3,jubu,juncus bufonius,"to 4"" Apr. 23"
+summer,nre,excl1,8,8b-8d,3,jute,juncus tenuis,"to 4"" Apr. 23"
 summer,nre,grubbed,1,na,125,elpar,eleocharis parvula,removed
 summer,nre,grubbed,1,na,9,spca,spergularia canadensis,removed
 summer,nre,grubbed,1,1a,1,juba,juncus balticus,
 summer,nre,grubbed,2,na,93,elpar,eleocharis parvula,removed
 summer,nre,grubbed,2,na,8,spca,spergularia canadensis,sp
-summer,nre,grubbed,2,2a-2b,2,jubu,juncus bufonius,"to 4"" Apr. 23"
+summer,nre,grubbed,2,2a-2b,2,jute,juncus tenuis,"to 4"" Apr. 23"
 summer,nre,grubbed,2,2c,1,juba,juncus balticus,"to 4"" Apr. 23"
 summer,nre,grubbed,3,na,113,elpar,eleocharis parvula,removed
 summer,nre,grubbed,3,na,5,spca,spergularia canadensis,removed
 summer,nre,grubbed,3,na,1,glma,glaux maritima,removed
-summer,nre,grubbed,3,"3a, 3c",2,jubu,juncus bufonius,"to 4"" Apr. 23"
+summer,nre,grubbed,3,"3a, 3c",2,jute,juncus tenuis,"to 4"" Apr. 23"
 summer,nre,grubbed,3,3b,1,juar,juncus articulatus,"to 4"" Apr. 23"
-summer,nre,grubbed,4,4a,1,jubu,juncus bufonius,"to 4"" Apr. 23"
+summer,nre,grubbed,4,4a,1,jute,juncus tenuis,"to 4"" Apr. 23"
 summer,nre,grubbed,4,na,143,elpar,eleocharis parvula,removed
 summer,nre,grubbed,4,na,5,spca,spergularia canadensis,removed
-summer,nre,grubbed,5,5a,1,jubu,juncus bufonius,"to 4"" Apr. 23"
+summer,nre,grubbed,5,5a,1,jute,juncus tenuis,"to 4"" Apr. 23"
 summer,nre,grubbed,5,na,104,elpar,eleocharis parvula,removed
 summer,nre,grubbed,5,na,5,spca,spergularia canadensis,removed
 summer,nre,grubbed,6,na,121,elpar,eleocharis parvula,removed
@@ -342,7 +342,7 @@ summer,nre,grubbed,6,na,5,spca,spergularia canadensis,removed
 summer,nre,grubbed,6,na,1,coco,cotula cornopifolia,removed
 summer,nre,grubbed,7,na,120,elpar,eleocharis parvula,removed
 summer,nre,grubbed,7,na,3,spca,spergularia canadensis,removed
-summer,nre,grubbed,7,7a-7c,3,jubu,juncus bufonius,"to 4"" Apr. 23"
+summer,nre,grubbed,7,7a-7c,3,jute,juncus tenuis,"to 4"" Apr. 23"
 summer,nre,grubbed,8,na,132,elpar,eleocharis parvula,removed
 summer,nre,grubbed,8,na,5,spca,spergularia canadensis,removed
 summer,nre,reference,1,na,16,elpar,eleocharis parvula,removed
@@ -356,7 +356,7 @@ summer,nre,reference,3,3b,1,juba,juncus balticus,"to 4"" Apr. 23"
 summer,nre,reference,3,na,1,spca,spergularia canadensis,removed
 summer,nre,reference,4,na,16,elpar,eleocharis parvula,removed
 summer,nre,reference,4,4a,1,juba,juncus balticus,"to 4"" Apr. 23"
-summer,nre,reference,4,4b,1,jubu,juncus bufonius,"to 4"" Apr. 23"
+summer,nre,reference,4,4b,1,jute,juncus tenuis,"to 4"" Apr. 23"
 summer,nre,reference,4,na,1,spca,spergularia canadensis,removed
 summer,nre,reference,5,na,1,sysu,symphotrichium subspicatum,removed
 summer,nre,reference,5,5a-5c,3,juba,juncus balticus,"to 4"" Apr. 23"
@@ -385,7 +385,7 @@ summer,lqre,reference,4,na,2,caly,carex lyngbyei,
 summer,lqre,reference,4,na,1,coco,cotula cornopifolia,removed
 summer,lqre,reference,4,na,1,spca,spergularia canadensis,removed
 summer,lqre,reference,5,na,4,agsp,agrostis stolonifera,removed
-summer,lqre,reference,5,5a-5b,2,jubu,juncus bufonius,"to 4"" Apr. 23"
+summer,lqre,reference,5,5a-5b,2,jute,juncus tenuis,"to 4"" Apr. 23"
 summer,lqre,reference,5,na,2,spca,spergularia canadensis,removed
 summer,lqre,reference,6,na,6,agsp,agrostis stolonifera,removed
 summer,lqre,reference,6,na,1,caly,carex lyngbyei,
@@ -394,7 +394,7 @@ summer,lqre,reference,6,na,4,elpar,eleocharis parvula,removed
 summer,lqre,reference,7,na,6,agsp,agrostis stolonifera,removed
 summer,lqre,reference,7,na,1,coco,cotula cornopifolia,removed
 summer,lqre,reference,7,na,2,spca,spergularia canadensis,removed
-summer,lqre,reference,7,7a,1,jubu,juncus bufonius,"to 4"" Apr. 23"
+summer,lqre,reference,7,7a,1,jute,juncus tenuis,"to 4"" Apr. 23"
 summer,lqre,reference,7,7b,1,graminoid,graminoid,"to 4"" Apr. 23"
 summer,lqre,reference,8,na,3,agsp,agrostis stolonifera,removed
 summer,lqre,reference,8,8a,1,caly,carex lyngbyei,
@@ -550,26 +550,26 @@ spring,lqre,excl10,8,8d,0,na,na,to 38P May 8; very small; died by May 23
 spring,lqre,excl10,8,na,1,spca,spergularia canadensis,removed
 spring,nre,grubbed,1,na,62,elpar,eleocharis parvula,removed
 spring,nre,grubbed,1,na,11,spca,spergularia canadensis,removed
-spring,nre,grubbed,1,1a-1c,3,jubu,juncus bufonius,to 38P May 8
+spring,nre,grubbed,1,1a-1c,3,jute,juncus tenuis,to 38P May 8
 spring,nre,grubbed,2,na,19,spca,spergularia canadensis,removed
 spring,nre,grubbed,2,na,84,elpar,eleocharis parvula,removed
-spring,nre,grubbed,2,2a,1,jubu,juncus bufonius,to 38P May 8
+spring,nre,grubbed,2,2a,1,jute,juncus tenuis,to 38P May 8
 spring,nre,grubbed,3,na,66,elpar,eleocharis parvula,removed
 spring,nre,grubbed,3,na,13,spca,spergularia canadensis,removed
 spring,nre,grubbed,4,na,7,spca,spergularia canadensis,removed
 spring,nre,grubbed,4,na,20,elpar,eleocharis parvula,removed
 spring,nre,grubbed,5,na,5,spca,spergularia canadensis,removed
 spring,nre,grubbed,5,na,92,elpar,eleocharis parvula,removed
-spring,nre,grubbed,5,5a,1,jubu,juncus bufonius,to 38P May 8
+spring,nre,grubbed,5,5a,1,jute,juncus tenuis,to 38P May 8
 spring,nre,grubbed,5,5b,1,juba,juncus balticus,to 38P May 8
 spring,nre,grubbed,6,na,16,spca,spergularia canadensis,removed
 spring,nre,grubbed,6,na,42,elpar,eleocharis parvula,removed
 spring,nre,grubbed,7,na,8,spca,spergularia canadensis,removed
 spring,nre,grubbed,7,na,90,elpar,eleocharis parvula,removed
-spring,nre,grubbed,7,7a-7b,2,jubu,juncus bufonius,to 38P May 8
+spring,nre,grubbed,7,7a-7b,2,jute,juncus tenuis,to 38P May 8
 spring,nre,grubbed,8,na,8,spca,spergularia canadensis,removed
 spring,nre,grubbed,8,na,85,elpar,eleocharis parvula,removed
-spring,nre,grubbed,8,8a,1,jubu,juncus bufonius,to 38P May 8
+spring,nre,grubbed,8,8a,1,jute,juncus tenuis,to 38P May 8
 spring,nre,grubbed,8,8b,1,epci,epilobium ciliatum,to 38P May 8
 spring,nre,excl1,1,na,37,spca,spergularia canadensis,removed
 spring,nre,excl1,1,na,62,elpar,eleocharis parvula,removed
@@ -588,7 +588,7 @@ spring,nre,excl1,6,na,31,spca,spergularia canadensis,removed
 spring,nre,excl1,6,na,60,elpar,eleocharis parvula,removed
 spring,nre,excl1,7,na,48,spca,spergularia canadensis,removed
 spring,nre,excl1,7,na,36,elpar,eleocharis parvula,removed
-spring,nre,excl1,7,7a,1,jubu,juncus bufonius,to 38P May 8
+spring,nre,excl1,7,7a,1,jute,juncus tenuis,to 38P May 8
 spring,nre,excl1,8,na,35,spca,spergularia canadensis,removed
 spring,nre,excl1,8,na,99,elpar,eleocharis parvula,removed
 spring,nre,reference,1,na,5,agsp,agrostis stolonifera,removed
@@ -609,16 +609,16 @@ spring,nre,reference,5,5a,1,juar,juncus articulatus,to 38P May 8
 spring,nre,reference,5,5b-5c,2,juba,juncus balticus,to 38P May 8
 spring,nre,reference,6,na,4,agsp,agrostis stolonifera,removed
 spring,nre,reference,6,6c-6d,2,juba,juncus balticus,to 38P May 8
-spring,nre,reference,6,6a,1,forb1,forb1,to 38P May 8; same as nre ref 3f
+spring,nre,reference,6,6a,1,epgl,epilobium glaberrimum,to 38P May 8; same as nre ref 3f
 spring,nre,reference,6,6b,1,forb2,forb2,to 38P May 8
 spring,nre,reference,6,na,1,spca,spergularia canadensis,removed
 spring,nre,reference,7,na,2,agsp,agrostis stolonifera,removed
 spring,nre,reference,7,na,17,elpar,eleocharis parvula,removed
 spring,nre,reference,7,na,1,coco,cotula cornopifolia,removed
-spring,nre,reference,7,7a-7b,2,jubu,juncus bufonius,to 38P May 8
+spring,nre,reference,7,7a-7b,2,jute,juncus tenuis,to 38P May 8
 spring,nre,reference,7,7c,1,juba,juncus balticus,to 38P May 8
 spring,nre,reference,8,na,4,agsp,agrostis stolonifera,removed
-spring,nre,reference,8,"8a, 8c",2,jubu,juncus bufonius,to 38P May 8
+spring,nre,reference,8,"8a, 8c",2,jute,juncus tenuis,to 38P May 8
 spring,nre,reference,8,"8b, 8d",2,juba,juncus balticus,to 38P May 8
 spring,nre,reference,8,8e,1,juen,juncus ensifolius,to 38P May 8
 spring,ere,reference,1,na,4,agsp,agrostis stolonifera,removed
