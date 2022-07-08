@@ -1044,7 +1044,7 @@ pa.nmds
 compare.ra <- ra.join %>% 
   ungroup() %>% 
   filter(!obs == "bare") %>% 
-  select(-sum.seed, -endemic.fngp2) %>% 
+  dplyr::select(-sum.seed, -endemic.fngp2) %>% 
   pivot_wider(names_from = species, values_from = rel.abund) %>%
   replace(is.na(.), 0) 
 #View(compare.ra)
@@ -1081,12 +1081,13 @@ df.disturb$pvalue.adj <- p.adjust(p = df.disturb$pvalue, method = "bonferroni", 
 kable(df.disturb)
 
 
-kable(df.disturb, 
-   col.names = c("Disturbance 1", "Disturbance 2", "p-value", "p-value (Bonferroni)"),
-   align = "c",  digits = 3) %>% #booktabs = TRUE,
-   #row_spec(1:6, color = 'black') %>%
-   kable_styling(font_size = 16, latex_options = "scale_down") %>%
-    save_kable("permanova-pairwise-disturb.jpeg")
+
+# kable(df.disturb,
+#    col.names = c("Disturbance 1", "Disturbance 2", "p-value", "p-value (Bonferroni)"),
+#    align = "c",  digits = 3) %>% #booktabs = TRUE,
+#    #row_spec(1:6, color = 'black') %>%
+#    kable_styling(font_size = 16, latex_options = "scale_down") %>%
+#     save_kable("permanova-pairwise-disturb.jpeg")
 
 ```
 
@@ -1274,7 +1275,7 @@ compare.ra.nmds.panel
 ```
 
 ```{r lm of rel.abund}
-
+# linear model (multiple regression, see Winter 2013), treating all variables as fixed effects
 
 
 ra.model <- ra.join %>% 
@@ -1286,7 +1287,7 @@ ra.model <- ra.join %>%
 
 # http://www.sthda.com/english/articles/40-regression-analysis/163-regression-with-categorical-variables-dummy-coding-essentials-in-r/#categorical-variables-with-more-than-two-levels
 library(car)
-model <- lm(rel.abund ~ disturbance + estuary + obs + season + structure, data = ra.model)
+model <- lm(rel.abund ~ disturbance + obs + structure + estuary  + season , data = ra.model) #  (*) is interaction whereas (+) is additive effect
 Anova(model)
 summary(model)
 
@@ -1296,17 +1297,30 @@ pred.lm <- predict(model, ra.model, se.fit = FALSE, scale = NULL, df = Inf,
         level = 0.95, type = c("response"),
         terms = NULL, na.action = na.pass)
 
-pred.lm <- as.data.frame(pred.lm)
+pred.lm <- as.data.frame(pred.lm) 
+
+pred.val <- cbind(pred.lm, ra.model)
+View(pred.val)
+
+hist(ra.model$rel.abund)
+plot(model)
 
 ####### 
 # Plot
 #######
 
+pred.val$disturbance <- factor(pred.val$disturbance , levels = c("grubbed", "excl1", "excl10", "reference"), labels = c("Grubbed", "Heavily Grazed, \nExclosed 1 year", "Heavily Grazed, \nExclosed 10 years", "Undisturbed"))
 ra.model$disturbance <- factor(ra.model$disturbance , levels = c("grubbed", "excl1", "excl10", "reference"), labels = c("Grubbed", "Heavily Grazed, \nExclosed 1 year", "Heavily Grazed, \nExclosed 10 years", "Undisturbed"))
 
+
+
+pred.val$structure <- factor(pred.val$structure , levels = c("short", "med", "tall"), labels = c("Short (< 50 cm)", "Medium (50-100 cm)", "Tall (> 100 cm)"))
 ra.model$structure <- factor(ra.model$structure , levels = c("short", "med", "tall"), labels = c("Short (< 50 cm)", "Medium (50-100 cm)", "Tall (> 100 cm)"))
 
+
+pred.val$obs <- factor(pred.val$obs , levels = c("veg", "seed"), labels = c("Above-Ground \nVegetation", "Surface Seed Bank"))
 ra.model$obs <- factor(ra.model$obs , levels = c("veg", "seed"), labels = c("Above-Ground \nVegetation", "Surface Seed Bank"))
+
 
 
 #https://sejohnston.com/2012/08/09/a-quick-and-easy-function-to-plot-lm-results-in-r/
@@ -1314,7 +1328,7 @@ ggplotRegression <- function (fit) {
 require(ggplot2)
 ggplot(fit$model, aes_string(x = names(fit$model)[2], y = names(fit$model)[1])) +
   geom_point() +
-  #geom_pointrange(data = pred.lm , aes(x = x, y = fit, ymin = lwr, ymax = upr), size = 0.8, colour = "black") +
+  geom_pointrange(data = pred.val , aes(x = disturbance, y = fit, ymin = lwr, ymax = upr), size = 0.8, colour = "blue") +
   ylab("Relative abundance\nof species observed") +
   xlab("Disturbance") +
   theme_classic(base_size = 12)+
@@ -1339,8 +1353,105 @@ ggplotRegression(lm(rel.abund ~ disturbance + estuary + obs + season + structure
 ```
 
 
+```{r use betareg for beta distribution}
+# cannot use lm or mixed effect bc skewed distribution
+# beta distribution assumes dist between 0 to 1 (*transform data; but cannot have 0, must have 0.000000000001; same for 1)
+
+library(betareg)
+library(emmeans)
+library(multcompView)
+library(multcomp)
+library(sjPlot) #for plotting lmer and glmer mods
+
+
+ra.model.beta <- ra.join %>% 
+  ungroup() %>% 
+  filter(!obs == "bare") %>% 
+  dplyr::select(-sum.seed, -endemic.fngp2) %>% 
+  replace(is.na(.), 0) %>% 
+  mutate(prop.abund = rel.abund/100) %>%
+  relocate(prop.abund, .after = rel.abund) %>% 
+  mutate(prop.abund = case_when(prop.abund == 1 ~ 0.9999999,
+                                prop.abund == 0 ~ 0.0000001, 
+                                TRUE ~ prop.abund))
+
+# View(ra.model.beta)
+# min(ra.model.beta$prop.abund)
+# max(ra.model.beta$prop.abund)
+
+
+beta.model <- betareg(prop.abund ~ disturbance + obs + structure + estuary  + season , data = ra.model.beta) #  (*) is interaction whereas (+) is additive effect
+
+joint_tests(beta.model)
+
+Anova(beta.model)
+summary(beta.model)
+
+hist(ra.model.beta$prop.abund)
+plot(fitted(beta.model), residuals(beta.model))
+
+# plot effect sizes
+sjPlot::plot_model(beta.model)
+
+sjPlot:: tab_model(beta.model)
+
+## Get predicted values 
+## USE EMMEANS
+
+
+# pred <- predict(beta.model, ra.model.beta, # se.fit = FALSE, scale = NULL, df = Inf,
+#         interval = c("confidence"),
+#         level = 0.95, type = c("response"),
+#         terms = NULL, na.action = na.pass)
+#head(pred)
+
+# pred.df <- as.data.frame(pred) 
+# pred.val.beta <- cbind(pred.df, ra.model.beta)
+
+beta.emm <- emmeans(beta.model, c("disturbance", "obs", "structure"), type = "response")
+beta.emm <- as.data.frame(beta.emm)
+
+
+####### 
+# Plot
+#######
+
+beta.emm$disturbance <- factor(beta.emm$disturbance , levels = c("grubbed", "excl1", "excl10", "reference"), labels = c("Grubbed", "Heavily Grazed, \nExclosed 1 year", "Heavily Grazed, \nExclosed 10 years", "Undisturbed"))
+ra.model.beta$disturbance <- factor(ra.model.beta$disturbance , levels = c("grubbed", "excl1", "excl10", "reference"), labels = c("Grubbed", "Heavily Grazed, \nExclosed 1 year", "Heavily Grazed, \nExclosed 10 years", "Undisturbed"))
+
+
+
+beta.emm$structure <- factor(beta.emm$structure , levels = c("short", "med", "tall"), labels = c("Short (< 50 cm)", "Medium (50-100 cm)", "Tall (> 100 cm)"))
+ra.model.beta$structure <- factor(ra.model.beta$structure , levels = c("short", "med", "tall"), labels = c("Short (< 50 cm)", "Medium (50-100 cm)", "Tall (> 100 cm)"))
+
+
+beta.emm$obs <- factor(beta.emm$obs , levels = c("veg", "seed"), labels = c("Above-Ground \nVegetation", "Surface Seed Bank"))
+ra.model.beta$obs <- factor(ra.model.beta$obs , levels = c("veg", "seed"), labels = c("Above-Ground \nVegetation", "Surface Seed Bank"))
+
+
+
+ggplot(ra.model.beta, aes(x = disturbance, y = prop.abund))+
+  geom_point() +
+  geom_pointrange(data = beta.emm , aes(x = disturbance, y = emmean, ymin = asymp.LCL, ymax = asymp.UCL), size = 0.8, colour = "blue") +
+  ylab("Relative abundance\nof species observed (proportion)") +
+  xlab("Disturbance") +
+  theme_classic(base_size = 16)+
+  theme(panel.spacing.x = unit(1.25, "lines"),
+        axis.text.x = element_text(angle = 25, hjust = 1)) + # text = element_text(size = 16)
+  facet_grid(obs~structure) +
+  theme(panel.spacing = unit(2, "lines"))
+
+
+
+
+
+
+```
+
 ```{r glm of rel.abund}
 # https://lmudge13.github.io/sample_code/mixed_effects.html
+
+# note: random effects must have at leas 5 levels (https://ourcodingclub.github.io/tutorials/mixed-models/#three), so should not treat estuary/obs/season/structure as random effects. 
 
 # uses ra.model from preceding code
 #View(ra.model)
@@ -1356,7 +1467,7 @@ library(sjstats) #use for r2 functions
 
 #use the lme4 package
 
-mod <- lme4::lmer(rel.abund ~ disturbance + estuary + obs + season + structure + (1|id), REML= FALSE, data= ra.model)
+mod <- lme4::lmer(rel.abund ~ disturbance + obs + estuary + season + structure + (1|id), REML= FALSE, data= ra.model) #  
 
 summary(mod)
 
@@ -1364,6 +1475,12 @@ summary(mod)
 sjPlot::plot_model(mod)
 
 sjPlot:: tab_model(mod)
+
+# check assumptions
+
+plot(mod)
+qqnorm(resid(mod))
+qqline(resid(mod))
 
 ## Plot model w/ data
 
@@ -1388,9 +1505,18 @@ x_disturb <- as.data.frame(effects_disturb)
   #5 Add geom_ribbon that has the CI limits for the model estimates
   #6 Edit the labels as you see fit!
 
+x_disturb$disturbance <- factor(x_disturb$disturbance , levels = c("grubbed", "excl1", "excl10", "reference"), labels = c("Grubbed", "Heavily Grazed, \nExclosed 1 year", "Heavily Grazed, \nExclosed 10 years", "Undisturbed"))
+
+ra.model$disturbance <- factor(ra.model$disturbance , levels = c("grubbed", "excl1", "excl10", "reference"), labels = c("Grubbed", "Heavily Grazed, \nExclosed 1 year", "Heavily Grazed, \nExclosed 10 years", "Undisturbed"))
+
+ra.model$structure <- factor(ra.model$structure , levels = c("short", "med", "tall"), labels = c("Short (< 50 cm)", "Medium (50-100 cm)", "Tall (> 100 cm)"))
+
+ra.model$obs <- factor(ra.model$obs , levels = c("veg", "seed"), labels = c("Above-Ground \nVegetation", "Surface Seed Bank"))
+
+
 
 disturb_plot <- ggplot() + 
-  geom_point(data=ra.model, aes(disturbance, rel.abund)) + 
+  geom_point(data=ra.model, aes(disturbance, rel.abund, group = 1)) + 
   geom_point(data=x_disturb, aes(x=disturbance, y=fit), color="blue") + 
   geom_line(data=x_disturb, aes(x=disturbance, y=fit), color="blue") +
   geom_ribbon(data= x_disturb, aes(x=disturbance, ymin=lower, ymax=upper), alpha= 0.3, fill="blue") +
@@ -1403,6 +1529,10 @@ disturb_plot
 ```
 
 
+
+
+
+OLDER - DELETE OR TIDY AS NEEDED
 
 I wanted to know:
 (1)	Whether surface seed banks in heavily grazed or grubbed sites resemble their above-ground vegetation counterparts, or if they retain compositional diversity similar to ungrazed sites. 
