@@ -102,32 +102,29 @@ mie <- raw.mie %>%
                values_to = "cover") %>%
   mutate(obs = "veg") %>% 
   mutate(endemic = ifelse(species %in% c("agre", "agsp", "atpa", "coco", "caca"), "Invasive",
-                   
                           ifelse(species %in% "bare", "Unvegetated", "Native"))) %>% 
-  mutate(life = ifelse(species %in% c("atpa", "pofo", "sade", "spca"), 
-                              "Annual", 
+  mutate(life = ifelse(species %in% c("atpa", "pofo", "sade", "spca"), "Annual", 
                        ifelse(species %in% "bare", "Unvegetated", "Perennial"))) %>% 
   mutate(root = ifelse(species %in% c("atpa", "daca", "pofo", "trwo"), "Taproot", 
-                ifelse(species %in% c("coco", "dece", "sade"), "Fibrous",
-                ifelse(species %in% "bare", "Unvegetated", "Rhizomatous")))) %>% 
-  mutate(clade = ifelse(species %in% c("agre", "agsp", "caly", "dece", "disp", 
-                                       "juba"), "Select Graminoid", 
-                ifelse(species %in% c("agre", "agsp", "caly", "dece", "disp", 
-                                      "elpar", "juba"), "All Graminoid",
-                ifelse(species %in% "bare", "Unvegetated", "Forb")))) %>% 
+                       ifelse(species %in% c("coco", "dece", "sade"), "Fibrous",
+                       ifelse(species %in% "bare", "Unvegetated", "Rhizomatous")))) %>% 
+  mutate(clade = ifelse(species %in% c("agre", "agsp", "caly", "dece", "disp", "juba"), "Select Graminoid", 
+                        ifelse(species %in% c("agre", "agsp", "caly", "dece", "disp", "elpar", "juba"), "All Graminoid",
+                        ifelse(species %in% "bare", "Unvegetated", "Forb")))) %>% 
   mutate(fngp = ifelse(species %in% c("agre", "agsp", "caly", "disp", "juba", "elpar"), "Perennial graminoid, rhizomatous roots",
-                  ifelse(species %in% c("dece"), "Perennial graminoid,  fibrous roots",
-                  ifelse(species %in% c("atpa", "pofo", "sade", "spca"), "Annual forb", 
-                  ifelse(species %in% c("coco", "daca", "trwo"), "Perennial forb,  fibrous roots",
-                  ifelse(species %in% c("trma", "glma", "popa", "sysu"), 
+                       ifelse(species %in% c("dece"), "Perennial graminoid,  fibrous roots",
+                       ifelse(species %in% c("atpa", "pofo", "sade", "spca"), "Annual forb", 
+                       ifelse(species %in% c("coco", "daca", "trwo"), "Perennial forb,  fibrous roots",
+                       ifelse(species %in% c("trma", "glma", "popa", "sysu"), 
                          "Perennial forb,  rhizomatous roots", "Unvegetated")))))) %>% 
-  mutate(fngp2 = ifelse(species %in% c("agre", "agsp", "caly", "disp", "juba", "dece", "elpar"), "Perennial graminoid",
-                  ifelse(species %in% c("atpa", "pofo", "sade", "spca"), "Annual forb",
-                  ifelse(species %in% c("bare"), "Unvegetated", "Perennial forb")))) %>% 
+  mutate(fngp2 = ifelse(species %in% c("agre", "agsp", "caly", "disp", "juba", "dece"), "Perennial graminoid (> 10 cm)",
+                        ifelse(species %in% c("elpar"), "Perennial graminoid (< 10 cm)",
+                        ifelse(species %in% c("atpa", "pofo", "sade", "spca"), "Annual forb",
+                        ifelse(species %in% c("bare"), "Unvegetated", "Perennial forb"))))) %>% 
   mutate(cultural = ifelse(species %in% c("popa", "sade", "trma", "trwo"), "cultural", "not")) %>%  #cultural mention taken from Luschiim's plants (popa, sade, trma; C. obnupta documented, but unclear whether CALY would have been used similarly. Inclusion of trwo from Turner et al., 2013. See esp. pg. 117: "Clover and silverweed roots were of tremendous significance to pre-contact and early postcontact peoples of the Northwest Coast (Kuhnlein et al. 1982; Turner 1995; Turner and Kuhnlein 1982, 1983).")
   mutate(structure = ifelse(species %in% c("bare"), "Unvegetated", 
-                     ifelse(species %in% c("coco", "disp", "glma", "elpar", "pofo", "popa", "sade", "spca", "trwo"), "short", 
-                     ifelse (species %in% c("agsp", "atpa", "daca", "juba", "sysu", "trma"), "med", "tall")))) # short = < 50 cm; med = 50 - 1 m, tall = > 1 m, per eflora BC
+                            ifelse(species %in% c("coco", "disp", "glma", "elpar", "pofo", "popa", "sade", "spca", "trwo"), "short", 
+                            ifelse (species %in% c("agsp", "atpa", "daca", "juba", "sysu", "trma"), "med", "tall")))) # short = < 50 cm; med = 50 - 1 m, tall = > 1 m, per eflora BC
 
 # cover was entered as relative abundance in raw data. rename 'cover' as 'rel.abund'
 mie_ra <- mie %>%
@@ -152,7 +149,7 @@ head(d.seed)
 
 seed_tidy <- d.seed %>% 
   filter(!estuary == "ere") %>% 
-  select(-c("id", "replicate", "latin", season)) %>% 
+  select(-c("id", "replicate", "latin", "season")) %>% 
   group_by(estuary, disturbance, seed_id, species) %>% 
   mutate(abund_m2 = count*85.5)   # 85.5 multiplier estimates sample area of ~ 117 cm2 to fill 1 m2 (10,000 cm2) 
 
@@ -170,15 +167,16 @@ seed <- seed_ra %>%
   mutate(obs = "seed", id = (seed_id+100)) %>% 
   mutate(endemic = ifelse(species %in% c("agsp", "atpa", "coco", "cirsp", "poasp"), "Invasive", "Native")) %>% 
   mutate(life = ifelse(species %in% c("atpa", "isce","jubu", "sade", "spca", "poasp"), "Annual", "Perennial")) %>% 
-  mutate(root = ifelse(species %in% c("atpa", "cirsp", "coco", "dece", "grsp", "isce", "jute", "sade", "sama","poasp"), "Fibrous", "Rhizomatous")) %>% 
+  mutate(root = ifelse(species %in% c("atpa", "cirsp", "coco", "dece", "grsp", "isce", "jute", "sade", "sama","poasp"), "Fibrous", "Rhizomatous")) %>%
   mutate(clade = ifelse(species %in% c("agsp", "caly", "dece", "juar", "juba", "juen", "jute", "poasp"), "Select Graminoid",
-                 ifelse(species %in% c("agsp", "caly", "dece", "elpar", "isce", "juar", "juba", "juen", "jute", "poasp"), "All Gramindoid", "Forb"))) %>% 
+                        ifelse(species %in% c("agsp", "caly", "dece", "elpar", "isce", "juar", "juba", "juen", "jute", "poasp"), "All Graminoid", "Forb"))) %>% 
   mutate(fngp = ifelse(species %in% c("agsp", "caly", "elpar", "juar", "juba", "juen"), "Perennial graminoid, rhizomatous roots",                  
-                ifelse(species %in% c("dece", "jute"), "Perennial graminoid,  fibrous roots",
-                ifelse(species %in% c("atpa", "sade", "spca"), "Annual forb", "Perennial forb")))) %>% 
-   mutate(fngp2 = ifelse(species %in% c("agsp", "caly", "juar", "juen", "juba", "jute", "dece", "elpar"), "Perennial graminoid",
-                ifelse(species %in% c("isce", "jubu"), "Annual graminoid", 
-                ifelse(species %in% c("atpa", "sade", "spca"), "Annual forb", "Perennial forb")))) %>% 
+                       ifelse(species %in% c("dece", "jute"), "Perennial graminoid,  fibrous roots",
+                       ifelse(species %in% c("atpa", "sade", "spca"), "Annual forb", "Perennial forb")))) %>% 
+   mutate(fngp2 = ifelse(species %in% c("agsp", "caly", "juar", "juen", "juba", "jute", "dece"), "Perennial graminoid (> 10 cm)",
+                         ifelse(species %in% c("elpar"), "Perennial graminoid (< 10 cm)",
+                         ifelse(species %in% c("isce", "jubu"), "Annual graminoid", 
+                         ifelse(species %in% c("atpa", "sade", "spca"), "Annual forb", "Perennial forb"))))) %>% 
   mutate(cultural = ifelse(species %in% c("achmi", "popa", "sade", "trma", "grsp"), "cultural", "not")) %>%  # achmi, sade, trma, grsp from Luschiim's plants
   mutate(structure = ifelse(species %in% c("coco", "isce" , "glma", "elpar", "jute", "popa", "sade", "sama", "spca"), "short", 
                   ifelse (species %in% c("achmi", "agsp", "atpa", "epgl", "grsp", "juar", "juba", "juen", "sysu", "trma"), "med", "tall")))  # short = < 50 cm; med = 50 - 1 m, tall = > 1 m, per eflora BC
@@ -272,9 +270,9 @@ obs_fngp <- ra_join %>%
   #mutate(across(8:13, round, 2))
 
 cover_graminoid <- obs_fngp %>%
-  filter(fngp2 == "Perennial graminoid")
+  filter(fngp2 == "Perennial graminoid (> 10 cm)")
 
-# set levels for proper chart labelling
+# set levels for proper chart labeling
 cover_graminoid$estuary = factor(cover_graminoid$estuary,
                      levels = c("nre", "lqre"),
                      labels = c("Nanaimo", "Little Qualicum"))
@@ -293,7 +291,7 @@ cover_graminoid$obs = factor(cover_graminoid$obs,
 tpg <- cover_graminoid %>% 
   ggplot(aes(x = estuary, y = cover, fill = endemic, shape = endemic)) +
   geom_boxplot() +
-  facet_grid(obs~disturbance) +
+  facet_grid(obs~disturbance, scales = "free") +
   geom_jitter(width = 0.1, alpha = 0.2) +
   theme_classic() +
   theme(legend.position = 'bottom') +
@@ -303,15 +301,16 @@ tpg <- cover_graminoid %>%
        y = "Relative abundance (%) \nperennial graminoids (species > 10 cm tall)", 
        fill = "",
        shape = "")  +
-  scale_fill_brewer(palette = "Set2") 
+  scale_fill_manual(values = c("#00AFBB", "#E7B800"))
+  #scale_fill_brewer(palette = "Set2") 
 
-ggsave("fig-boxplot_tpg_seed-veg.jpg", tpg, width = 15, height = 10)
+#ggsave("fig-boxplot_tpg_seed-veg.jpg", tpg, width = 15, height = 10)
 
 
 ```
 
 
-```{r boxplots sp of interest in veg vs seed, by fngp}
+```{r boxplots sp of interest, by obs & fngp}
 
 obs_soi <- ra_join %>% 
   filter(species == c("agsp", "caly", "juba", "popa")) %>% 
@@ -335,13 +334,13 @@ obs_soi$species = factor(obs_soi$species,
                       labels = c("Agrostis stolonifera*", "Carex lyngbyei", "Juncus balticus", "Potentilla pacifica**"))
 	
 
-soi <- obs_soi %>% 
-  #filter(obs == "Above-ground vegetation") %>% 
+
+soi_nre <- obs_soi %>% 
+  filter(estuary == "Nanaimo") %>% 
   ggplot(aes(x = disturbance, y = abund, fill = obs, shape = obs)) +
   geom_boxplot() +
-  facet_grid(estuary~species) +
+  facet_wrap(~species, nrow = 2, scales = "free_y") +
   geom_jitter(width = 0.1, alpha = 0.2) +
-  #scale_y_continuous(trans='log10')+
   theme_classic() +
   theme(legend.position = 'bottom') +
   theme(text = element_text(size = 16),
@@ -350,294 +349,313 @@ soi <- obs_soi %>%
        y = "Relative abundance (%)", 
        fill = "",
        shape = "")  +
-  #scale_color_gradientn(colours = rainbow(4))
+  labs(title = "Nanaimo") +
   scale_fill_brewer(palette = "Set2")
-  #scale_fill_manual(values = c("#00AFBB", "#E7B800"))
 
-want to do this https://stackoverflow.com/questions/45611725/multiple-rows-in-facet-grid 
-
-#ggsave("fig-boxplot_soi_seed-veg.jpg", soi, width = 15, height = 10)
-
-
-```
-Vegetation
-
-```{r veg summary: native, exotic, cultural, sedge, richness}
-veg.sum <- mie %>% 
-  filter(!species == "bare") %>% 
-  filter(cover != 0) %>% 
-  group_by(id, disturbance, estuary) %>% 
-  #na.omit() %>% 
-  dplyr::summarize(native_rich = length(endemic[endemic == "Native"]), 
-            exotic_rich = length(endemic[endemic == "Invasive"]), 
-            total_rich = length(species[unique(species)]), 
-            cultural_rich = length(cultural[cultural == "cultural"]),
-            native_cover = sum(cover[endemic == "Native"]), 
-            exotic_cover = sum(cover[endemic == "Invasive"]), 
-            cultural_cover = sum(cover[cultural == "cultural"]), 
-            graminoid_cover = sum(cover[clade == "Select Graminoid"]),
-            sedge_cover = sum(cover[species == "caly"]), 
-            total_cover = sum(cover)) %>% 
-  mutate(exotic_prop = exotic_cover/100, 
-         graminoid_prop = graminoid_cover/100, 
-         sedge_prop = sedge_cover/100, 
-         total_prop = total_cover/100, 
-         culture_prop = cultural_cover/100) %>% 
-  mutate(across(8:13, round, 2))
-
-#View(veg.sum)
-#which(is.na(veg))
-
-
-# redoing veg.sum w/ ra_join (instead of mie), adding additional levels of group_by fngp2/endemic. Compare to running analyses w veg.sum
-
-
-
-```
-
-```{r veg boxplots, faceted; older iteration/may be obsolete}
-
-# veg_box <- veg.sum %>% 
-#   pivot_longer(native_rich:cultural_rich, 
-#                names_to = "richness", 
-#                values_to = "rich_val") %>% 
-#   pivot_longer(native_cover:total_cover,
-#                names_to = "cover", 
-#                values_to = "cover_val") %>% 
-#   pivot_longer(exotic_prop:culture_prop,
-#                names_to = "prop_cover", 
-#                values_to = "prop_val")
-# #View(veg_box)
-# #unique(veg_box$cover)
-# 
-# veg_box$estuary = factor(veg_box$estuary,
-#                      levels = c("ere", "nre", "lqre"),
-#                      labels = c("Englishman", "Nanaimo", "Little Qualicum"))
-# veg_box$disturbance = factor(veg_box$disturbance,
-#                             levels = c("grubbed", "excl1", "excl10", "reference"),
-#                             labels = c("Grubbed", "Heavily Grazed, \nExclosed 1 year", "Heavily Grazed, \nExclosed 10 years", "Undisturbed"))
-# veg_box$richness = factor(veg_box$richness, 
-#                             levels = c("cultural_rich", "native_rich", "exotic_rich", "total_rich"), 
-#                             labels = c("Culturally Significant Species", "Native Species", "Exotic Species", "Total Species"))
-# veg_box$cover = factor(veg_box$cover, 
-#                             levels = c("cultural_cover", "native_cover", "exotic_cover", "sedge_cover", "graminoid_cover","total_cover"), 
-#                             labels = c("Culturally Significant Species", "Native Species", "Exotic Species", "Carex lyngbyei", "Select Graminoids", "Total Species"))
-# 
-# pd <- position_dodge(0.75)
-# 
-# rich_box <- veg_box %>% 
-#   ggplot(aes(x = disturbance, y = rich_val, fill = richness)) +
-#   geom_boxplot() + # aes(fill = richness), outlier.shape = NA
-#   #geom_point(position = position_dodge(width = 1), color = 'gray60', size = 2) +
-#   #geom_jitter(alpha = 0.1, width = 0.3) +   # , position = pd
-#   theme_classic() +
-#   facet_grid(. ~ estuary, scales = "free", labeller = labeller(estuary = facet_labels)) +
-#   labs(x = "Disturbance condition", y = "Species Richness", fill = "Richness") +
-#   scale_y_continuous(breaks = seq(0, 12, by = 2)) +
-#   #scale_x_discrete(expand=c(0.1, 0.5)) +
-#   theme(text = element_text(size = 12), 
-#         panel.spacing.x = unit(1.25, "lines"), 
-#         axis.text.x = element_text(angle = 25, hjust = 1)) +
-#   scale_fill_brewer(palette = "Dark2") #+
-#   #scale_color_brewer(palette = "Dark2")
-# 
-# cover_box <- veg_box %>% 
-#   ggplot(aes(x = disturbance, y = cover_val, fill = cover)) +
-#   geom_boxplot() + 
-#   theme_classic() +
-#   facet_grid(. ~ estuary, scales = "free", labeller = labeller(estuary = facet_labels)) +
-#   labs(x = "Disturbance condition", y = "Species Richness", fill = "Above-ground Cover") +
-#   #scale_y_continuous(breaks = seq(0, 12, by = 2)) +
-#   theme(text = element_text(size = 12), 
-#         panel.spacing.x = unit(1.25, "lines"), 
-#         axis.text.x = element_text(angle = 25, hjust = 1)) +
-#   scale_fill_brewer(palette = "Dark2") 
-  
-  
-```
-
-```{r veg boxplot, unfaceted - may be obsolete; see next chunk}
-  
-veg.sum$estuary = factor(veg.sum$estuary,
-                     levels = c("ere", "nre", "lqre"),
-                     labels = c("Englishman", "Nanaimo", "Little Qualicum"))
-veg.sum$disturbance = factor(veg.sum$disturbance,
-                            levels = c("grubbed", "excl1", "excl10", "reference"),
-                            labels = c("Grubbed", "Heavily Grazed, \nExclosed 1 year", "Heavily Grazed, \nExclosed 10 years", "Undisturbed"))  
-  
-#disturb_levels <- c('grubbed', 'excl1', 'excl10', 'reference')
-
-# uses gram_fit
-cover_graminoid <- veg.sum %>%
-  ggplot(aes(x = disturbance, y = graminoid_cover, fill = estuary, shape = estuary)) +
+soi_lqre <- obs_soi %>% 
+  filter(estuary == "Little Qualicum") %>% 
+  ggplot(aes(x = disturbance, y = abund, fill = obs, shape = obs)) +
   geom_boxplot() +
+  facet_wrap(~species, nrow = 2, scales = "free_y") +
   geom_jitter(width = 0.1, alpha = 0.2) +
-  #geom_ribbon(data = gram_fit$fit, aes(x = disturbance, ymin = visregLwr, ymax = visregUpr), fill = "lightgrey") +
-  #geom_line(data = gram_fit$fit, aes(x = disturbance, y = visregFit), color = "red", size = 1.25) +
   theme_classic() +
-  labs(x = "Disturbance condition", y = "Graminoid cover, \nexcluding Eleocharis parvula (%)", fill = "Estuary") +
-  theme(text = element_text(size = 12),
-           panel.spacing.x = unit(1.25, "lines"),
-           axis.text.x = element_text(angle = 25, hjust = 1)) +
-  #theme(plot.margin = unit(c(2,2,2,2), "lines")) +
-  scale_shape_discrete(guide = "none")
+  theme(legend.position = 'bottom') +
+  theme(text = element_text(size = 16),
+           panel.spacing.y = unit(1.25, "lines"),
+           axis.text.x = element_text(angle = 25, hjust = 1)) +  labs(x = "", 
+       y = "Relative abundance (%)", 
+       fill = "",
+       shape = "")  +
+  labs(title = "Little Qualicum") +
+  scale_fill_brewer(palette = "Set2")
 
-# trying to overlay a regression onto the boxplot; see also experimentation w/ regfit next to glm
-# prop_graminoid <- veg.sum %>% 
-#   ggplot(aes(x = disturbance, y = graminoid_prop, fill = estuary, shape = estuary)) +
-#   geom_boxplot() + 
-#   geom_jitter(width = 0.1, alpha = 0.2) +
-#   geom_ribbon(data = gram_fit, aes(x = disturbance, ymin = visregLwr, ymax = visregUpr), fill = "lightgrey") +
-#   geom_line(data = gram_fit, aes(x = disturbance, y = visregFit), color = "red", size = 1.25) +
-#   theme_classic() +
-#   labs(x = "Disturbance condition", y = "Graminoid cover, \nexcluding Eleocharis parvula (%)", fill = "Estuary") +
-#    theme(text = element_text(size = 12), 
-#            panel.spacing.x = unit(1.25, "lines"), 
-#            axis.text.x = element_text(angle = 25, hjust = 1)) + 
-#   #theme(plot.margin = unit(c(2,2,2,2), "lines")) +
-#   scale_shape_discrete(guide = "none")
-
-
-cover_sedge <- veg.sum %>%
-  ggplot(aes(x = disturbance, y = sedge_cover, fill = estuary, shape = estuary)) +
-  geom_boxplot() + geom_jitter(width = 0.1, alpha = 0.2) +
-  theme_classic() +
-  labs(x = "Disturbance condition", y = "Sedge cover (%)", fill = "Estuary") +
-   theme_classic()+
-   theme(text = element_text(size = 12),
-           panel.spacing.x = unit(1.25, "lines"),
-           axis.text.x = element_text(angle = 25, hjust = 1)) +
-  scale_shape_discrete(guide = "none")
-
-cover_total <- veg.sum %>%
-  ggplot(aes(x = disturbance, y = total_cover, fill = estuary, shape = estuary)) +
-  geom_boxplot() + geom_jitter(width = 0.1, alpha = 0.2) +
-  theme_classic() +
-  labs(x = "Disturbance condition", y = "Total cover (%)", fill = "Estuary") +
-   theme_classic()+
-   theme(text = element_text(size = 12),
-           panel.spacing.x = unit(1.25, "lines"),
-           axis.text.x = element_text(angle = 25, hjust = 1)) +
-  scale_shape_discrete(guide = "none")
-
-
-cover_exotic <- veg.sum %>% 
-  ggplot(aes(x = disturbance, y = exotic_cover, fill = estuary, shape = estuary)) +
-  geom_boxplot() + geom_jitter(width = 0.1, alpha = 0.2) +
-  theme_classic() +
-  labs(x = "Disturbance condition", y = "Exotic cover (%)", fill = "Estuary") +
-   theme_classic()+
-   theme(text = element_text(size = 12), 
-           panel.spacing.x = unit(1.25, "lines"), 
-           axis.text.x = element_text(angle = 25, hjust = 1)) +
-  scale_shape_discrete(guide = "none")
-
-cover_cultural <- veg.sum %>% 
-  ggplot(aes(x = disturbance, y = cultural_cover, fill = estuary, shape = estuary)) +
-  geom_boxplot() + geom_jitter(width = 0.1, alpha = 0.2) +
-  theme_classic() +
-  labs(x = "Disturbance condition", y = "Culturally significant species cover (%)", fill = "Estuary") +
-   theme_classic()+
-   theme(text = element_text(size = 12), 
-           panel.spacing.x = unit(1.25, "lines"), 
-           axis.text.x = element_text(angle = 25, hjust = 1)) +
-  theme(plot.margin = unit(c(2,2,2,2), "lines")) +
-  scale_shape_discrete(guide = "none")
-
-
-rich_total <- veg.sum %>% 
-  ggplot(aes(x = disturbance, y = total_rich, fill = estuary, shape = estuary)) +
-  geom_boxplot() + geom_jitter(width = 0.1, alpha = 0.2) +
-  theme_classic() +
-  labs(x = "Disturbance condition", y = "Total Richness", fill = "Estuary") +
-   theme_classic()+
-   theme(text = element_text(size = 12), 
-           panel.spacing.x = unit(1.25, "lines"), 
-           axis.text.x = element_text(angle = 25, hjust = 1))  +
-  theme(plot.margin = unit(c(2,2,2,2), "lines")) +
-  scale_shape_discrete(guide = "none")
-
-rich_exotic <- veg.sum %>% 
-  ggplot(aes(x = disturbance, y = exotic_rich, fill = estuary, shape = estuary)) +
-  geom_boxplot() + geom_jitter(width = 0.1, alpha = 0.2) +
-  theme_classic() +
-  labs(x = "Disturbance condition", y = "Exotic Richness", fill = "Estuary") +
-   theme_classic()+
-   theme(text = element_text(size = 12), 
-           panel.spacing.x = unit(1.25, "lines"), 
-           axis.text.x = element_text(angle = 25, hjust = 1))  +
-  #theme(plot.margin = unit(c(2,2,2,2), "lines")) +
-  scale_shape_discrete(guide = "none")
-
-rich_cultural <- veg.sum %>% 
-  ggplot(aes(x = disturbance, y = cultural_rich, fill = estuary, shape = estuary)) +
-  geom_boxplot() + geom_jitter(width = 0.1, alpha = 0.2) +
-  theme_classic() +
-  labs(x = "Disturbance condition", y = "Culturally significant species richness", fill = "Estuary") +
-   theme_classic()+
-   theme(text = element_text(size = 12), 
-           panel.spacing.x = unit(1.25, "lines"), 
-           axis.text.x = element_text(angle = 25, hjust = 1))  +
-  #theme(plot.margin = unit(c(2,2,2,2), "lines")) +
-  scale_shape_discrete(guide = "none")
-
-
-veg_rich_panel <- ggarrange(rich_total, rich_exotic, rich_cultural,
-                       common.legend = TRUE, legend = "right",
-                       ncol = 1, nrow = 3) 
-                       #widths = c(2, 2)) #%>% 
-             #annotate_figure(bottom = text_grob("text here", hjust = 1, x = 1,  size = 20))
-veg_rich_panel
-
-veg_cover_panel <- ggarrange(cover_total, cover_graminoid, cover_sedge, cover_exotic, cover_cultural,
-                       common.legend = TRUE, legend = "right",
-                       ncol = 2, nrow = 4)
-veg_cover_panel
-
+soi_panel <- ggarrange(soi_nre, soi_lqre,
+                       common.legend = TRUE, 
+                       legend = "bottom",
+                       ncol = 2, nrow = 1) 
+#ggsave("fig-boxplot_soi_seed-veg.jpg", soi_panel, width = 15, height = 10)
 
 
 ```
 
-```{r veg vs seed boxplots, by fngp natve v exotic}
+```{r boxplots of all fngp by obs}
 
 obs_fngp <- ra_join %>% 
-  filter(!species == c("bare", "elpar")) %>% 
-  group_by(id, disturbance, estuary, fngp2, endemic, obs) %>% 
-  dplyr::summarize(rich = length(endemic), 
-            #cultural_rich = length(cultural[cultural == "cultural"]),
-            cover = sum(relabund[endemic == endemic])) %>%  
-            #cultural_cover = sum(relabund[cultural == "cultural"]), 
-            # trwo_cover = sum(relabund[species =="trwo"]), 
-            # total_cover = sum(relabund)) %>% 
-  mutate(cover_prop = cover/100) #%>%  
-         # graminoid_prop = graminoid_cover/100, 
-         # culture_prop = cultural_cover/100) %>% 
-  #mutate(across(8:13, round, 2))
-
-cover_graminoid <- obs_fngp %>%
-  filter(fngp2 == "Perennial graminoid")
+  #filter(!species == "elpar") %>% 
+  group_by(id, disturbance, estuary, obs, endemic, fngp2) %>% 
+  dplyr::summarize(fnabund = sum(relabund[fngp2 == fngp2])) %>%  
+            mutate(fnabund_prop = fnabund/100) 
 
 # set levels for proper chart labelling
-cover_graminoid$estuary = factor(cover_graminoid$estuary,
-                     levels = c("ere", "nre", "lqre"),
-                     labels = c("Englishman", "Nanaimo", "Little Qualicum"))
-cover_graminoid$disturbance = factor(cover_graminoid$disturbance,
+obs_fngp$estuary = factor(obs_fngp$estuary,
+                     levels = c("nre", "lqre"),
+                     labels = c("Nanaimo", "Little Qualicum"))
+obs_fngp$disturbance = factor(obs_fngp$disturbance,
                             levels = c("grubbed", "excl1", "excl10", "reference"),
                             labels = c("Grubbed", "Heavily Grazed, \nExclosed 1 year", "Heavily Grazed, \nExclosed 10 years", "Undisturbed")) 
-cover_graminoid$endemic = factor(cover_graminoid$endemic, 
+obs_fngp$endemic = factor(obs_fngp$endemic, 
                           levels = c("Native", "Invasive"), 
                           labels = c("Native", "Exotic"))
-cover_graminoid$obs = factor(cover_graminoid$obs, 
-                      levels = c("veg", "seed"),
-                      labels = c("Above-ground vegetation", "Surface seed bank"))
-	
+obs_fngp$obs = factor(obs_fngp$obs, 
+                      levels = c("veg", "seed", "bare"),
+                      labels = c("Above-ground vegetation", "Surface seed bank", "Bare ground"))
 
-cover_graminoid %>% 
-  ggplot(aes(x = endemic, y = cover, fill = obs, shape = obs)) +
+fngp_obs <- obs_fngp %>% 
+  ggplot(aes(x = estuary, y = fnabund, fill = fngp2, shape = fngp2)) +
   geom_boxplot() +
-  facet_grid(estuary~disturbance) +
+  facet_grid(obs~disturbance, scales = "free") +
   geom_jitter(width = 0.1, alpha = 0.2) +
-   theme_classic()
+  theme_classic() +
+  theme(legend.position = 'bottom') +
+  theme(text = element_text(size = 16),
+           panel.spacing.y = unit(1.25, "lines"),
+           axis.text.x = element_text(angle = 25, hjust = 1)) +  
+  labs(x = "", 
+       y = "Relative abundance (%)", 
+       fill = "",
+       shape = "")  +
+  scale_fill_manual(values = c("#DE77AE", "#F7FCB9", "#762A83", "#80CDC1", "#1B7837", "#8C510A"))
+
+ggsave("fig-boxplot_fngp_veg-seed-bare.jpg", fngp_obs, width = 15, height = 10)
+
+#brewer.pal(11, "YlGn")
+# Annual forb "#DE77AE" (3rd in PiYG)
+# Annual graminoid "#F7FCB9" (2 in YlGn)
+# Perennial forb "#762A83" (2nd in PRGn)
+# Perennial graminoid (< 10 cm) "#80CDC1" (8th in BrBG)
+# Perennial graminoid (> 10 cm) "#1B7837" (10th in PRGn)
+# Bare ground "#8C510A" (2nd in BrBG)
+
+```
+
+```{r NMDS of relative abundance - grid estuary~disturbance}
+
+compare.ra <- ra_join %>% 
+  ungroup() %>% 
+  filter(!obs == "bare") %>% 
+  pivot_wider(names_from = species, values_from = relabund) %>%
+  replace(is.na(.), 0) 
+#View(compare_ra)
+
+#################################
+## NMDS of species relative abundance 
+#################################
+
+compare.ra.nre <- compare.ra %>% filter(estuary == "nre") 
+#View(compare.ra.nre)
+#nrow(compare.ra.nre) #300
+#ncol(compare.ra.nre) #33
+
+compare.ra.lqre <- compare.ra %>% filter(estuary == "lqre")
+#View(compare.ra.lqre)
+#nrow(compare.ra.lqre) #353
+#ncol(compare.ra.lqre) #33
+
+# matrix of species relative abundance
+ra.compare.nre = compare.ra.nre[,10:ncol(compare.ra.nre)]
+ra.compare.lqre = compare.ra.lqre[,10:ncol(compare.ra.lqre)]
+#View(compare.ra.nre)
+
+#turn abundance data frame into a matrix
+mat.ra.nre = as.matrix(ra.compare.nre)
+#m.ra.nre <- mat.ra.nre[which(rowSums(mat.ra.nre) > 0), ] # remove rows where all species columns = 0
+
+mat.ra.lqre = as.matrix(ra.compare.lqre)
+#m.ra.lqre <- m.ra.lqre[which(rowSums(m.ra.lqre) > 0), ]
+
+set.seed(123)
+nmds.compare.ra.nre = metaMDS(mat.ra.nre, distance = "euclidean")
+plot(nmds.compare.ra.nre)
+# stress = 0.0834
+
+set.seed(123)
+nmds.compare.ra.lqre = metaMDS(mat.ra.lqre, distance = "euclidean")
+nmds.compare.ra.lqre
+# stress = 0.0898
+
+#extract NMDS data scores (x and y coordinates)
+ds.compare.ra.nre = as.data.frame(scores(nmds.compare.ra.nre)$sites)
+ds.compare.ra.lqre = as.data.frame(scores(nmds.compare.ra.lqre)$sites)
+
+#add columns to data frame 
+ds.compare.ra.nre$id = compare.ra.nre$id
+ds.compare.ra.lqre$id = compare.ra.lqre$id
+
+ds.compare.ra.nre$disturbance = compare.ra.nre$disturbance
+ds.compare.ra.lqre$disturbance = compare.ra.lqre$disturbance
+
+ds.compare.ra.nre$obs = compare.ra.nre$obs
+ds.compare.ra.lqre$obs = compare.ra.lqre$obs
+
+ds.compare.ra.nre$estuary = compare.ra.nre$estuary
+ds.compare.ra.lqre$estuary = compare.ra.lqre$estuary
+
+ds.compare.ra.nre$endemic = compare.ra.nre$endemic
+ds.compare.ra.lqre$endemic = compare.ra.lqre$endemic
+
+
+########~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~``
+### Plot
+########~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~``
+
+pd.nmds.ra <- position_dodge(0.74)
+col = c("#1B9E77", "#D95F02" ) 
+#brewer.pal(n = 4, "Dark2")
+
+
+## NRE
+ds.compare.ra.nre$disturbance = factor(ds.compare.ra.nre$disturbance, levels = c("grubbed", "excl1", "reference"))
+
+
+compare.ra.nmds.nre = ggplot(ds.compare.ra.nre, aes(x = NMDS1, y = NMDS2)) + 
+    geom_point(size = 4, aes(colour = obs)) + 
+    facet_grid(. ~ disturbance, labeller = labeller(disturbance = disturb_labels)) + 
+    theme(axis.text.y = element_text(colour = "black", size = 16), 
+    axis.text.x = element_text(colour = "black", size = 16), 
+    axis.title.x = element_text(face = "bold", size = 16, colour = "black"), 
+    legend.text = element_text(size = 16, face ="bold", colour ="black", lineheight = 0.8), legend.key.height = unit(1, "cm"), 
+    legend.position = "right", axis.title.y = element_text(face = "bold", size = 16), 
+    legend.title = element_text(size = 16, colour = "black", face = "bold"), 
+    panel.background = element_blank(), panel.border = element_rect(colour = "black", fill = NA, size = 1.2),
+    legend.key=element_blank()) + 
+    theme(strip.text.x = element_text(size = 16), plot.caption = element_text(size = 16)) +
+    labs(x = "NMDS1", colour = "Source", shape = "Endemic status", y = "NMDS2", title = "Nanaimo", caption = "stress = 0.0834")  + 
+    scale_color_manual(limits = c("veg", "seed"), labels = c("Above ground vegetation", "Surface seed bank"), values = col) # +
+    #scale_shape_manual(values = c(15, 17), limits = c("Native", "Invasive"), labels = c("Native", "Exotic")) 
+
+compare.ra.nmds.nre
+
+
+## LQRE
+ds.compare.ra.lqre$disturbance = factor(ds.compare.ra.lqre$disturbance, levels = c("grubbed", "excl10", "reference"))
+
+compare.ra.nmds.lqre = ggplot(ds.compare.ra.lqre, aes(x = NMDS1, y = NMDS2)) + 
+    geom_point(size = 4, aes(colour = obs))+ 
+    theme(axis.text.y = element_text(colour = "black", size = 16), 
+    axis.text.x = element_text(colour = "black", size = 16), 
+    axis.title.x = element_text(face = "bold", size = 16, colour = "black"), 
+    legend.text = element_text(size = 16, face ="bold", colour ="black", lineheight = 0.8), legend.key.height = unit(1, "cm"), 
+    legend.position = "right", axis.title.y = element_text(face = "bold", size = 16), 
+    legend.title = element_text(size = 16, colour = "black", face = "bold"), 
+    panel.background = element_blank(), panel.border = element_rect(colour = "black", fill = NA, size = 1.2),
+    legend.key=element_blank()) +
+    facet_grid(. ~ disturbance, labeller = labeller(disturbance = disturb_labels)) + 
+    labs(x = "NMDS1", colour = "Source", y = "NMDS2", title = "Little Qualicum", caption = "stress = 0.0898")  + 
+    theme(strip.text.x = element_text(size = 16), plot.caption = element_text(size = 16)) +
+    scale_color_manual(limits = c("veg", "seed"), labels = c("Above ground vegetation", "Surface seed bank"), values = col) #+
+    #scale_shape_manual(values = c(15, 17), limits = c("Native", "Invasive"), labels = c("Native", "Exotic")) 
+compare.ra.nmds.lqre
+
+## panel format w/ ggpubr
+compare.ra.nmds.panel <- ggarrange(compare.ra.nmds.nre, compare.ra.nmds.lqre,
+          common.legend = TRUE, legend = "right",
+          ncol = 1, nrow = 2) %>% 
+  annotate_figure(bottom = text_grob("Similarity of species relative abundance in surface seed banks and above-ground vegetation (Euclidean distance)", hjust = 1, x = 1,  size = 14))
+compare.ra.nmds.panel
+
+#ggsave("fig-nmds-compare-ra-panel.jpg", compare.ra.nmds.panel, width = 15, height = 10)
+
+
+```
+
+```{r DIDN'T WORK; REVISIT - COULDN'T GET FACTORS AS MEANINGFUL CENTROIDS/VECTORS ON PLOT for nmds relabund, panel .~estuary, with disturbance & fngp as factors}
+# tried using envfit to make vector & factor ecological coordinates per https://jkzorz.github.io/2020/04/04/NMDS-extras.html
+
+compare_ra <- ra_join %>% 
+  ungroup() %>% 
+  filter(!obs == "bare") %>% 
+  pivot_wider(names_from = species, values_from = relabund) %>%
+   mutate(age = if_else(disturbance %in% c("grubbed"), 0,
+                     if_else(disturbance %in% c("excl1"), 1, 
+                     if_else(disturbance %in% c("excl10"), 10, 100)))) %>% 
+  relocate(fngp2, .before = obs) %>% 
+  relocate(endemic, .after = fngp2) %>% 
+  relocate(age, .after = disturbance) %>% 
+  replace(is.na(.), 0) 
+
+ra_nre <- compare_ra %>% 
+                filter(estuary == "nre")
+
+ra_lqre <- compare_ra %>% 
+                filter(estuary == "lqre")
+
+# subset data by estuary so there's one data frame with only ecological variables (eco), and a data frame with only species abundance data (com)
+com_nre = ra_nre[,11:35]
+com_lqre = ra_lqre[,11:35]
+
+eco_nre = ra_nre[,3:4]
+eco_lqre = ra_lqre[,3:4]
+
+#convert com to a matrix
+m_com_nre = as.matrix(com_nre)
+m_com_lqre = as.matrix(com_lqre)
+
+
+set.seed(123)
+nmds_nre = metaMDS(m_com_nre, distance = "euclidean")
+nmds_nre
+# stress 0.0834
+
+set.seed(123)
+nmds_lqre = metaMDS(m_com_lqre, distance = "euclidean")
+nmds_lqre
+# stress 0.0898
+
+# run the envfit function with our ecological data frame, eco
+en_nre = envfit(nmds_nre, eco_nre, permutations = 999, na.rm = TRUE)
+en_lqre = envfit(nmds_lqre, eco_lqre, permutations = 999, na.rm = TRUE)
+
+plot(nmds_nre)
+plot(en_nre)
+
+plot(nmds_lqre)
+plot(en_lqre)
+
+# extract coordinates (data scores, ds) & add columns of interest from original df
+
+ds_nre = as.data.frame(scores(nmds_nre)$sites)
+ds_lqre = as.data.frame(scores(nmds_lqre)$sites)
+
+ds_nre$obs = ra_nre$obs
+ds_lqre$obs = ra_lqre$obs
+
+ds_nre$estuary = ra_nre$estuary
+ds_lqre$estuary = ra_lqre$estuary
+
+ds_nre$disturbance = ra_nre$disturbance
+ds_lqre$disturbance = ra_lqre$disturbance
+
+ds_nre$fngp2 = ra_nre$fngp2
+ds_lqre$fngp2 = ra_lqre$fngp2
+
+# extract factor data
+en_coord_cat_nre = as.data.frame(scores(en_nre, "factors")) * ordiArrowMul(en_nre)
+en_coord_cat_lqre = as.data.frame(scores(en_lqre, "factors")) * ordiArrowMul(en_lqre)
+
+en_coord_con_nre = as.data.frame(scores(en_nre, "vectors")) * ordiArrowMul(en_nre)
+en_coord_con_lqre = as.data.frame(scores(en_lqre, "vectors")) * ordiArrowMul(en_lqre)
+
+
+# plot
+
+ggplot(data = ds_nre, aes(x = NMDS1, y = NMDS2)) + 
+     geom_point(data = ds_nre, aes(colour = fngp2, shape = obs), size = 3, alpha = 0.5) + 
+     #scale_colour_manual(values = c("orange", "steelblue"))  + 
+     geom_segment(aes(x = 0, y = 0, xend = NMDS1, yend = NMDS2),
+       data = en_coord_con_nre, size =1, alpha = 0.5, colour = "grey30") +
+     # geom_point(data = en_coord_cat_nre, aes(x = NMDS1, y = NMDS2), 
+     #   shape = "diamond", size = 4, alpha = 0.6, colour = "navy") +
+     # geom_text(data = en_coord_cat_nre, aes(x = NMDS1, y = NMDS2+0.04), 
+     #   label = row.names(en_coord_cat_nre), colour = "navy", fontface = "bold") + 
+     geom_text(data = en_coord_con_nre, aes(x = NMDS1, y = NMDS2), colour = "grey30",
+       fontface = "bold", label = row.names(en_coord_con_nre)) +
+     theme(axis.title = element_text(size = 10, face = "bold", colour = "grey30"), 
+       panel.background = element_blank(), panel.border = element_rect(fill = NA, colour = "grey30"), 
+       axis.ticks = element_blank(), axis.text = element_blank(), legend.key = element_blank(), 
+       legend.title = element_text(size = 10, face = "bold", colour = "grey30"), 
+       legend.text = element_text(size = 9, colour = "grey30")) + 
+     labs(colour = "")
+
 
 ```
 
@@ -815,95 +833,182 @@ plot(std_exotic_glm)
 
 
 
-
-Surface seed bank trends 
-
-
-```{r seed summary: native, exotic, sedge, richness}
-#head(seed)
-seed.sum <- seed %>% 
-  #filter(cover != 0) %>% 
+OLDER - DELETE OR TIDY AS NEEDED
+```{r veg summary: native, exotic, cultural, sedge, richness}
+veg.sum <- mie %>% 
+  filter(!species == "bare") %>% 
+  filter(cover != 0) %>% 
   group_by(id, disturbance, estuary) %>% 
-  dplyr::summarize(seed_native_rich = length(endemic[endemic == "Native"]), 
-            seed_exotic_rich = length(endemic[endemic == "Invasive"]), 
-            seed_total_rich = length(species[unique(species)]), 
-            seed_cultural_rich = length(species[cultural == "cultural"]), 
-            native_m2 = sum(abund.m2[endemic == "Native"]), 
-            exotic_m2 = sum(abund.m2[endemic == "Invasive"]), 
-            cultural_m2 = sum(abund.m2[cultural == "cultural"]), 
-            select_graminoid_m2 = sum(abund.m2[clade == "Select Graminoid"]),
-            sedge_m2 = sum(abund.m2[species == "caly"]), 
-            total_m2 = sum(abund.m2)) %>% 
-    na.omit() 
+  #na.omit() %>% 
+  dplyr::summarize(native_rich = length(endemic[endemic == "Native"]), 
+            exotic_rich = length(endemic[endemic == "Invasive"]), 
+            total_rich = length(species[unique(species)]), 
+            cultural_rich = length(cultural[cultural == "cultural"]),
+            native_cover = sum(cover[endemic == "Native"]), 
+            exotic_cover = sum(cover[endemic == "Invasive"]), 
+            cultural_cover = sum(cover[cultural == "cultural"]), 
+            graminoid_cover = sum(cover[clade == "Select Graminoid"]),
+            sedge_cover = sum(cover[species == "caly"]), 
+            total_cover = sum(cover)) %>% 
+  mutate(exotic_prop = exotic_cover/100, 
+         graminoid_prop = graminoid_cover/100, 
+         sedge_prop = sedge_cover/100, 
+         total_prop = total_cover/100, 
+         culture_prop = cultural_cover/100) %>% 
+  mutate(across(8:13, round, 2))
+
+#View(veg.sum)
+#which(is.na(veg))
 
 
-View(seed.sum)
+# redoing veg.sum w/ ra_join (instead of mie), adding additional levels of group_by fngp2/endemic. Compare to running analyses w veg.sum
+
+
 
 ```
 
-```{r seed response boxplots}
+```{r veg boxplots, faceted; older iteration/may be obsolete}
 
-seed.sum$estuary = factor(seed.sum$estuary,
-                     levels = c("nre", "lqre"),
-                     labels = c("Nanaimo", "Little Qualicum"))
-seed.sum$disturbance = factor(seed.sum$disturbance,
+# veg_box <- veg.sum %>% 
+#   pivot_longer(native_rich:cultural_rich, 
+#                names_to = "richness", 
+#                values_to = "rich_val") %>% 
+#   pivot_longer(native_cover:total_cover,
+#                names_to = "cover", 
+#                values_to = "cover_val") %>% 
+#   pivot_longer(exotic_prop:culture_prop,
+#                names_to = "prop_cover", 
+#                values_to = "prop_val")
+# #View(veg_box)
+# #unique(veg_box$cover)
+# 
+# veg_box$estuary = factor(veg_box$estuary,
+#                      levels = c("ere", "nre", "lqre"),
+#                      labels = c("Englishman", "Nanaimo", "Little Qualicum"))
+# veg_box$disturbance = factor(veg_box$disturbance,
+#                             levels = c("grubbed", "excl1", "excl10", "reference"),
+#                             labels = c("Grubbed", "Heavily Grazed, \nExclosed 1 year", "Heavily Grazed, \nExclosed 10 years", "Undisturbed"))
+# veg_box$richness = factor(veg_box$richness, 
+#                             levels = c("cultural_rich", "native_rich", "exotic_rich", "total_rich"), 
+#                             labels = c("Culturally Significant Species", "Native Species", "Exotic Species", "Total Species"))
+# veg_box$cover = factor(veg_box$cover, 
+#                             levels = c("cultural_cover", "native_cover", "exotic_cover", "sedge_cover", "graminoid_cover","total_cover"), 
+#                             labels = c("Culturally Significant Species", "Native Species", "Exotic Species", "Carex lyngbyei", "Select Graminoids", "Total Species"))
+# 
+# pd <- position_dodge(0.75)
+# 
+# rich_box <- veg_box %>% 
+#   ggplot(aes(x = disturbance, y = rich_val, fill = richness)) +
+#   geom_boxplot() + # aes(fill = richness), outlier.shape = NA
+#   #geom_point(position = position_dodge(width = 1), color = 'gray60', size = 2) +
+#   #geom_jitter(alpha = 0.1, width = 0.3) +   # , position = pd
+#   theme_classic() +
+#   facet_grid(. ~ estuary, scales = "free", labeller = labeller(estuary = facet_labels)) +
+#   labs(x = "Disturbance condition", y = "Species Richness", fill = "Richness") +
+#   scale_y_continuous(breaks = seq(0, 12, by = 2)) +
+#   #scale_x_discrete(expand=c(0.1, 0.5)) +
+#   theme(text = element_text(size = 12), 
+#         panel.spacing.x = unit(1.25, "lines"), 
+#         axis.text.x = element_text(angle = 25, hjust = 1)) +
+#   scale_fill_brewer(palette = "Dark2") #+
+#   #scale_color_brewer(palette = "Dark2")
+# 
+# cover_box <- veg_box %>% 
+#   ggplot(aes(x = disturbance, y = cover_val, fill = cover)) +
+#   geom_boxplot() + 
+#   theme_classic() +
+#   facet_grid(. ~ estuary, scales = "free", labeller = labeller(estuary = facet_labels)) +
+#   labs(x = "Disturbance condition", y = "Species Richness", fill = "Above-ground Cover") +
+#   #scale_y_continuous(breaks = seq(0, 12, by = 2)) +
+#   theme(text = element_text(size = 12), 
+#         panel.spacing.x = unit(1.25, "lines"), 
+#         axis.text.x = element_text(angle = 25, hjust = 1)) +
+#   scale_fill_brewer(palette = "Dark2") 
+  
+  
+```
+
+```{r veg boxplot, unfaceted - may be obsolete}
+  
+veg.sum$estuary = factor(veg.sum$estuary,
+                     levels = c("ere", "nre", "lqre"),
+                     labels = c("Englishman", "Nanaimo", "Little Qualicum"))
+veg.sum$disturbance = factor(veg.sum$disturbance,
                             levels = c("grubbed", "excl1", "excl10", "reference"),
-                            labels = c("Grubbed", "Heavily Grazed, \nExclosed 1 year", "Heavily Grazed, \nExclosed 10 years", "Undisturbed")) 
+                            labels = c("Grubbed", "Heavily Grazed, \nExclosed 1 year", "Heavily Grazed, \nExclosed 10 years", "Undisturbed"))  
+  
+#disturb_levels <- c('grubbed', 'excl1', 'excl10', 'reference')
 
-
-
-seed_graminoid <- seed.sum %>% 
-  ggplot(aes(x = disturbance, y = select_graminoid_m2, fill = estuary, shape = estuary)) +
-  geom_boxplot() + geom_jitter(width = 0.1, alpha = 0.2) +
+# uses gram_fit
+cover_graminoid <- veg.sum %>%
+  ggplot(aes(x = disturbance, y = graminoid_cover, fill = estuary, shape = estuary)) +
+  geom_boxplot() +
+  geom_jitter(width = 0.1, alpha = 0.2) +
+  #geom_ribbon(data = gram_fit$fit, aes(x = disturbance, ymin = visregLwr, ymax = visregUpr), fill = "lightgrey") +
+  #geom_line(data = gram_fit$fit, aes(x = disturbance, y = visregFit), color = "red", size = 1.25) +
   theme_classic() +
-  labs(x = "Disturbance condition", y = "Graminoid abundance, \nexcluding Eleocharis parvula (m2)", fill = "Estuary") +
-   theme_classic()+
-   theme(text = element_text(size = 12), 
-           panel.spacing.x = unit(1.25, "lines"), 
-           axis.text.x = element_text(angle = 25, hjust = 1)) +
-  scale_shape_discrete(guide = "none")
-
-seed_sedge <- seed.sum %>%
-  ggplot(aes(x = disturbance, y = sedge_m2, fill = estuary, shape = estuary)) +
-  geom_boxplot() + geom_jitter(width = 0.1, alpha = 0.2) +
-  #facet_wrap(~estuary, scales = "free") +
-  theme_classic() +
-  labs(x = "Disturbance condition", y = "Sedge abundance (m2)", fill = "Estuary") +
-   theme_classic()+
-   theme(text = element_text(size = 12),
+  labs(x = "Disturbance condition", y = "Graminoid cover, \nexcluding Eleocharis parvula (%)", fill = "Estuary") +
+  theme(text = element_text(size = 12),
            panel.spacing.x = unit(1.25, "lines"),
-           axis.text.x = element_text(angle = 25, hjust = 1)) +
-  scale_shape_discrete(guide = "none")
-
-seed_total <- seed.sum %>%
-  ggplot(aes(x = disturbance, y = total_m2, fill = estuary, shape = estuary)) +
-  geom_boxplot() + geom_jitter(width = 0.1, alpha = 0.2) +
-  theme_classic() +
-  labs(x = "Disturbance condition", y = "Total abundance (m2)", fill = "Estuary") +
-   theme_classic()+
-   theme(text = element_text(size = 12),
-           panel.spacing.x = unit(1.25, "lines"),
-           axis.text.x = element_text(angle = 25, hjust = 1)) +
-  scale_shape_discrete(guide = "none")
-
-
-seed_exotic <- seed.sum %>% 
-  ggplot(aes(x = disturbance, y = exotic_m2, fill = estuary, shape = estuary)) +
-  geom_boxplot() + geom_jitter(width = 0.1, alpha = 0.2) +
-  theme_classic() +
-  labs(x = "Disturbance condition", y = "Exotic seed abundance (m2)", fill = "Estuary") +
-   theme_classic()+
-   theme(text = element_text(size = 12), 
-           panel.spacing.x = unit(1.25, "lines"), 
            axis.text.x = element_text(angle = 25, hjust = 1)) +
   #theme(plot.margin = unit(c(2,2,2,2), "lines")) +
   scale_shape_discrete(guide = "none")
 
-seed_cultural <- seed.sum %>% 
-  ggplot(aes(x = disturbance, y = cultural_m2, fill = estuary, shape = estuary)) +
+# trying to overlay a regression onto the boxplot; see also experimentation w/ regfit next to glm
+# prop_graminoid <- veg.sum %>% 
+#   ggplot(aes(x = disturbance, y = graminoid_prop, fill = estuary, shape = estuary)) +
+#   geom_boxplot() + 
+#   geom_jitter(width = 0.1, alpha = 0.2) +
+#   geom_ribbon(data = gram_fit, aes(x = disturbance, ymin = visregLwr, ymax = visregUpr), fill = "lightgrey") +
+#   geom_line(data = gram_fit, aes(x = disturbance, y = visregFit), color = "red", size = 1.25) +
+#   theme_classic() +
+#   labs(x = "Disturbance condition", y = "Graminoid cover, \nexcluding Eleocharis parvula (%)", fill = "Estuary") +
+#    theme(text = element_text(size = 12), 
+#            panel.spacing.x = unit(1.25, "lines"), 
+#            axis.text.x = element_text(angle = 25, hjust = 1)) + 
+#   #theme(plot.margin = unit(c(2,2,2,2), "lines")) +
+#   scale_shape_discrete(guide = "none")
+
+
+cover_sedge <- veg.sum %>%
+  ggplot(aes(x = disturbance, y = sedge_cover, fill = estuary, shape = estuary)) +
   geom_boxplot() + geom_jitter(width = 0.1, alpha = 0.2) +
   theme_classic() +
-  labs(x = "Disturbance condition", y = "Culturally significant species abundance (m2)", fill = "Estuary") +
+  labs(x = "Disturbance condition", y = "Sedge cover (%)", fill = "Estuary") +
+   theme_classic()+
+   theme(text = element_text(size = 12),
+           panel.spacing.x = unit(1.25, "lines"),
+           axis.text.x = element_text(angle = 25, hjust = 1)) +
+  scale_shape_discrete(guide = "none")
+
+cover_total <- veg.sum %>%
+  ggplot(aes(x = disturbance, y = total_cover, fill = estuary, shape = estuary)) +
+  geom_boxplot() + geom_jitter(width = 0.1, alpha = 0.2) +
+  theme_classic() +
+  labs(x = "Disturbance condition", y = "Total cover (%)", fill = "Estuary") +
+   theme_classic()+
+   theme(text = element_text(size = 12),
+           panel.spacing.x = unit(1.25, "lines"),
+           axis.text.x = element_text(angle = 25, hjust = 1)) +
+  scale_shape_discrete(guide = "none")
+
+
+cover_exotic <- veg.sum %>% 
+  ggplot(aes(x = disturbance, y = exotic_cover, fill = estuary, shape = estuary)) +
+  geom_boxplot() + geom_jitter(width = 0.1, alpha = 0.2) +
+  theme_classic() +
+  labs(x = "Disturbance condition", y = "Exotic cover (%)", fill = "Estuary") +
+   theme_classic()+
+   theme(text = element_text(size = 12), 
+           panel.spacing.x = unit(1.25, "lines"), 
+           axis.text.x = element_text(angle = 25, hjust = 1)) +
+  scale_shape_discrete(guide = "none")
+
+cover_cultural <- veg.sum %>% 
+  ggplot(aes(x = disturbance, y = cultural_cover, fill = estuary, shape = estuary)) +
+  geom_boxplot() + geom_jitter(width = 0.1, alpha = 0.2) +
+  theme_classic() +
+  labs(x = "Disturbance condition", y = "Culturally significant species cover (%)", fill = "Estuary") +
    theme_classic()+
    theme(text = element_text(size = 12), 
            panel.spacing.x = unit(1.25, "lines"), 
@@ -912,8 +1017,8 @@ seed_cultural <- seed.sum %>%
   scale_shape_discrete(guide = "none")
 
 
-seed_rich_total <- seed.sum %>% 
-  ggplot(aes(x = disturbance, y = seed_total_rich, fill = estuary, shape = estuary)) +
+rich_total <- veg.sum %>% 
+  ggplot(aes(x = disturbance, y = total_rich, fill = estuary, shape = estuary)) +
   geom_boxplot() + geom_jitter(width = 0.1, alpha = 0.2) +
   theme_classic() +
   labs(x = "Disturbance condition", y = "Total Richness", fill = "Estuary") +
@@ -924,8 +1029,8 @@ seed_rich_total <- seed.sum %>%
   theme(plot.margin = unit(c(2,2,2,2), "lines")) +
   scale_shape_discrete(guide = "none")
 
-seed_rich_exotic <- seed.sum %>% 
-  ggplot(aes(x = disturbance, y = seed_exotic_rich, fill = estuary, shape = estuary)) +
+rich_exotic <- veg.sum %>% 
+  ggplot(aes(x = disturbance, y = exotic_rich, fill = estuary, shape = estuary)) +
   geom_boxplot() + geom_jitter(width = 0.1, alpha = 0.2) +
   theme_classic() +
   labs(x = "Disturbance condition", y = "Exotic Richness", fill = "Estuary") +
@@ -936,8 +1041,8 @@ seed_rich_exotic <- seed.sum %>%
   #theme(plot.margin = unit(c(2,2,2,2), "lines")) +
   scale_shape_discrete(guide = "none")
 
-seed_rich_cultural <- seed.sum %>% 
-  ggplot(aes(x = disturbance, y = seed_cultural_rich, fill = estuary, shape = estuary)) +
+rich_cultural <- veg.sum %>% 
+  ggplot(aes(x = disturbance, y = cultural_rich, fill = estuary, shape = estuary)) +
   geom_boxplot() + geom_jitter(width = 0.1, alpha = 0.2) +
   theme_classic() +
   labs(x = "Disturbance condition", y = "Culturally significant species richness", fill = "Estuary") +
@@ -949,438 +1054,23 @@ seed_rich_cultural <- seed.sum %>%
   scale_shape_discrete(guide = "none")
 
 
-seed_rich_panel <- ggarrange(seed_rich_total, seed_rich_exotic, seed_rich_cultural,
+veg_rich_panel <- ggarrange(rich_total, rich_exotic, rich_cultural,
                        common.legend = TRUE, legend = "right",
                        ncol = 1, nrow = 3) 
                        #widths = c(2, 2)) #%>% 
              #annotate_figure(bottom = text_grob("text here", hjust = 1, x = 1,  size = 20))
-seed_rich_panel
+veg_rich_panel
 
-seed_abund_panel <- ggarrange(seed_total, seed_graminoid, seed_sedge, seed_exotic, seed_cultural,
+veg_cover_panel <- ggarrange(cover_total, cover_graminoid, cover_sedge, cover_exotic, cover_cultural,
                        common.legend = TRUE, legend = "right",
                        ncol = 2, nrow = 4)
-seed_abund_panel
+veg_cover_panel
 
 
 
 ```
 
 
-``` {r seasonal surface seed bank NMDS by realbund}
-# runs with seed.ra 
-View(seed)
-
-seed.ra <- seed %>% 
-  select(estuary, disturbance, id, ct, species, endemic, fngp2, cultural, clade) %>% 
-  group_by(id, species) %>%
-  dplyr::summarize(sum.seed = sum(ct),
-                   rel.abund = (ct/sum.seed)*100,
-                   species = species)
-
-  #aggregate(rel.abund~species, FUN=sum) #https://stackoverflow.com/questions/10180132/consolidate-duplicate-rows
-  #ungroup()
-#View(seed.ra)
-
-
-
-
-
-
-
-seasonal.ra <- seed.ra %>% 
-  select(estuary, disturbance, id, species, rel.abund) %>% 
-  pivot_wider(names_from = species, values_from = rel.abund) %>% 
-  mutate_all(~replace(., is.na(.), 0)) 
-
-View(seed.ra)
-#View(seasonal.ra)
-
-# select only species
-seasonal.sp = seasonal.ra[,4:ncol(seasonal.ra)]
-
-############################################
-#turn abundance data frame into a matrix
-############################################
-seasonal.matrix = as.matrix(seasonal.sp)
-#View(seasonal.matrix)
-
-############################################
-# Stress
-############################################
-#all
-set.seed(123)
-nmds.seasonal.seed = metaMDS(seasonal.matrix, distance = "bray")
-nmds.seasonal.seed
-# stress = 0.134
-
-############################################
-#extract NMDS scores (x and y coordinates)
-############################################
-ds.seasonal.seed = as.data.frame(scores(nmds.seasonal.seed)$sites)
-#View(ds.seasonal.seed)
-#any(is.na(ds.seasonal.seed))
-
-############################################
-#add columns to data frame 
-############################################
-ds.seasonal.seed$season = seasonal.ra$season
-
-ds.seasonal.seed$disturbance = seasonal.ra$disturbance
-
-ds.seasonal.seed$estuary = seasonal.ra$estuary
-
-# View(ds.seasonal.seed)
-
-############################################
-# PLOT
-############################################
-
-## all
-ds.seasonal.seed$estuary = factor(ds.seasonal.seed$estuary, levels = c("nre", "lqre"))
-ds.seasonal.seed$disturbance <- as.factor(ds.seasonal.seed$disturbance)
-
-seasonal.seed.nmds = ggplot(ds.seasonal.seed, aes(x = NMDS1, y = NMDS2)) + 
-    geom_point(size = 6, aes(colour = disturbance, shape = season)) + 
-    theme(axis.text.y = element_text(colour = "black", size = 20, face = "bold"), 
-    axis.text.x = element_text(colour = "black", face = "bold", size = 20), 
-    legend.text = element_text(size = 20, face ="bold", colour ="black", lineheight = 0.8), legend.key.height = unit(1, "cm"), 
-    legend.position = "right", axis.title.y = element_text(face = "bold", size = 20), 
-    axis.title.x = element_text(face = "bold", size = 20, colour = "black"), 
-    legend.title = element_text(size = 20, colour = "black", face = "bold"), 
-    panel.background = element_blank(), panel.border = element_rect(colour = "black", fill = NA, size = 1.2),
-    legend.key=element_blank()) + 
-    facet_grid(. ~ estuary, labeller = labeller(estuary = facet_labels)) +
-    labs(x = "NMDS1", colour = "Disturbance", shape = "Surface seed bank \nsampling season", y = "NMDS2", caption = "Relative compositional abundance of seasonal surface seed bank samples (Bray's distance), stress = 0.134")  + 
-    theme(strip.text.x = element_text(size = 20, face = "bold"), plot.caption = element_text(size = 20)) +
-    scale_colour_brewer(palette = "PRGn", limits = c("grubbed", "excl1", "excl10", "reference"), labels = c("Grubbed", "Heavily Grazed, \nExclosed 1 year", "Heavily Grazed, \nExclosed 10 years", "Undisturbed")) +
-    scale_shape_discrete(limits = c("summer", "fall", "spring"), labels = c("Summer 2021", "Fall 2021", "Spring 2022"))
-seasonal.seed.nmds
-
-
-```
-
-
-Comparisons of vegetation to seed bank
-Note - these NMDS plots don't seem to show much difference (points overlap); need to determine what/how ordination is measuring. 
-
-
-
-```{r NMDS of presence/absence}
-
-#################################
-## PERMANOVA using species presence with Bray's distance 
-#################################
-# Does composition presence/absence significantly differ between seed bank and vegetation? 
-
-# PERMANOVA
-# comp = pa.join[,7:ncol(pa.join)]
-# comp.matrix <- vegdist(comp, method = 'bray')
-# 
-# # is.na(comp.matrix)
-# # which(is.na(comp.matrix))
-# 
-# set.seed(42)
-# permanova <- adonis2(comp.matrix ~ disturbance + obs + estuary, data = pa.join, permutations = 99, method = "bray")
-# # Yes, compositional presence/absence is significantly different between disturbance conditions, estuaries, and veg. vs. seeds. 
-
-
-##https://stats.stackexchange.com/questions/477826/how-is-pairwise-permanova-adonis-a-valid-non-parametric-approach-for-pairwise-co
-# install.packages("pairwiseAdonis")
-# library(pairwiseAdonis)
-# pairwiseAdonis::pairwise.adonis(comp.matrix, pa.join[,7:35])
-
-# https://www.researchgate.net/post/How_can_I_do_PerMANOVA_pairwise_contrasts_in_R
-
-
-#################################
-##3. NMDS based on species presence using Bray's distance
-#################################
-
-# matrix of species presence/absence
-com = pa.join[,7:ncol(pa.join)]
-#View(com)
-
-#turn abundance data frame into a matrix
-m.com = as.matrix(com)
-
-set.seed(123)
-nmds = metaMDS(m.com, distance = "euclidean")
-nmds #stress = 0.0024 *no convergent soln
-plot(nmds)
-View(nmds)
-
-#extract NMDS scores (x and y coordinates)
-data.scores = as.data.frame(scores(nmds)$sites)
-#View(data.scores)
-
-
-#add columns to data frame 
-data.scores$id = pa.join$id
-data.scores$disturbance = pa.join$disturbance
-data.scores$obs = pa.join$obs
-data.scores$estuary = pa.join$estuary
-data.scores$endemic = pa.join$endemic
-
-# trying to add species labels following https://chrischizinski.github.io/rstats/vegan-ggplot2/
-# species.scores <- as.data.frame(scores(nmds, "species"))
-# species.scores$species <- rownames(species.scores)  # create a column of species, from the rownames of species.scores
-# head(species.scores)
-
-
-# add CI; see also https://stackoverflow.com/questions/36609476/ggplot2-draw-individual-ellipses-but-color-by-group
-# library(ellipse)
-# 
-# df_ell <- data.frame() 
-# for(g in levels(data.scores$disturbance)){df_ell <- rbind(df_ell, 
-#       cbind(as.data.frame(with(data.scores[data.scores$disturbance==g,], 
-#       ellipse(cor(NMDS1, NMDS2),scale=c(sd(NMDS1),sd(NMDS2)),centre=c(mean(NMDS1),mean(NMDS2))))),disturbance=g))} 
-
-
-## plot
-
-data.scores$estuary = factor(data.scores$estuary, levels = c("ere", "nre", "lqre"))
-data.scores$disturbance <- as.factor(data.scores$disturbance)
-
-pa.nmds = ggplot(data.scores, aes(x = NMDS1, y = NMDS2)) + 
-    #geom_text(data=species.scores,aes(x=NMDS1,y=NMDS2,label=species),alpha=0.5) +
-    geom_point(size = 6, aes( colour = obs, shape = endemic))+ 
-    facet_grid(estuary ~ disturbance, labeller = labeller(disturbance = disturb_labels)) + 
-    theme(axis.text.y = element_text(colour = "black", size = 14, face = "bold"), 
-    axis.text.x = element_text(colour = "black", face = "bold", size = 14), 
-    legend.text = element_text(size = 14, face ="bold", colour ="black", lineheight = 0.8), legend.key.height = unit(1, "cm"), 
-    legend.position = "right", axis.title.y = element_text(face = "bold", size = 14), 
-    axis.title.x = element_text(face = "bold", size = 14, colour = "black"), 
-    legend.title = element_text(size = 14, colour = "black", face = "bold"), 
-    panel.background = element_blank(), panel.border = element_rect(colour = "black", fill = NA, size = 1.2),
-    legend.key=element_blank()) + 
-    labs(x = "NMDS1", colour = "Source", y = "NMDS2", shape = "Status", caption = "Dissimilarity of species presence/absence using Euclidean distance, stress = 0.013")  + 
-    theme(strip.text.x = element_text(size = 14, face = "bold")) +
-    scale_colour_brewer(palette = "Dark2", limits = c("veg", "seed"), labels = c("Above ground vegetation", "Surface seed bank")) +
-    scale_shape_manual(values = c(15, 17), limits = c("Native", "Invasive"), labels = c("Native", "Exotic")) 
-
-pa.nmds
-
-
-
-```
-
-```{r NMDS of relative abundance}
-
-compare.ra <- ra_join %>% 
-  ungroup() %>% 
-  filter(!obs == "bare") %>% 
-  pivot_wider(names_from = species, values_from = relabund) %>%
-  replace(is.na(.), 0) 
-#View(compare_ra)
-
-#################################
-## NMDS of species relative abundance 
-#################################
-
-compare.ra.nre <- compare.ra %>% filter(estuary == "nre") 
-#View(compare.ra.nre)
-#nrow(compare.ra.nre) #300
-#ncol(compare.ra.nre) #33
-
-compare.ra.lqre <- compare.ra %>% filter(estuary == "lqre")
-#View(compare.ra.lqre)
-#nrow(compare.ra.lqre) #353
-#ncol(compare.ra.lqre) #33
-
-# matrix of species relative abundance
-ra.compare.nre = compare.ra.nre[,10:ncol(compare.ra.nre)]
-ra.compare.lqre = compare.ra.lqre[,10:ncol(compare.ra.lqre)]
-#View(compare.ra.nre)
-
-#turn abundance data frame into a matrix
-mat.ra.nre = as.matrix(ra.compare.nre)
-#m.ra.nre <- mat.ra.nre[which(rowSums(mat.ra.nre) > 0), ] # remove rows where all species columns = 0
-
-mat.ra.lqre = as.matrix(ra.compare.lqre)
-#m.ra.lqre <- m.ra.lqre[which(rowSums(m.ra.lqre) > 0), ]
-
-set.seed(123)
-nmds.compare.ra.nre = metaMDS(mat.ra.nre, distance = "euclidean")
-plot(nmds.compare.ra.nre)
-# stress = 0.0834
-
-set.seed(123)
-nmds.compare.ra.lqre = metaMDS(mat.ra.lqre, distance = "euclidean")
-nmds.compare.ra.lqre
-# stress = 0.0898
-
-#extract NMDS data scores (x and y coordinates)
-ds.compare.ra.nre = as.data.frame(scores(nmds.compare.ra.nre)$sites)
-ds.compare.ra.lqre = as.data.frame(scores(nmds.compare.ra.lqre)$sites)
-
-#add columns to data frame 
-ds.compare.ra.nre$id = compare.ra.nre$id
-ds.compare.ra.lqre$id = compare.ra.lqre$id
-
-ds.compare.ra.nre$disturbance = compare.ra.nre$disturbance
-ds.compare.ra.lqre$disturbance = compare.ra.lqre$disturbance
-
-ds.compare.ra.nre$obs = compare.ra.nre$obs
-ds.compare.ra.lqre$obs = compare.ra.lqre$obs
-
-ds.compare.ra.nre$estuary = compare.ra.nre$estuary
-ds.compare.ra.lqre$estuary = compare.ra.lqre$estuary
-
-ds.compare.ra.nre$endemic = compare.ra.nre$endemic
-ds.compare.ra.lqre$endemic = compare.ra.lqre$endemic
-
-
-########~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~``
-### Plot
-########~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~``
-
-pd.nmds.ra <- position_dodge(0.74)
-col = c("#1B9E77", "#D95F02" ) 
-#brewer.pal(n = 4, "Dark2")
-
-
-## NRE
-ds.compare.ra.nre$disturbance = factor(ds.compare.ra.nre$disturbance, levels = c("grubbed", "excl1", "reference"))
-
-
-compare.ra.nmds.nre = ggplot(ds.compare.ra.nre, aes(x = NMDS1, y = NMDS2)) + 
-    geom_point(size = 4, aes(colour = obs)) + 
-    facet_grid(. ~ disturbance, labeller = labeller(disturbance = disturb_labels)) + 
-    theme(axis.text.y = element_text(colour = "black", size = 16), 
-    axis.text.x = element_text(colour = "black", size = 16), 
-    axis.title.x = element_text(face = "bold", size = 16, colour = "black"), 
-    legend.text = element_text(size = 16, face ="bold", colour ="black", lineheight = 0.8), legend.key.height = unit(1, "cm"), 
-    legend.position = "right", axis.title.y = element_text(face = "bold", size = 16), 
-    legend.title = element_text(size = 16, colour = "black", face = "bold"), 
-    panel.background = element_blank(), panel.border = element_rect(colour = "black", fill = NA, size = 1.2),
-    legend.key=element_blank()) + 
-    theme(strip.text.x = element_text(size = 16), plot.caption = element_text(size = 16)) +
-    labs(x = "NMDS1", colour = "Source", shape = "Endemic status", y = "NMDS2", title = "Nanaimo", caption = "stress = 0.0834")  + 
-    scale_color_manual(limits = c("veg", "seed"), labels = c("Above ground vegetation", "Surface seed bank"), values = col) # +
-    #scale_shape_manual(values = c(15, 17), limits = c("Native", "Invasive"), labels = c("Native", "Exotic")) 
-
-compare.ra.nmds.nre
-
-
-## LQRE
-ds.compare.ra.lqre$disturbance = factor(ds.compare.ra.lqre$disturbance, levels = c("grubbed", "excl10", "reference"))
-
-compare.ra.nmds.lqre = ggplot(ds.compare.ra.lqre, aes(x = NMDS1, y = NMDS2)) + 
-    geom_point(size = 4, aes(colour = obs))+ 
-    theme(axis.text.y = element_text(colour = "black", size = 16), 
-    axis.text.x = element_text(colour = "black", size = 16), 
-    axis.title.x = element_text(face = "bold", size = 16, colour = "black"), 
-    legend.text = element_text(size = 16, face ="bold", colour ="black", lineheight = 0.8), legend.key.height = unit(1, "cm"), 
-    legend.position = "right", axis.title.y = element_text(face = "bold", size = 16), 
-    legend.title = element_text(size = 16, colour = "black", face = "bold"), 
-    panel.background = element_blank(), panel.border = element_rect(colour = "black", fill = NA, size = 1.2),
-    legend.key=element_blank()) +
-    facet_grid(. ~ disturbance, labeller = labeller(disturbance = disturb_labels)) + 
-    labs(x = "NMDS1", colour = "Source", y = "NMDS2", title = "Little Qualicum", caption = "stress = 0.0898")  + 
-    theme(strip.text.x = element_text(size = 16), plot.caption = element_text(size = 16)) +
-    scale_color_manual(limits = c("veg", "seed"), labels = c("Above ground vegetation", "Surface seed bank"), values = col) #+
-    #scale_shape_manual(values = c(15, 17), limits = c("Native", "Invasive"), labels = c("Native", "Exotic")) 
-compare.ra.nmds.lqre
-
-## panel format w/ ggpubr
-compare.ra.nmds.panel <- ggarrange(compare.ra.nmds.nre, compare.ra.nmds.lqre,
-          common.legend = TRUE, legend = "right",
-          ncol = 1, nrow = 2) %>% 
-  annotate_figure(bottom = text_grob("Similarity of species relative abundance in surface seed banks and above-ground vegetation (Euclidean distance)", hjust = 1, x = 1,  size = 14))
-compare.ra.nmds.panel
-
-ggsave("fig-nmds-compare-ra-panel.jpg", compare.ra.nmds.panel, width = 15, height = 10)
-
-
-```
-
-
-
-
-
-OLDER - DELETE OR TIDY AS NEEDED
-
-```{r DELETE - OBSOLETE CALCS relabund in all seed & veg}
-
-# transform seed data into relative abundance (ra)
-#head(seed)
-#View(seed)
-##################################
-# former version
-##################################
-
-# seed.select <- seed %>%
-#   select(-c(life, season, root, abund.m2)) %>%
-#   mutate(obs = "seed") %>%
-#   unite(endemic.fngp2, c(endemic, fngp2), sep = " ", remove = FALSE)
-# #View(seed.select)
-# #View(seed)
-# 
-# seed.rel <- seed.select %>%
-#   #arrange(estuary, season, disturbance, id) %>%
-#   group_by(id) %>%
-#   dplyr::summarize(sum.seed = sum(ct),
-#                    seed.ra = (ct/sum.seed)*100,
-#                     species = species) #%>%
-#   # ungroup()
-# #View(seed.rel)
-# 
-# seed.ra <- seed.select %>%
-#   left_join(seed.rel) %>%
-#   dplyr::rename(rel.abund = seed.ra)
-# 
-# 
-# 
-# 
-# seed_sum <- seed %>% 
-#   select(estuary, disturbance, id, species, ct, abund.m2) %>% 
-#   group_by(estuary, disturbance, id, species) %>% 
-#   dplyr::summarize(sp_sum = sum(ct[species == species]), 
-#                    sp_seed_m2 = sum(abund.m2[species == species])) %>% 
-#   ungroup() %>% 
-#   na.omit()
-# #View(seed_sum)
-# unique(seed_sum$id)
-# 
-# seed_join <- seed_sum %>% 
-#   left_join(seed) %>% 
-#   select(estuary, disturbance, id, species, ct, abund.m2, sp_sum, sp_seed_m2) %>% 
-#   group_by(id) %>%
-#   dplyr::summarize(id_sum = sum(ct[id == id]),
-#                    sp_seed_ra = ((sp_sum/id_sum)*100)) %>% 
-#   ungroup()
-# View(seed_join)
-# 
-# seed_ra <- seed_join %>% 
-#   left_join(seed_sum) %>% 
-#   left_join(seed) %>% 
-#   select(estuary, disturbance, id, species, sp_sum, sp_seed_m2, sp_seed_ra) %>% 
-#   group_by(estuary, disturbance, id, species)
-# View(seed_ra)
-
-# dplyr::summarize(native_rich = length(endemic[endemic == "Native"]), 
-#             sedge_cover = sum(cover[species == "caly"]), 
-#             total_cover = sum(cover)) %>% 
-#   mutate(exotic_prop = exotic_cover/100) %>% 
-#   mutate(across(8:13, round, 2))
-
-#View(seed.ra)
-# which(is.na(seed.ra))
-
-
-# 
-# ra.join <- mie.ra %>% 
-#   full_join(seed.ra, by = c("estuary", "disturbance", "id","species","clade", "obs","endemic.fngp2", "endemic","fngp", "fngp2","rel.abund", "season", "structure")) %>% 
-#   unite(endemic.fngp2, c(endemic, fngp2), sep = " ", remove = FALSE) %>% 
-#   ungroup() %>% 
-#    select(-c("ct", "endemic","fngp","fngp2", "sum.seed", "replicate"))
-
-
-
-#View(ra.join)
-# which(is.na(ra.join))
-
-```
 
 ```{r models of standardized responses}
 
@@ -1475,189 +1165,7 @@ ranef(lmer_exotic_cover)
 
 ```
 
-```{r veg response models - incomplete attempts}
 
-lm_nonstd_graminoid_cover <- lm(graminoid_cover ~ disturbance, 
-                                data = veg.sum)
-summary(lm_nonstd_graminoid_cover)
-plot(lm_nonstd_graminoid_cover)
-
-####################################################################################
-# use estuary as a fixed effect, and bc estuary is not significant, then justifiable as fixed effect (not much difference in terms of graminoid cover)
-glm_nonstd_gram <- glm(graminoid_cover ~ disturbance + estuary, 
-                        family = "????"
-                        data = veg.sum)
-summary(glm_nonstd_gram)
-plot(glm_nonstd_gram)
-####################################################################################
-
-
-
-lmer_nonstd_graminoid_cover <- lmer(graminoid_cover ~ disturbance + (1|estuary), 
-                                data = veg.sum)
-summary(lmer_nonstd_graminoid_cover)
-
-plot(lmer_nonstd_graminoid_cover)
-
-# test whether log-likelihood ratio is different from zero
-my_stat = 2*(logLik(lmer_nonstd_graminoid_cover) - logLik(lm_nonstd_graminoid_cover,REML = TRUE))
-
-#bootstrap method to simulate the data under the null hypothesis (the simple linear model) and then generate a large number of likelihood ratio test statistics. https://towardsdatascience.com/random-effects-in-linear-models-15845b2540ac
-LRT_stat = numeric(100)
-for(i in 1:100){
-  y = simulate(lm_nonstd_graminoid_cover)$sim_1
-  null_md = lm(graminoid_cover ~ disturbance, 
-                                data = veg.sum)
-  mixed_md = lmer(graminoid_cover ~ disturbance + (1|estuary), 
-                                data = veg.sum)
-  LRT_stat[i] = as.numeric(2*(logLik(mixed_md) - logLik(null_md,REML = TRUE)))
-}
-
-sum(LRT_stat > my_stat)
-
-
-# veg_pa <- veg.sum %>%
-#   mutate(sedge_pa = ifelse(sedge_prop == 0, 0, 1))
-
-sedge_glm <- glm(sedge_prop ~ disturbance + estuary,
-                 family = 'binomial',
-                 data = veg.sum) # binomial family appropriate for proportional data constrained 0:1. logit link is default.  
-
-# basics of glms https://www.geo.fu-berlin.de/en/v/soga/Basics-of-statistics/Logistic-Regression/Logistic-Regression-in-R---An-Example/index.html 
-summary(sedge_glm)
-summary(sedge_glm)$coefficients
-plot(sedge_glm)
-
-confint.default(model)[2,]
-exp(confint.default(model)[2,])
-
-
-# https://psyteachr.github.io/msc-data-skills/glm.html
-exotic_glm <- glm(exotic_prop ~ disturbance, 
-                  data = veg.sum, 
-                  family = 'binomial')
-summary(exotic_glm) # not a good model bc error for excl1 is wildly incomparable
-
-#res <- residuals(exotic_glm)
-
-```
-
-Vegetation trends
-
-```{r vegetation trends - relative abundance of functional group, means & SE}
-veg.abund.mean <- mie.ra %>% 
-  group_by(estuary, disturbance, obs, endemic.fngp2) %>%  
-  dplyr::summarize(vg.abund = n(),
-            vg.abund.mean = mean(rel.abund), 
-            vg.abund.sd = sd(rel.abund), 
-            vg.abund.se = vg.abund.sd/sqrt(vg.abund)) %>% 
-   mutate_all(~replace(., is.na(.), 0)) 
-#View(veg.abund.mean)
-#View(ra.join)
-
-
-# unique(veg.abund.mean$endemic.fngp2)
-# is.na(veg.abund.mean)
-# which(is.na(veg.abund.mean))
-
-#### plot setup
-
-veg.abund.mean$estuary = factor(veg.abund.mean$estuary, levels = c("ere", "nre", "lqre"))
-veg.abund.mean$disturbance = factor(veg.abund.mean$disturbance,
-                                          levels = c("grubbed", "excl1", "excl10", "reference"),
-                                          labels = c("Grubbed", "Heavily Grazed, \nExclosed 1 year", "Heavily Grazed, \nExclosed 10 years", "Undisturbed"))
-veg.abund.mean$endemic.fngp2 = factor(veg.abund.mean$endemic.fngp2,
-                                          levels = c("Native Annual forb", "Invasive Annual forb", "Native Perennial forb", "Invasive Perennial forb", "Native Annual graminoid", "Invasive Annual graminoid", "Native Perennial graminoid", "Invasive Perennial graminoid", "NA Unvegetated"),
-                                          labels = c("Annual Forb, Native", "Annual Forb, Invasive", "Perennial Forb, Native", "Perennial Forb, Invasive", "Annual Graminoid, Native", "Annual Graminoid, Invasive", "Perennial Graminoid, Native", "Perennial Graminoid, Invasive", "Unvegetated"))
-
-veg.abund.mean$structure = factor(veg.abund.mean$structure, levels = c("short", "med", "tall", "bare"))
-
-
-pd.abund <- position_dodge(0.4)
-abund.col <- c("#FDBF6F", "#FF7F00", "#CAB2D6", "#6A3D9A", "#B2DF8A", "#33A02C", "#B3B3B3") 
-#abund.w.seed <- c("#FDBF6F", "#FF7F00", "#CAB2D6", "#6A3D9A", "#FFFF99", "#B15928", "#B2DF8A", "#33A02C", "#B3B3B3")
-#brewer.pal(n= 12,"Paired")
-# native = light, invasive = dark
-# annual forb orange (native) "#FDBF6F" (invasive) "#FF7F00"
-# perennial forb purple (native) "#CAB2D6" (invasive) "#6A3D9A" 
-# annual graminoid yellow (native) "#FFFF99", (invasive) "#B15928"
-#gramoind green (native) "#B2DF8A", (invasive) "#33A02C"
-# Unvegetated = "#B3B3B3"
-
-
- veg.abund <- veg.abund.mean %>% 
-   ggplot(aes(x=disturbance, y=vg.abund.mean, color = endemic.fngp2, shape = obs)) +   
-   geom_jitter(size = 7, position = pd.abund) +
-   ylim(0, 100)+
-   geom_errorbar(aes(ymin = ifelse(vg.abund.mean - vg.abund.se <0, 0, vg.abund.mean - vg.abund.se), 
-                     ymax = vg.abund.mean + vg.abund.se), 
-                 width = .3, position = pd.abund) +
-   labs(x = "Disturbance condition", y = "Mean Relative Abundance (%)", color = "Functional Group & \nEndemic Status", shape = "Cover Type") +
-   theme_classic()+
-   theme(text = element_text(size = 20), 
-           panel.spacing.x = unit(1.25, "lines"), 
-           axis.text.x = element_text(angle = 25, hjust = 1)) +
-   facet_grid(. ~ estuary, scales = "free", labeller = labeller(estuary = facet_labels)) +
-   scale_color_manual(values = abund.col) +
-   scale_shape_manual(values = c(15, 18), limits = c("veg", "bare"), labels = c("Vegetation", "Unvegetated"))
- 
- veg.abund
-
-#ggsave("fig-meanse-veg-abund.jpg", veg.abund, width = 15, height = 6)
-```
-
-```{r vegetation trends - relative abundance of clades & structure, means & SE}
- 
-#View(mie.ra)
-
-veg.structure.mean <- mie.ra %>% 
-  #filter(!obs == "bare") %>% 
-  group_by(estuary, disturbance, obs, endemic, clade, structure) %>%  
-  dplyr::summarize(st.abund = n(),
-            st.abund.mean = mean(rel.abund), 
-            st.abund.sd = sd(rel.abund), 
-            st.abund.se = st.abund.sd/sqrt(st.abund)) %>% 
-   mutate_all(~replace(., is.na(.), 0)) %>% 
-  ungroup()
-#View(veg.structure.mean)
-
-veg.structure.mean$estuary = factor(veg.structure.mean$estuary, levels = c("ere", "nre", "lqre"))
-veg.structure.mean$disturbance = factor(veg.structure.mean$disturbance,
-                                          levels = c("grubbed", "excl1", "excl10", "reference"),
-                                          labels = c("Grubbed", "Heavily Grazed, \nExclosed 1 year", "Heavily Grazed, \nExclosed 10 years", "Undisturbed"))
-
-veg.structure.mean$structure = factor(veg.structure.mean$structure, levels = c("tall", "med", "short","Unvegetated"), 
-                                      labels = c("Tall (> 100 cm)", "Medium (50-100 cm)", "Short (< 50 cm)",  "Unvegetated")) 
-
-veg.structure.mean$clade = factor(veg.structure.mean$clade, levels = c("Forb", "Graminoid", "Unvegetated")) 
-
-pd.structure <- position_dodge(0.5)
-structure.col <- c("#00441B", "#41AB5D", "#A1D99B", "#737373")
-
-#brewer.pal(n= 9, "Greens") # "Greens" and "Greys"
-# short =  "#A1D99B", medium = "#41AB5D" , tall = "#00441B", unvegetated = "#737373"
-
-  structure.abund <- veg.structure.mean %>% 
-   ggplot(aes(x=disturbance, y=st.abund.mean, color = structure, shape = endemic)) +
-   geom_jitter(size = 7, position = pd.structure) +
-   scale_y_continuous(limits = c(0, 100), breaks = c(0, 50, 100)) +
-   geom_errorbar(aes(ymin = ifelse(st.abund.mean - st.abund.se <0, 0, st.abund.mean - st.abund.se),
-                     ymax = st.abund.mean + st.abund.se),
-                 width = .3, position = pd.structure) +
-   labs(x = "Disturbance condition", y = "Mean Relative Abundance (%)", color = "Plant Height", shape = "Endemic") +
-   theme_classic()+
-   theme(text = element_text(size = 18), 
-           panel.spacing.x = unit(1.25, "lines"), 
-           axis.text.x = element_text(angle = 25, hjust = 1)) +
-   facet_grid(clade ~ estuary, scales = "free", labeller = labeller(estuary = facet_labels, clade = clade_labels)) +
-    theme(panel.spacing = unit(2, "lines")) +
-   scale_color_manual(values = structure.col) +
-   scale_shape_manual(values = c(15, 18, 16), limits = c("Native", "Invasive", "Unvegetated"))
- structure.abund
-
-#ggsave("fig-meanse-veg-structure-abund.jpg", structure.abund, width = 15, height = 8)
-
-```
 
 ```{r veg NMDS by species relative abund, single plot & facet by estuary}
 #colnames(mie.ra)
@@ -2210,7 +1718,6 @@ disturb_plot
 
 ```
 
-Seed responses
 ``` {r surface seed bank trends - relative abundance of functional groups by season, means & SE}
 
 ## Duplicated rows are causing the SE overlapping - need to figure out why rows are repeated
@@ -2437,21 +1944,6 @@ seasonal.seed.meanse.panel
 
 ```
 
-
-I wanted to know:
-(1)	Whether surface seed banks in heavily grazed or grubbed sites resemble their above-ground vegetation counterparts, or if they retain compositional diversity similar to ungrazed sites. 
-a.	Because intensive grazing and grubbing removes vegetation structural complexity and leads to increased erosion, I do not expect surface seed banks in recently grubbed or heavily grazed sites to be compositionally similar to undisturbed seed banks. 
-
-(2)	If surface seed banks and vegetation exhibit resilience by returning to a ‘reference’ condition when grazing has been excluded for 10 years. 
-a.	I expect sites recovered for 10 years to have similar species compositional abundance to undisturbed sites due to clonal expansion from surrounding marsh vegetation. This will support greater vegetation structural complexity, which will trap seeds produced within or dispersed into the patch.   
-
-(3)	Whether seasonal surface seed bank compositional changes are affected by grazing impacts. 
-a.	I expect seed banks at recently grubbed or heavily grazed sties will be highly variable between seasons due to increased opportunities for erosion or seed dispersal within/between sites because these sites have less vegetation structural complexity to trap seeds locally. 
- 
- 
- 
- 
-
 ```{r impact to PFGs}
 
 mie$fngp <- factor(mie$fngp , levels = c("Annual forb", "Annual graminoid, fibrous roots", "Perennial forb, fibrous roots", "Perennial forb, rhizomatous roots",  "Perennial graminoid, fibrous roots", "Perennial graminoid, rhizomatous roots"))
@@ -2561,2091 +2053,6 @@ lm %>%
 
 ```
 
-```{r simplified PFGs native/invasive by estuary}
-
-pfg2.abund <- mie %>% select(estuary, disturbance, endemic, elev, sal, fngp2, cover) %>% 
-  group_by(estuary, disturbance, fngp2, endemic) %>% 
-  mutate(relabund = cover/100)  %>% 
-  filter(!relabund == 0, !endemic == "NA") %>% 
-  group_by(estuary, disturbance, fngp2, endemic)
-
-
-# filter by estuary
-pfg2.ere <- pfg2.abund %>% filter(estuary == "ere")
-pfg2.nre <- pfg2.abund %>% filter(estuary == "nre")
-pfg2.lqre <- pfg2.abund %>% filter(estuary == "lqre")
-
-#summarize mean & SE
-pfg.abund.ere <- pfg2.ere %>% 
-  dplyr::summarize(veg.fngp2.n = n(),
-            veg.fngp2.mean = mean(relabund), 
-           veg.fngp2.sd = sd(relabund), 
-            veg.fngp2.se = veg.fngp2.sd/sqrt(veg.fngp2.n)) %>% 
-    mutate_all(~replace(., is.na(.), 0)) 
-
-
-pfg.abund.nre <- pfg2.nre %>% 
-  dplyr::summarize(veg.fngp2.n = n(),
-            veg.fngp2.mean = mean(relabund), 
-           veg.fngp2.sd = sd(relabund), 
-            veg.fngp2.se = veg.fngp2.sd/sqrt(veg.fngp2.n)) %>% 
-    mutate_all(~replace(., is.na(.), 0)) 
-
-pfg.abund.lqre <- pfg2.lqre %>% 
-  dplyr::summarize(veg.fngp2.n = n(),
-            veg.fngp2.mean = mean(relabund), 
-           veg.fngp2.sd = sd(relabund), 
-            veg.fngp2.se = veg.fngp2.sd/sqrt(veg.fngp2.n)) %>% 
-    mutate_all(~replace(., is.na(.), 0)) 
-
-
-
-
-
-######################################
-# PLOT
-######################################
-
-#brewer.pal(n=3,"Dark2")
-pfg2col <- c("#D95F02", "#7570B3", "#1B9E77")
-pd.pfg2 <- position_dodge(0.4)
-
-## ERE
-meanse.pfg2.ere <- pfg.abund.ere %>%  
-  ggplot(aes(x=disturbance, y=veg.fngp2.mean, shape = fngp2, color = endemic)) +   
-  geom_jitter(position = pd.pfg2, 
-             size = 7) +
-  geom_errorbar(aes(ymin = ifelse(veg.fngp2.mean - veg.fngp2.se <0,0, veg.fngp2.mean - veg.fngp2.se), 
-                    ymax = veg.fngp2.mean + veg.fngp2.se),
-                width = .3, 
-                position = pd.pfg2) + 
-  labs(x = "", y = "Mean Relative Abundance \nAbove-Ground Cover", color = "Endemism", shape = "Plant Functional Group") +
-  theme_classic()+
-   theme(axis.text.y = element_text(colour = "black", size = 14, face = "bold"), 
-    axis.text.x = element_text(colour = "black", size = 14, angle = 25, hjust = 1), 
-    legend.text = element_text(size = 14, colour ="black", lineheight = 1), legend.key.height = unit(1.15, "cm"), 
-    legend.position = "right", axis.title.y = element_text(face = "bold", size = 14), 
-    axis.title.x = element_text(face = "bold", size = 14, colour = "black"), 
-    legend.title = element_text(size = 14, colour = "black", face = "bold"), 
-    panel.background = element_blank(), panel.border = element_rect(colour = "black", fill = NA, size = 1.2),
-    legend.key=element_blank()) + 
-  labs(title = "Englishman") +
-  scale_x_discrete(limits = c("grubbed", "reference"), labels = c("Grubbed", "Undisturbed")) +
-  scale_y_continuous(limits=c(0,1), breaks=c(0, 0.25, 0.5, 0.75, 1)) +
-  scale_shape_discrete(limits = c("Annual", "Perennial graminoid", "Perennial forb"), labels = c("Annual", "Perennial Graminoid", "Perennial Forb")) +
-  scale_color_manual(limits = c("Native", "Invasive"), labels = c("Native", "Invasive"), values = c("#01665E", "#BF812D"))
-meanse.pfg2.ere
-
-## NRE
-meanse.pfg2.nre <- pfg.abund.nre %>%  
-  ggplot(aes(x=disturbance, y=veg.fngp2.mean, shape = fngp2, color = endemic)) +   
-  geom_jitter(position = pd.pfg2, 
-             size = 7) +
-  geom_errorbar(aes(ymin = ifelse(veg.fngp2.mean - veg.fngp2.se <0,0, veg.fngp2.mean - veg.fngp2.se),
-                    ymax = veg.fngp2.mean + veg.fngp2.se),
-                width = .3, 
-                position = pd.pfg2) + 
-  labs(x = "Disturbance Condition", y = "", color = "Endemism", shape = "Plant Functional Group") +
-  theme_classic()+
-   theme(axis.text.y = element_text(colour = "black", size = 14, face = "bold"), 
-    axis.text.x = element_text(colour = "black", size = 14, angle = 25, hjust = 1), 
-    legend.text = element_text(size = 14, colour ="black", lineheight = 1), legend.key.height = unit(1.15, "cm"), 
-    legend.position = "right", axis.title.y = element_text(face = "bold", size = 14), 
-    axis.title.x = element_text(face = "bold", size = 14, colour = "black"), 
-    legend.title = element_text(size = 14, colour = "black", face = "bold"), 
-    panel.background = element_blank(), panel.border = element_rect(colour = "black", fill = NA, size = 1.2),
-    legend.key=element_blank()) + 
-  labs(title = "Nanaimo") +
-  scale_x_discrete(limits = c("grubbed", "excl1", "reference"), labels = c("Grubbed", "Heavily Grazed, \nExclosed 1 year", "Undisturbed")) +
-  scale_y_continuous(limits=c(0,1), breaks=c(0, 0.25, 0.5, 0.75, 1)) +
-   scale_shape_discrete(limits = c("Annual", "Perennial graminoid", "Perennial forb"), labels = c("Annual", "Perennial Graminoid", "Perennial Forb")) +
-  scale_color_manual(limits = c("Native", "Invasive"), labels = c("Native", "Invasive"), values = c("#01665E", "#BF812D"))
-meanse.pfg2.nre
-
-## LQRE
-meanse.pfg2.lqre <- pfg.abund.lqre %>%  
-  ggplot(aes(x=disturbance, y=veg.fngp2.mean, shape = fngp2, color = endemic)) +   
-  geom_jitter(position = pd.pfg2, size = 7) +
-  geom_errorbar(aes(ymin = ifelse(veg.fngp2.mean - veg.fngp2.se <0,0, veg.fngp2.mean - veg.fngp2.se),
-                    ymax = ifelse(veg.fngp2.mean + veg.fngp2.se >1,1, veg.fngp2.mean + veg.fngp2.se)),
-                width = .3, 
-                position = pd.pfg2) + 
-  labs(x = "", y = "", color = "Endemism", shape = "Plant Functional Group") +
-  theme_classic()+
-   theme(axis.text.y = element_text(colour = "black", size = 14, face = "bold"), 
-    axis.text.x = element_text(colour = "black", size = 14, angle = 25, hjust = 1), 
-    legend.text = element_text(size = 14, colour ="black", lineheight = 1), legend.key.height = unit(1.15, "cm"), 
-    legend.position = "right", axis.title.y = element_text(face = "bold", size = 14), 
-    axis.title.x = element_text(face = "bold", size = 14, colour = "black"), 
-    legend.title = element_text(size = 14, colour = "black", face = "bold"), 
-    panel.background = element_blank(), panel.border = element_rect(colour = "black", fill = NA, size = 1.2),
-    legend.key=element_blank()) + 
-  labs(title = "Little Qualicum") +
-  scale_x_discrete(limits = c("grubbed", "excl10", "reference"), labels = c("Grubbed", "Heavily Grazed, \nExclosed 10 years", "Undisturbed")) +
-  scale_y_continuous(limits=c(0,1), breaks=c(0, 0.25, 0.5, 0.75, 1)) +
-  scale_shape_discrete(limits = c("Annual", "Perennial graminoid", "Perennial forb"), labels = c("Annual", "Perennial Graminoid", "Perennial Forb")) +
-  scale_color_manual(limits = c("Native", "Invasive"), labels = c("Native", "Invasive"), values = c("#01665E", "#BF812D"))
-meanse.pfg2.lqre
-
-
-## panel format w/ ggpubr
-pfg2.panel <- ggarrange(meanse.pfg2.ere, meanse.pfg2.nre, meanse.pfg2.lqre,
-          common.legend = TRUE, legend = "bottom",
-          ncol = 3, nrow = 1, 
-          heights = c(1, 1, 1)) #%>% 
-  #annotate_figure(left = text_grob("Mean Relative Cover Abundance", size = 20, rot = 90))
-pfg2.panel
-
-#ggsave("fig-pfg2-panel.jpg", pfg2.panel, width = 15, height = 6)
-
-```
-
-```{r seed bank richness/abundance}
-
-seed.end.mean <- seed %>% 
-  group_by(estuary, disturbance, endemic) %>% 
-  dplyr::summarize(seed.end.n = n(),
-            seed.end.mean = mean(ct), 
-            seed.end.sd = sd(ct), 
-            seed.end.se = seed.end.sd/sqrt(seed.end.n))
- 
-pd.seed <- position_dodge(0.15)
-
-
-seed.end.mean %>%  
-  ggplot(aes(x=disturbance, y=seed.end.mean, color = endemic, shape = estuary)) +   
-  geom_point(position = pd.seed, size = 7) +
-  geom_errorbar(aes(ymin = seed.end.mean - seed.end.se, 
-                    ymax = seed.end.mean + seed.end.se),
-                width = .1, 
-                position = pd.seed) + 
-  labs(x = "Disturbance condition", y = expression(Seed~Abundance~(per~0.015~m^2)), color = "Endemism", shape = "Estuary") +
-  theme_classic()+
-  theme(text = element_text(size = 20), 
-          panel.spacing.x = unit(1.25, "lines"), 
-          axis.text.x = element_text(angle = 25, hjust = 1)) +
-  scale_x_discrete(limits = c("grubbed", "excl1", "excl10", "reference"), labels = c("Grubbed", "Heavily Grazed, \nExclosed 1 year", "Heavily Grazed, \nExclosed 10 years", "Undisturbed")) +
-   scale_shape_discrete(limits = c("ere", "nre", "lqre"), labels = c("Englishman", "Nanaimo", "Little Qualicum")) +
-  scale_color_brewer(limits = c("Native", "Invasive"), labels = c("Native", "Invasive") ,palette = "Set2")
-
-###############################################
-# Abundance by functional group
-###############################################
-
-
-fngp.mean <- seed %>% 
-  group_by(estuary, disturbance, fngp) %>% 
-  dplyr::summarize(n.fngp = n(),
-            mean.fngp = mean(ct), 
-            sd.fngp = sd(ct), 
-            se.fngp = sd.fngp/sqrt(n.fngp))
-
-fngp.mean %>%  
-  ggplot(aes(x=disturbance, y=mean.fngp, color = fngp, shape = estuary)) +   
-  geom_point(position = pd.seed, 
-             size = 7) +
-  geom_errorbar(aes(ymin = mean.fngp - se.fngp, 
-                    ymax = mean.fngp + se.fngp),
-                width = .1, 
-                position = pd.seed) + 
-  labs(x = "Disturbance condition", y = expression(Seed~Abundance~(per~0.015~m^2)), color = "Functional Group", shape = "Estuary") +
-  theme_classic()+
-  theme(text = element_text(size = 18), 
-          panel.spacing.x = unit(1.25, "lines"), 
-          axis.text.x = element_text(angle = 25, hjust = 1)) +
-  scale_x_discrete(limits = c("grubbed", "excl1", "excl10", "reference"), labels = c("Grubbed", "Heavily Grazed, \nExclosed 1 year", "Heavily Grazed, \nExclosed 10 years", "Undisturbed")) +
-   scale_shape_discrete(limits = c("ere", "nre", "lqre"), labels = c("Englishman", "Nanaimo", "Little Qualicum")) +
-  scale_color_manual(values = pfgcol)
-
-```
-
-```{r richness, seed & veg}
-
-
-############################################
-# Sp richness by age since disturbance
-############################################
-
-seed.rich <- seed %>% 
-   group_by(estuary, disturbance, id) %>% 
-   dplyr::summarize(n.rich = n_distinct(species)) %>% 
-  mutate(obs = "seed") 
-
-
-mie.rich <- mie %>%
-  select(-c(site, sal, elev, endemic, life, root, clade, fngp)) %>% 
-  filter(!cover == 0, !species == "bare") %>% 
-   group_by(estuary, disturbance, id) %>% 
-   dplyr::summarize(n.rich = n_distinct(species)) %>% 
-  mutate(obs = "veg")
-
-mie.rich$id <- as.character(mie.rich$id)
-sp.rich <- seed.rich %>% full_join(mie.rich, by = c("estuary", "disturbance", "id", "n.rich", "obs")) 
-
-
-sp.rich.mean <- sp.rich %>% 
-  group_by(estuary, disturbance, obs) %>% 
-  dplyr::summarize(sp.rich = n(),
-            sp.rich.mean = mean(n.rich), 
-            sp.rich.sd = sd(n.rich), 
-            sp.rich.se = sp.rich.sd/sqrt(sp.rich))
-
-pd.rich <- position_dodge(0.15)
-
-sp.rich.mean %>%  
-  ggplot(aes(x=disturbance, y=sp.rich.mean, color = obs, shape = estuary)) +   
-  geom_point(size = 7, position = pd.seed) +
-  geom_errorbar(aes(ymin = sp.rich.mean - sp.rich.se, 
-                    ymax = sp.rich.mean + sp.rich.se),
-                width = .1, 
-                position = pd.rich) + 
-  labs(x = "Disturbance condition", y = "Mean Species Richness", color = "Species Richness Source", shape = "Estuary") +
-  theme_classic()+
-  theme(text = element_text(size = 20), 
-          panel.spacing.x = unit(1.25, "lines"), 
-          axis.text.x = element_text(angle = 25, hjust = 1)) +
-  scale_x_discrete(limits = c("grubbed", "excl1", "excl10", "reference"), labels = c("Grubbed", "Heavily Grazed, \nExclosed 1 year", "Heavily Grazed, \nExclosed 10 years", "Undisturbed")) +
-  scale_shape_discrete(limits = c("ere", "lqre", "nre"), labels = c("Englishman", "Little Qualicum", "Nanaimo")) +
-  scale_color_manual(limits = c("veg", "seed"), labels = c("Above-Ground Vegetation", "Seed Bank"), values = c("#01665E", "#BF812D"))
-
-
-#brewer.pal(n=10,"BrBG")
-
-#seed = brown "#BF812D"
-#veg = teal "#01665E"
-
-# NRE = blue "#1F78B4"
-# LQRE = red "#E31A1C" 
-# ERE = yellow "#FFD92F"
-
-
-####################################### 
-# sp richness by exotic status
-#######################################
-
-seed.rich.endemic <- seed %>% 
-   group_by(estuary, disturbance, id, endemic) %>% 
-   dplyr::summarize(n.rich.end = n_distinct(species)) %>% 
-  mutate(obs = "seed") 
-
-
-mie.rich.endemic <- mie %>%
-  select(-c(site, sal, elev, life, root, clade, fngp, fngp2)) %>% 
-  filter(!cover == 0, !species == "bare") %>% 
-   group_by(estuary, disturbance, id, endemic) %>% 
-   dplyr::summarize(n.rich.end = n_distinct(species)) %>% 
-  mutate(obs = "veg")
-
-mie.rich.endemic$id <- as.character(mie.rich.endemic$id)
-sp.rich.endemic <- seed.rich.endemic %>% full_join(mie.rich.endemic, by = c("estuary", "disturbance", "id", "endemic", "n.rich.end", "obs")) 
-
-sp.rich.endemic.mean <- sp.rich.endemic %>% 
-  group_by(estuary, disturbance, obs, endemic) %>% 
-  dplyr::summarize(sp.rich.end = n(),
-            sp.rich.end.mean = mean(n.rich.end), 
-            sp.rich.end.sd = sd(n.rich.end), 
-            sp.rich.end.se = sp.rich.end.sd/sqrt(sp.rich.end))
-
-pd.seed <- position_dodge(0.15)
-sp.rich.endemic.mean$estuary = factor(sp.rich.endemic.mean$estuary, levels = c("ere", "nre", "lqre"))
-sp.rich.endemic.mean$disturbance = factor(sp.rich.endemic.mean$disturbance,
-                                          levels = c("grubbed", "excl1", "excl10", "reference"), 
-                                          labels = c("Grubbed", "Heavily Grazed, \nExclosed 1 year", "Heavily Grazed, \nExclosed 10 years", "Undisturbed")) 
-
-seedveg.rich.endemic <- sp.rich.endemic.mean %>%  
-  ggplot(aes(x=disturbance, y=sp.rich.end.mean, shape = obs, color = endemic)) +   
-  ylim(0, 8) +
-  geom_point(size = 7, position = pd.seed) +
-  geom_errorbar(aes(ymin = sp.rich.end.mean - sp.rich.end.se, 
-                    ymax = sp.rich.end.mean + sp.rich.end.se),
-                width = .1, 
-                position = pd.rich) + 
-  labs(x = "Disturbance Condition", y = "Mean Species Richness", shape = "Life Stage", color = "Species \nEndemic Status") +
-  theme_classic()+
-  theme(text = element_text(size = 20), 
-          panel.spacing.x = unit(1.25, "lines"), 
-          axis.text.x = element_text(angle = 25, hjust = 1)) +
-  facet_grid(. ~ estuary, scales = "free", labeller = labeller(estuary = facet_labels)) + 
-  theme(panel.spacing = unit(2, "lines")) +
-  scale_shape_manual(values = c(15, 17), limits = c("veg", "seed"), labels = c("Vegetation", "Seed Bank")) +
-  scale_color_manual(limits = c("Native", "Invasive"), labels = c("Native", "Invasive"), values = c("#01665E", "#BF812D"))
-
-#ggsave("fig-sprich-seedveg.jpg", seedveg.rich.endemic, width = 15, height = 6)
-
-
-```
-
-```{r NMDS just veg}
-
-veg <-  mie %>%
-  select(-c(site, sal, obs, elev, life, root, clade, endemic, fngp, fngp2)) %>% 
-  filter(!cover == 0, !species == "bare") %>% 
-   group_by(estuary, disturbance) %>% 
-  pivot_wider(names_from = species, values_from = cover) %>% 
-    mutate_all(~replace(., is.na(.), 0)) 
-
-View(veg)
-######################
-# NMDS based on species presence using Bray's distance
-#################################
-
-# matrix of species presence/absence
-veg.pa = veg[,5:ncol(veg)]
-
-############################################
-#turn abundance data frame into a matrix
-############################################
-veg.matrix = as.matrix(veg.pa)
-
-############################################
-# Stress
-############################################
-#all
-set.seed(123)
-nmds.veg = metaMDS(veg.matrix, distance = "bray")
-nmds.veg
-# stress = 0.174
-
-############################################
-#extract NMDS scores (x and y coordinates)
-############################################
-ds.veg = as.data.frame(scores(nmds.veg)$sites)
-View(ds.veg)
-#any(is.na(ds.veg))
-
-############################################
-#add columns to data frame 
-############################################
-ds.veg$id = veg$id
-
-ds.veg$disturbance = veg$disturbance
-
-ds.veg$estuary = veg$estuary
-
-############################################
-# PLOT
-############################################
-
-## all
-ds.veg$estuary = factor(ds.veg$estuary, levels = c("ere", "nre", "lqre"))
-ds.veg$disturbance <- as.factor(ds.veg$disturbance)
-
-veg.nmds = ggplot(ds.veg, aes(x = NMDS1, y = NMDS2)) + 
-    geom_point(size = 6, aes(colour = disturbance, shape = estuary)) + 
-    theme(axis.text.y = element_text(colour = "black", size = 20, face = "bold"), 
-    axis.text.x = element_text(colour = "black", face = "bold", size = 20), 
-    legend.text = element_text(size = 20, face ="bold", colour ="black", lineheight = 0.8), legend.key.height = unit(1, "cm"), 
-    legend.position = "right", axis.title.y = element_text(face = "bold", size = 20), 
-    axis.title.x = element_text(face = "bold", size = 20, colour = "black"), 
-    legend.title = element_text(size = 20, colour = "black", face = "bold"), 
-    panel.background = element_blank(), panel.border = element_rect(colour = "black", fill = NA, size = 1.2),
-    legend.key=element_blank()) + 
-    labs(x = "NMDS1", colour = "Disturbance", shape = "Estuary", y = "NMDS2", caption = "Above-ground species relative abundance (Bray's distance), stress = 0.174")  + 
-    theme(strip.text.x = element_text(size = 20, face = "bold"), plot.caption = element_text(size = 20)) +
-    scale_colour_brewer(palette = "PRGn", limits = c("grubbed", "excl1", "excl10", "reference"), labels = c("Grubbed", "Heavily Grazed, \nExclosed 1 year", "Heavily Grazed, \nExclosed 10 years", "Undisturbed")) +
-    scale_shape_discrete(limits = c("ere", "nre", "lqre"), labels = c("Englishman", "Nanaimo", "Little Qualicum"))
-veg.nmds
-
-#ggsave("fig-nmds-veg.jpg", veg.nmds, width = 15, height = 6)
-
-
-# # was trying to tease apart each estuary into a separate nmds panel, however matrix is based on pooled species, therefore must run nmds for each estuary separately - see next chunk; likely delete this when done
-# facet.veg.nmds = ggplot(ds.veg, aes(x = NMDS1, y = NMDS2)) + 
-#     geom_point(size = 6, aes(colour = disturbance))+ 
-#     theme(axis.text.y = element_text(colour = "black", size = 14, face = "bold"), 
-#     axis.text.x = element_text(colour = "black", face = "bold", size = 14), 
-#     legend.text = element_text(size = 14, face ="bold", colour ="black", lineheight = 0.8), legend.key.height = unit(1, "cm"), 
-#     legend.position = "right", axis.title.y = element_text(face = "bold", size = 14), 
-#     axis.title.x = element_text(face = "bold", size = 14, colour = "black"), 
-#     legend.title = element_text(size = 14, colour = "black", face = "bold"), 
-#     panel.background = element_blank(), panel.border = element_rect(colour = "black", fill = NA, size = 1.2),
-#     legend.key=element_blank()) + 
-#     facet_grid(. ~ estuary, labeller = labeller(estuary = facet_labels)) + 
-#     labs(x = "NMDS1", colour = "Disturbance", shape = "Estuary", y = "NMDS2", caption = "above-ground species presence/absence (Bray's distance), stress = 0.122")  + 
-#     theme(strip.text.x = element_text(size = 14, face = "bold")) +
-#     scale_colour_brewer(palette = "PRGn", limits = c("grubbed", "excl1", "excl10", "reference"), labels = c("Grubbed", "Heavily Grazed, \nExclosed 1 year", "Heavily Grazed, \nExclosed 10 years", "Undisturbed")) +
-#     scale_shape_discrete(limits = c("ere", "nre", "lqre"), labels = c("Englishman", "Nanaimo", "Little Qualicum"))
-# facet.veg.nmds
-
-
-
-
-```
-
-```{r NMDS veg by estuary}
-
-
-veg.ere <- veg %>% filter(estuary == "ere")
-
-veg.nre <- veg %>% filter(estuary == "nre")
-
-veg.lqre <- veg %>% filter(estuary == "lqre")
-
-######################
-# NMDS based on species presence using Bray's distance
-#################################
-
-# matrix of species presence/absence
-veg.pa.ere = veg.ere[,4:ncol(veg.ere)]
-veg.pa.nre = veg.nre[,4:ncol(veg.nre)]
-veg.pa.lqre = veg.lqre[,4:ncol(veg.lqre)]
-
-############################################
-#turn abundance data frame into a matrix
-############################################
-veg.matrix.ere = as.matrix(veg.pa.ere)
-veg.matrix.nre = as.matrix(veg.pa.nre)
-veg.matrix.lqre = as.matrix(veg.pa.lqre)
-
-############################################
-# Stress
-############################################
-
-#ERE
-set.seed(123)
-nmds.veg.ere = metaMDS(veg.matrix.ere, distance = "bray")
-nmds.veg.ere
-#stress = 0.099
-
-# NRE
-set.seed(123)
-nmds.veg.nre = metaMDS(veg.matrix.nre, distance = "bray")
-nmds.veg.nre
-# stress = 0.120
-
-# LQRE
-set.seed(123)
-nmds.veg.lqre = metaMDS(veg.matrix.lqre, distance = "bray")
-nmds.veg.lqre
-# stress = 0.095
-
-############################################
-#extract NMDS scores (x and y coordinates)
-############################################
-ds.veg.ere = as.data.frame(scores(nmds.veg.ere))
-ds.veg.nre = as.data.frame(scores(nmds.veg.nre))
-ds.veg.lqre = as.data.frame(scores(nmds.veg.lqre))
-
-############################################
-#add columns to data frame 
-############################################
-ds.veg.ere$id = veg.ere$id
-ds.veg.nre$id = veg.nre$id
-ds.veg.lqre$id = veg.lqre$id
-
-ds.veg.ere$disturbance = veg.ere$disturbance
-ds.veg.nre$disturbance = veg.nre$disturbance
-ds.veg.lqre$disturbance = veg.lqre$disturbance
-
-ds.veg.ere$estuary = veg.ere$estuary
-ds.veg.nre$estuary = veg.nre$estuary
-ds.veg.lqre$estuary = veg.lqre$estuary
-
-############################################
-# PLOT
-############################################
-
-
-## ERE
-ds.veg.ere$disturbance <- as.factor(ds.veg.ere$disturbance)
-#brewer.pal(n=11,"PRGn")
-
-veg.nmds.ere = ggplot(ds.veg.ere, aes(x = NMDS1, y = NMDS2)) + 
-    geom_point(size = 6, aes(colour = disturbance))+ 
-    theme(axis.text.y = element_text(colour = "black", size = 20, face = "bold"), 
-    axis.text.x = element_text(colour = "black", face = "bold", size = 20), 
-    legend.text = element_text(size = 20, face ="bold", colour ="black", lineheight = 0.8), legend.key.height = unit(1, "cm"), 
-    legend.position = "right", axis.title.y = element_text(face = "bold", size = 20), 
-    axis.title.x = element_text(face = "bold", size = 20, colour = "black"), 
-    legend.title = element_text(size = 20, colour = "black", face = "bold"), 
-    panel.background = element_blank(), panel.border = element_rect(colour = "black", fill = NA, size = 1.2),
-    legend.key=element_blank()) + 
-    labs(x = "NMDS1", colour = "Disturbance", y = "NMDS2", title = "Englishman", caption = "stress = 0.099")  + 
-    theme(strip.text.x = element_text(size = 20, face = "bold"), plot.caption = element_text(size = 20)) +
-     scale_color_manual(limits = c("grubbed", "excl1", "excl10", "reference"), labels = c("Grubbed", "Heavily Grazed, \nExclosed 1 year", "Heavily Grazed, \nExclosed 10 years", "Undisturbed"), values = c("#762A83", "#C2A5CF", "#A6DBA0", "#1B7837"))
-veg.nmds.ere
-
-
-## NRE
-ds.veg.nre$disturbance <- as.factor(ds.veg.nre$disturbance)
-
-veg.nmds.nre = ggplot(ds.veg.nre, aes(x = NMDS1, y = NMDS2)) + 
-    geom_point(size = 6, aes(colour = disturbance))+ 
-    theme(axis.text.y = element_text(colour = "black", size = 20, face = "bold"), 
-    axis.text.x = element_text(colour = "black", face = "bold", size = 20), 
-    legend.text = element_text(size = 20, face ="bold", colour ="black", lineheight = 0.8), legend.key.height = unit(1, "cm"), 
-    legend.position = "right", axis.title.y = element_text(face = "bold", size = 20), 
-    axis.title.x = element_text(face = "bold", size = 20, colour = "black"), 
-    legend.title = element_text(size = 20, colour = "black", face = "bold"), 
-    panel.background = element_blank(), panel.border = element_rect(colour = "black", fill = NA, size = 1.2),
-    legend.key=element_blank()) + 
-    labs(x = "NMDS1", colour = "Disturbance", y = "NMDS2", title = "Nanaimo", caption = "stress = 0.120")  + 
-    theme(strip.text.x = element_text(size = 20, face = "bold"), plot.caption = element_text(size = 20)) +
-    scale_color_manual(limits = c("grubbed", "excl1", "excl10", "reference"), labels = c("Grubbed", "Heavily Grazed, \nExclosed 1 year", "Heavily Grazed, \nExclosed 10 years", "Undisturbed"), values = c("#762A83", "#C2A5CF", "#A6DBA0", "#1B7837"))
-veg.nmds.nre
-
-## LQRE
-ds.veg.lqre$disturbance <- as.factor(ds.veg.lqre$disturbance)
-
-veg.nmds.lqre = ggplot(ds.veg.lqre, aes(x = NMDS1, y = NMDS2)) + 
-    geom_point(size = 6, aes(colour = disturbance))+ 
-    theme(axis.text.y = element_text(colour = "black", size = 20, face = "bold"), 
-    axis.text.x = element_text(colour = "black", face = "bold", size = 20), 
-    legend.text = element_text(size = 20, face ="bold", colour ="black", lineheight = 0.8), legend.key.height = unit(1, "cm"), 
-    legend.position = "right", axis.title.y = element_text(face = "bold", size = 20), 
-    axis.title.x = element_text(face = "bold", size = 20, colour = "black"), 
-    legend.title = element_text(size = 20, colour = "black", face = "bold"), 
-    panel.background = element_blank(), panel.border = element_rect(colour = "black", fill = NA, size = 1.2),
-    legend.key=element_blank()) + 
-    labs(x = "NMDS1", colour = "Disturbance", y = "NMDS2", title = "Little Qualicum", caption = "stress = 0.095")  + 
-    theme(strip.text.x = element_text(size = 20, face = "bold"), plot.caption = element_text(size = 20)) +
-     scale_color_manual(limits = c("grubbed", "excl1", "excl10", "reference"), labels = c("Grubbed", "Heavily Grazed, \nExclosed 1 year", "Heavily Grazed, \nExclosed 10 years", "Undisturbed"), values = c("#762A83", "#C2A5CF", "#A6DBA0", "#1B7837"))
-veg.nmds.lqre
-
-veg.nmds.ere
-veg.nmds.nre
-veg.nmds.lqre
-
-
-
-## panel format w/ ggpubr
-veg.panel <- ggarrange(veg.nmds.ere, veg.nmds.nre, veg.nmds.lqre,  # + rremove("x.text")
-          common.legend = TRUE, legend = "bottom",
-          ncol = 3, nrow = 1) %>% 
-  annotate_figure(bottom = text_grob("Above-ground vegetation species presence/absence (Bray's distance)", hjust = 1, x = 1,  size = 20))
-veg.panel
-
-#ggsave("fig-nmds-veg-panel.jpg", veg.panel, width = 15, height = 6)
-
-```
-
-
-
-```{r nmds seed vs veg presence/absence, ggarrange by estuary}
-# uses pa_join from chunk above
-
-pa.join.ere <- pa.join %>% filter(estuary == "ere")
-pa.join.nre <- pa.join %>% filter(estuary == "nre")
-pa.join.lqre <- pa.join %>% filter(estuary == "lqre")
-
-
-#################################
-##3. NMDS based on species presence using Bray's distance
-#################################
-
-# matrix of species presence/absence
-pa.com.ere = pa.join.ere[,7:ncol(pa.join.ere)]
-pa.com.nre = pa.join.nre[,7:ncol(pa.join.nre)]
-pa.com.lqre = pa.join.lqre[,7:ncol(pa.join.lqre)]
-
-
-#turn abundance data frame into a matrix
-m.com.ere = as.matrix(pa.com.ere)  
-m.com.nre = as.matrix(pa.com.nre)
-m.com.lqre = as.matrix(pa.com.lqre)
-
-
-set.seed(123)
-nmds.seedveg.ere = metaMDS(m.com.ere, distance = "bray")
-nmds.seedveg.ere
-# stress = 0.121
-
-set.seed(123)
-nmds.seedveg.nre = metaMDS(m.com.nre, distance = "bray")
-nmds.seedveg.nre
-# stress = 0.087
-
-set.seed(123)
-nmds.seedveg.lqre = metaMDS(m.com.lqre, distance = "bray")
-nmds.seedveg.lqre
-# stress = 0.141
-
-
-#extract NMDS data scores (x and y coordinates)
-ds.seedveg.ere = as.data.frame(scores(nmds.seedveg.ere))
-ds.seedveg.nre = as.data.frame(scores(nmds.seedveg.nre))
-ds.seedveg.lqre = as.data.frame(scores(nmds.seedveg.lqre))
-
-
-#add columns to data frame 
-ds.seedveg.ere$id = pa.join.ere$id
-ds.seedveg.nre$id = pa.join.nre$id
-ds.seedveg.lqre$id = pa.join.lqre$id
-
-
-ds.seedveg.ere$disturbance = pa.join.ere$disturbance
-ds.seedveg.nre$disturbance = pa.join.nre$disturbance
-ds.seedveg.lqre$disturbance = pa.join.lqre$disturbance
-
-
-ds.seedveg.ere$obs = pa.join.ere$obs
-ds.seedveg.nre$obs = pa.join.nre$obs
-ds.seedveg.lqre$obs = pa.join.lqre$obs
-
-
-ds.seedveg.ere$estuary = pa.join.ere$estuary
-ds.seedveg.nre$estuary = pa.join.nre$estuary
-ds.seedveg.lqre$estuary = pa.join.lqre$estuary
-
-
-## plot
-
-## ERE
-ds.seedveg.ere$disturbance <- as.factor(ds.seedveg.ere$disturbance)
-
-seedveg.nmds.ere = ggplot(ds.seedveg.ere, aes(x = NMDS1, y = NMDS2)) + 
-    geom_point(size = 6, aes(shape = obs, colour = disturbance))+ 
-    #xlim(-1,1.5) + ylim(-1,1) +
-    theme(axis.text.y = element_text(colour = "black", size = 20, face = "bold"), 
-    axis.text.x = element_text(colour = "black", face = "bold", size = 20), 
-    legend.text = element_text(size = 20, face ="bold", colour ="black", lineheight = 0.8), legend.key.height = unit(1, "cm"), 
-    legend.position = "right", axis.title.y = element_text(face = "bold", size = 20), 
-    axis.title.x = element_text(face = "bold", size = 20, colour = "black"), 
-    legend.title = element_text(size = 20, colour = "black", face = "bold"), 
-    panel.background = element_blank(), panel.border = element_rect(colour = "black", fill = NA, size = 1.2),
-    legend.key=element_blank()) + 
-    labs(x = "NMDS1", colour = "Disturbance", shape = "Life Stage", y = "NMDS2", title = "Englishman", caption = "stress = 0.121")  + 
-    theme(strip.text.x = element_text(size = 20, face = "bold"), plot.caption = element_text(size = 20)) +
-    scale_color_manual(limits = c("grubbed", "excl1", "excl10", "reference"), labels = c("Grubbed", "Heavily Grazed, \nExclosed 1 year", "Heavily Grazed, \nExclosed 10 years", "Undisturbed"), values = c("#762A83", "#C2A5CF", "#A6DBA0", "#1B7837")) +
-  scale_shape_manual(values = c(15, 17), limits = c("veg", "seed"), labels = c("Vegetation", "Seed Bank"))
-seedveg.nmds.ere
-
-## NRE
-ds.seedveg.nre$disturbance <- as.factor(ds.seedveg.nre$disturbance)
-
-seedveg.nmds.nre = ggplot(ds.seedveg.nre, aes(x = NMDS1, y = NMDS2)) + 
-    geom_point(size = 6, aes(shape = obs, colour = disturbance))+ 
-    #xlim(-1,1.7) + ylim(-1,1) +
-    theme(axis.text.y = element_text(colour = "black", size = 20, face = "bold"), 
-    axis.text.x = element_text(colour = "black", face = "bold", size = 20), 
-    legend.text = element_text(size = 20, face ="bold", colour ="black", lineheight = 0.8), legend.key.height = unit(1, "cm"), 
-    legend.position = "right", axis.title.y = element_text(face = "bold", size = 20), 
-    axis.title.x = element_text(face = "bold", size = 20, colour = "black"), 
-    legend.title = element_text(size = 20, colour = "black", face = "bold"), 
-    panel.background = element_blank(), panel.border = element_rect(colour = "black", fill = NA, size = 1.2),
-    legend.key=element_blank()) + 
-    labs(x = "NMDS1", colour = "Disturbance", shape = "Life Stage", y = "NMDS2", title = "Nanaimo", caption = "stress = 0.087")  + 
-    theme(strip.text.x = element_text(size = 20, face = "bold"), plot.caption = element_text(size = 20)) +
-    scale_color_manual(limits = c("grubbed", "excl1", "excl10", "reference"), labels = c("Grubbed", "Heavily Grazed, \nExclosed 1 year", "Heavily Grazed, \nExclosed 10 years", "Undisturbed"), values = c("#762A83", "#C2A5CF", "#A6DBA0", "#1B7837")) +
-  scale_shape_manual(values = c(15, 17), limits = c("veg", "seed"), labels = c("Vegetation", "Seed Bank"))
-seedveg.nmds.nre
-
-
-## LQRE
-ds.seedveg.lqre$disturbance <- as.factor(ds.seedveg.lqre$disturbance)
-
-seedveg.nmds.lqre = ggplot(ds.seedveg.lqre, aes(x = NMDS1, y = NMDS2)) + 
-    geom_point(size = 6, aes(shape = obs, colour = disturbance))+ 
-    #xlim(-1,1.5) + ylim(-1,1) +
-    theme(axis.text.y = element_text(colour = "black", size = 20, face = "bold"), 
-    axis.text.x = element_text(colour = "black", face = "bold", size = 20), 
-    legend.text = element_text(size = 20, face ="bold", colour ="black", lineheight = 0.8), legend.key.height = unit(1, "cm"), 
-    legend.position = "right", axis.title.y = element_text(face = "bold", size = 20), 
-    axis.title.x = element_text(face = "bold", size = 20, colour = "black"), 
-    legend.title = element_text(size = 20, colour = "black", face = "bold"), 
-    panel.background = element_blank(), panel.border = element_rect(colour = "black", fill = NA, size = 1.2),
-    legend.key=element_blank()) + 
-    labs(x = "NMDS1", colour = "Disturbance", shape = "Life Stage", y = "NMDS2", title = "Little Qualicum", caption = "stress = 0.141")  + 
-    theme(strip.text.x = element_text(size = 20, face = "bold"), plot.caption = element_text(size = 20)) +
-    scale_color_manual(limits = c("grubbed", "excl1", "excl10", "reference"), labels = c("Grubbed", "Heavily Grazed, \nExclosed 1 year", "Heavily Grazed, \nExclosed 10 years", "Undisturbed"), values = c("#762A83", "#C2A5CF", "#A6DBA0", "#1B7837")) +
-  scale_shape_manual(values = c(15, 17), limits = c("veg", "seed"), labels = c("Vegetation", "Seed Bank"))
-seedveg.nmds.lqre
-
-## panel format w/ ggpubr
-seedveg.nmds.panel <- ggarrange(seedveg.nmds.ere, seedveg.nmds.nre, seedveg.nmds.lqre,
-          common.legend = TRUE, legend = "bottom",
-          ncol = 3, nrow = 1) %>% 
-  annotate_figure(bottom = text_grob("Compositional similarity of seed bank vs. above-ground vegetation based on species presence/absence (Bray's distance)", hjust = 1, x = 1,  size = 14))
-seedveg.nmds.panel
-
-#ggsave("fig-nmds-seedveg-panel.jpg", seedveg.nmds.panel, width = 20, height = 6)
-
-
-```
-
-```{r iterative addition of veg & seed by endemic guild & life stage}
-
-# code has been canibalized & moved to different chunks; delete later
-###############################################
-### By PFG
-###############################################
-
-
-
-
-
-###############################################
-# annuals
-###############################################
-# 
-# abund.annual <- pfg.abund.mean %>% 
-#   filter(endemic.fngp2 %in% c("Annual, Native", "Annual, Invasive"))
-# #View(abund.annual)
-# 
-# plot.abund.annual <- abund.annual %>%  
-#   ggplot(aes(x=disturbance, y=sp.abund.mean, color = endemic.fngp2, shape = obs)) +   
-#   geom_jitter(size = 7, position = pd.abund) +
-#   ylim(0, 100)+
-#   geom_errorbar(aes(ymin = sp.abund.mean - sp.abund.se, 
-#                     ymax = sp.abund.mean + sp.abund.se), 
-#                 width = .3, position = pd.abund) +
-#   labs(x = "Disturbance condition", y = "Mean Relative Abundance (%)", color = "Functional Group & \nEndemic Status", shape = "Life Stage") +
-#   theme_classic()+
-#   theme(text = element_text(size = 20), 
-#           panel.spacing.x = unit(1.25, "lines"), 
-#           axis.text.x = element_text(angle = 25, hjust = 1)) +
-#   facet_grid(. ~ estuary, scales = "free", labeller = labeller(estuary = facet_labels)) +
-#   scale_color_manual(values = abund.col) +
-#   scale_shape_manual(values = c(15, 17), limits = c("veg", "seed"), labels = c("Vegetation", "Seed Bank"))
-# plot.abund.annual
-# 
-# #ggsave("fig-abund-ann.jpg", plot.abund.annual, width = 15, height = 6)
-# 
-# 
-# ###############################################
-# # annuals + perennial forbs
-# ###############################################
-# 
-# 
-# abund.ann.per <- pfg.abund.mean %>% 
-#   filter(endemic.fngp2 %in% c("Annual, Native", "Annual, Invasive", "Perennial Forb, Native", "Perennial Forb, Invasive"))
-# 
-# plot.abund.ann.per <- abund.ann.per %>%  
-#   ggplot(aes(x=disturbance, y=sp.abund.mean, color = endemic.fngp2, shape = obs)) +   
-#   geom_jitter(size = 7, position = pd.abund) +
-#   ylim(0, 100)+
-#   geom_errorbar(aes(ymin = sp.abund.mean - sp.abund.se, 
-#                     ymax = sp.abund.mean + sp.abund.se), 
-#                 width = .3, position = pd.abund) +
-#   labs(x = "Disturbance condition", y = "Mean Relative Abundance (%)", color = "Functional Group & \nEndemic Status", shape = "Life Stage") +
-#   theme_classic()+
-#   theme(text = element_text(size = 20), 
-#           panel.spacing.x = unit(1.25, "lines"), 
-#           axis.text.x = element_text(angle = 25, hjust = 1)) +
-#   facet_grid(. ~ estuary, scales = "free", labeller = labeller(estuary = facet_labels)) +
-#   scale_color_manual(values = abund.col) +
-#   scale_shape_manual(values = c(15, 17), limits = c("veg", "seed"), labels = c("Vegetation", "Surface Seed Bank"))
-# plot.abund.ann.per
-# 
-# #ggsave("fig-abund-ann-per.jpg", plot.abund.ann.per, width = 15, height = 6)
-
-
-###############################################
-### All groups, by PFG
-###############################################
-
-#### plot 
-abund.col.veg <- c("#FDBF6F", "#FF7F00", "#CAB2D6", "#6A3D9A", "#B2DF8A", "#33A02C", "#B3B3B3") 
-
-plot.abund <- pfg.abund.mean %>% 
-  ggplot(aes(x=disturbance, y=sp.abund.mean, color = endemic.fngp2, shape = obs)) +   
-  geom_jitter(size = 7, position = pd.abund) +
-  ylim(0, 100)+
-  geom_errorbar(aes(ymin = sp.abund.mean - sp.abund.se, 
-                    ymax = sp.abund.mean + sp.abund.se), 
-                width = .3, position = pd.abund) +
-  labs(x = "Disturbance condition", y = "Mean Relative Abundance (%)", color = "Functional Group & \nEndemic Status", shape = "Life Stage") +
-  theme_classic()+
-  theme(text = element_text(size = 20), 
-          panel.spacing.x = unit(1.25, "lines"), 
-          axis.text.x = element_text(angle = 25, hjust = 1)) +
-  facet_grid(. ~ estuary, scales = "free", labeller = labeller(estuary = facet_labels)) +
-  scale_color_manual(values = abund.col) +
-  scale_shape_manual(values = c(15, 17, 18), limits = c("veg", "seed", "bare"), labels = c("Vegetation", "Surface Seed Bank", "Unvegetated"))
-
-plot.abund
-
-#ggsave("fig-abund-all.jpg", plot.abund, width = 15, height = 6)
-
-###############################################
-### Just veg, by PFG
-###############################################
-
-pfg.abund.mean.veg <- ra.join %>%
-  filter(obs == "veg") %>%
-  group_by(estuary, disturbance, obs, endemic, fngp2) %>%
-  dplyr::summarize(n.abund = n(),
-            sp.abund.mean = mean(rel.abund),
-            sp.abund.sd = sd(rel.abund),
-            sp.abund.se = sp.abund.sd/sqrt(n.abund)) %>%
-  mutate_all(~replace(., is.na(.), 0))%>%
-  filter(!endemic == "NA")
-#View(pfg.abund.mean.veg)
-
-
-#### plot setup
-
-pfg.abund.mean.veg$estuary = factor(pfg.abund.mean.veg$estuary, levels = c("ere", "nre", "lqre"))
-pfg.abund.mean.veg$disturbance = factor(pfg.abund.mean.veg$disturbance,
-                                          levels = c("grubbed", "excl1", "excl10", "reference"),
-                                          labels = c("Grubbed", "Heavily Grazed, \nExclosed 1 year", "Heavily Grazed, \nExclosed 10 years", "Undisturbed"))
-# pfg.abund.mean.veg$endemic.fngp2 = factor(pfg.abund.mean.veg$endemic.fngp2,
-#                                           levels = c("Native Annual", "Invasive Annual", "Native Perennial forb", "Invasive Perennial forb", "Native Perennial graminoid", "Invasive Perennial graminoid"),
-#                                           labels = c("Annual, Native", "Annual, Invasive", "Perennial Forb, Native", "Perennial Forb, Invasive", "Perennial Graminoid, Native", "Perennial Graminoid, Invasive"))
-
-#### plot 
-abund.col.veg <- c("#FDBF6F", "#FF7F00", "#CAB2D6", "#6A3D9A", "#B2DF8A", "#33A02C") 
-
-veg.fngp.abund <- pfg.abund.mean.veg %>% 
-  ggplot(aes(x=disturbance, y=sp.abund.mean, color = endemic, shape = fngp2)) +   
-  geom_jitter(size = 7, position = pd.abund) +
-  ylim(0, 100)+
-  geom_errorbar(aes(ymin = sp.abund.mean - sp.abund.se, 
-                    ymax = sp.abund.mean + sp.abund.se), 
-                width = .3, position = pd.abund) +
-  labs(x = "Disturbance condition", y = "Mean Relative Abundance (%)", color = "Endemic Status", shape = "Functional Group") +
-  theme_classic()+
-  theme(text = element_text(size = 20), 
-          panel.spacing.x = unit(1.25, "lines"), 
-          axis.text.x = element_text(angle = 25, hjust = 1)) +
-  facet_grid(. ~ estuary, scales = "free", labeller = labeller(estuary = facet_labels)) +
-  scale_color_brewer(palette = "Set2", direction = -1)
-
-veg.fngp.abund
-
-#ggsave("fig-abund-veg-fngp.jpg", veg.fngp.abund, width = 15, height = 6)
-
-
-### Cut error bars if < 0
-
-  # geom_errorbar(aes(ymin = ifelse(sp.abund.mean - sp.abund.se <0,0, sp.abund.mean - sp.abund.se),
-  #                   ymax = ifelse(sp.abund.mean + sp.abund.se >1,1, sp.abund.mean + sp.abund.se)),
-  #               width = .3, position = pd.abund) + 
-
-```
-
-
-```{r RA mean & SE by life history stage}
-
-#######################################
-# Relative abundance mean & SE by life history stage
-#######################################
-
-ra.mean.se <- ra.join %>% 
-  group_by(estuary, disturbance, endemic.fngp2, obs) %>% 
-  dplyr::summarize(ra.n = n(),
-            ra.mean = mean(rel.abund), 
-           ra.sd = sd(rel.abund), 
-            ra.se = ra.sd/sqrt(ra.sd)) %>% 
-    mutate_all(~replace(., is.na(.), 0)) 
-
-#View(ra.mean.se)
-
-ra.mean.se.ere <- filter(ra.mean.se, estuary=="ere")
-ra.mean.se.nre <- filter(ra.mean.se, estuary=="nre")
-ra.mean.se.lqre <- filter(ra.mean.se, estuary=="lqre")
-
-
-pd.ra = position_dodge(0.25)
-
-ra.seedveg.ere <- ra.mean.se.ere %>%  
-  ggplot(aes(x=disturbance, y=ra.mean, color = endemic.fngp2, shape = obs)) +   
-  geom_jitter(position = pd.ra, 
-             size = 7) +
-  geom_errorbar(aes(ymin = ifelse(ra.mean - ra.se <0,0, ra.mean - ra.se), 
-                    ymax = ra.mean + ra.se),
-                width = .3, 
-                position = pd.ra) + 
-  labs(x = "", y = "Mean Relative Abundance", color = "Plant Functional Group", shape = "Life Stage") +
-  theme_classic()+
-   theme(axis.text.y = element_text(colour = "black", size = 14, face = "bold"), 
-    axis.text.x = element_text(colour = "black", size = 14, angle = 25, hjust = 1), 
-    legend.text = element_text(size = 14, colour ="black", lineheight = 1), legend.key.height = unit(1.15, "cm"), 
-    legend.position = "right", axis.title.y = element_text(face = "bold", size = 14), 
-    axis.title.x = element_text(face = "bold", size = 14, colour = "black"), 
-    legend.title = element_text(size = 14, colour = "black", face = "bold"), 
-    panel.background = element_blank(), panel.border = element_rect(colour = "black", fill = NA, size = 1.2),
-    legend.key=element_blank()) + 
-  labs(title = "Englishman") +
-  scale_x_discrete(limits = c("grubbed", "reference"), labels = c("Grubbed", "Undisturbed")) +
-  scale_y_continuous(limits=c(0,1), breaks=c(0, 0.25, 0.5, 0.75, 1)) +
-  scale_shape_discrete(limits = c("veg", "seed"), labels = c("Vegetation", "Seed Bank")) +
-  scale_color_brewer(palette = "Dark2")
-ra.seedveg.ere
-
-
-
-
-
-
-```
-
-OLD ANALYSIS - MESSY, EXTRANEOUS DATA BELOW THIS LINE
-
-
-```{r setup ABOVE GROUND summary stats}
-
-# dMIE <- read.csv("2021_dMIE.csv")
-# #View(dMIE)
-# 
-# dMIE$Exclosure_date <- factor(dMIE$Exclosure_date, levels = c("Grubbed", "2020", "2016", "2010", "Reference"))
-# dMIE$Estuary <- factor(dMIE$Estuary, levels = c("LQRE", "ERE", "NRE"),
-#                   labels = c("Little Qualicum", "Englishman", "Nanaimo"))
-
-# Species info
-# "Agropyron_repens" graminoid, non-native, perennial, rhizomatous    NOMENCLATURE UPDATE: Elymus repens
-# "Agrostis_gigantea" graminoid, non-native, perennial, rhizomatous   NOMENCLATURE UPDATE: Agrostis stolonifera
-# "Atriplex_patula" forb, non-native, annual, taproot
-# "Carex_lyngbyei" graminoid, native, perennial, rhizomatous
-# "Cotula_coronopifolia" forb, non-native, perennial, fibrous
-# "Daucus_carota" forb, non-native, biennial (perennial), taproot
-# "Deschampsia_cespitosa" graminoid, native, perennial, fibrous
-# "Distichlis_spicata" graminoid, native, perennial, rhizomatous
-# "Glaux_maritima" forb, native, perennial, rhizomatous
-# "Isolepis_cernua" graminoid, native, annual, fibrous
-# "Juncus_balticus" graminoid, native, perennial, rhizomatous
-# "Polygonum_fowlerii" forb, native, annual, taproot                  SPELLING: Polygonum fowleri
-# "Potentilla_anserina_pacifica" forb, native, perennial, rhizomatous
-# "Salicornia_depressa" forb, native, annual, fibrous
-# "Scirpus_microcarpus" graminoid, native, perennial, rhizomatous
-# "Spergularia_canadensis" forb, native, annual, taproot
-# "Symphotrichium_subspicatum" forb, native, perennial, rhizomatous   SPELLING : Sympohtricum 
-# "Trifolium_wormskioldii" forb, native, perennial, taproot
-# "Triglochin_maritima" forb, native, perennial, rhizomatous
-# 
-# MIE_long <- dMIE %>% 
-#   filter(!(ID==c(1:12)) & !(ID==c(17:24))) %>% 
-#   pivot_longer(Agropyron_repens:No_cover, names_to = "Species", values_to = "Cover") %>%
-#   mutate(Endemic = ifelse(Species %in% c("Agropyron_repens", "Agrostis_gigantea", "Atriplex_patula", "Cotula_coronopifolia", "Daucus_carota"), "Invasive",
-#                    ifelse(Species %in% "No_cover", "NA", "Native"))) %>% 
-#   mutate(LifeHistory = ifelse(Species %in% c("Atriplex_patula", "Isolepis_cernua", "Polygonum_fowlerii", "Salicornia_depressa", "Spergularia_canadensis"), 
-#                               "Annual", ifelse(Species %in% "No_cover", "NA", "Perennial"))) %>% 
-#   mutate(Root = ifelse(Species %in% c("Atriplex_patula", "Daucus_carota", "Polygonum_fowlerii", "Trifolium_wormskioldii"), "Taproot", 
-#                 ifelse(Species %in% c("Cotula_coronopifolia", "Deschampsia_cespitosa", "Isolepis_cernua", "Salicornia_depressa"), "Fibrous",
-#                 ifelse(Species %in% "No_cover", "NA", "Rhizomatous")))) %>% 
-#   mutate(Clade = ifelse(Species %in% c("Agropyron_repens", "Agrostis_gigantea", "Carex_lyngbyei", "Deschampsia_cespitosa", "Distichlis_spicata", 
-#                                       "Isolepis_cernua", "Juncus_balticus", "Scirpus_microcarpus"), "Graminoid",
-#                 ifelse(Species %in% "No_cover", "NA", "Forb"))) %>% 
-#   mutate(Fn_gp = ifelse(Species %in% c("Agropyron_repens", "Agrostis_gigantea", "Carex_lyngbyei", "Distichlis_spicata", "Juncus_balticus", "Scirpus_microcarpus"), "Perennial graminoid, rhizomatous roots",
-#                   ifelse(Species %in% c("Isolepis_cernua"), "Annual graminoid, fibrous roots", 
-#                   ifelse(Species %in% c("Deschampsia_cespitosa"), "Perennial graminoid, fibrous roots",
-#                   ifelse(Species %in% c("Atriplex_patula", "Polygonum_fowlerii", "Salicornia_depressa", "Spergularia_canadensis"), "Annual forb", 
-#                   ifelse(Species %in% c("Cotula_coronopifolia", "Daucus_carota", "Trifolium_wormskioldii"), "Perennial forb, fibrous roots",
-#                   ifelse(Species %in% c("Triglochin_maritima", "Glaux_maritima", "Potentilla_anserina_pacifica", "Symphotrichium_subspicatum"), 
-#                          "Perennial forb, rhizomatous roots", "Unvegetated")))))))
-#                   
-# # want to show: relative cover abundance of native, rhizomatous, graminoids over time
-# 
-# 
-# MIE_long$Fn_gp <- factor(MIE_long$Fn_gp, levels = c("Annual forb", "Annual graminoid, fibrous roots", "Perennial forb, fibrous roots", "Perennial forb, rhizomatous roots",  "Perennial graminoid, fibrous roots", "Perennial graminoid, rhizomatous roots", "Unvegetated"))
-# 
-# ggplot(MIE_long, aes(fill=Fn_gp, y=Cover, x=Exclosure_date)) + 
-#     geom_bar(position="fill", stat="identity") +
-#     theme_classic()+
-#     facet_grid(~Estuary, scales = "free", space = "free") + 
-#     theme(text = element_text(size = 20), 
-#           panel.spacing.x = unit(1.25, "lines"), 
-#           axis.text.x = element_text(angle = 45, hjust = 1)) +
-#     labs(y="Relative Abundance 
-#          (% cover)", x="Disturbance condition", fill = "Plant Functional Group") +
-#     scale_fill_brewer(palette = "Spectral")  
-#    #scale_x_discrete(labels=c("Grubbed" = "0", "2020" = "1", "2016" = "5", "2010" = "10", "Reference" = "Undisturbed"))
-# 
-# 
-# 
-# 
-# ```
-# 
-# ```{r setup, functional groups boxplots}
-# MIE_gps <- MIE_long %>% select(Estuary, Exclosure_date, Cover, Fn_gp) %>% 
-#   filter(Fn_gp == "Perennial graminoid, rhizomatous roots") %>% 
-#   group_by(Estuary)
-# 
-# ggplot(data = MIE_gps, 
-#     aes(x = Exclosure_date, y = Cover, fill = Estuary))+
-#     theme(text = element_text(size = 20)) +
-#     geom_boxplot(size=1, alpha = 1/10)+ theme_classic()+
-#     #facet_grid(Estuary ~ Fn_gp, scales = "free", space = "free")+ 
-#     theme(panel.spacing.x = unit(1.25, "lines")) +
-#     theme(axis.text.x = element_text(angle=45, margin = margin(t=20, r=100)))+
-#     labs(y="Above-ground cover", x="Disturbance Condition", caption = "n = 4 per exclosure status") 
-
-
-```
-
-```{r setup LM for functional gps}
-
-
-
-
-#abbreviated workflow from Zurr et al, 2009
-# bit of a mess below this line - 
-#############################
-# Linear regression, no model testing
-#############################
-library(ggpubr)
-
-# want to show trend of functional groups over time
-
-lm_fn <- y ~ x
-
-ggplot(MIE_gps, aes(x = Exclosure_date, y = Cover, color = Estuary)) + #, add = "reg.line"
-  geom_jitter() +
-  geom_smooth(method = "lm") +
-  labs(x = "Exclosure status", y = "Avg. plot cover", caption = "geom_jitter + geom_smooth(method = lm)") +
-  #stat_regline_equation(aes(label =  paste(..eq.label.., ..adj.rr.label.., sep = "~~~~")), formula = lm_fn) +
-  theme_classic() +
-  theme(axis.text.x = element_text(margin = margin(t=20, r=100), angle = 45))+
-  theme(text = element_text(size = 14)) +
-  scale_x_continuous(breaks = c(0, 1, 5, 15), labels = c("Grubbed", "2020", "2016", "Reference")) 
-#ggsave("2021_CALY_LM.png",  width = 9, height = 6, units = "in")
-
-
-#############################
-# A.2 Data Exploration
-#############################
-# Cleveland dotplots (pdf pg. 532)
-library(graphics)
-data(MIE_gps)
-#MIE_gps$fExclosure_date <- factor(MIE_gps$Exclosure_date)
-op <- par(mfrow = c(1, 3), mar = c(3, 3, 3, 1))
-dotchart(MIE_gps$Plot_elev_m_AMLL, main = "Elevation", group = MIE_gps$fExclosure_date)
-dotchart(MIE_gps$Cover, main = "Rhizomatous graminoid cover", group = MIE_gps$fExclosure_date)
-#dotchart(MIE_gps$mean_EC_mS, main = "Salinity", group = MIE_gps$fExclosure_date)
-par(op)
-
-# Colinearity
-## To assess collinearity, we will use three tools: Pairwise scatterplots, correlation
-## coefficients, and variance inflation factors (VIF).
-
- Z <- cbind(MIE_gps$Exclosure_date, MIE_gps$Cover)
- colnames(Z) <- c("Exclosure Age", "Cover")
- pairs(Z)
- 
- ## correlation & variance values
- cor(Z)
- var(Z)
- #VIF won't run on atomic vector - can run on LM output (see Chunk 9 ("Lm"))
- #vif(Z)
- 
- #############################
- # A.3 Linear Regression
- #############################
- # Linear regression w/ no interactions
- M1 <- lm(Cover ~ Exclosure_date, data = MIE_gps)
- 
-summary(M1)
-drop1(M1, test="F")
-anova(M1) # order of interaction terms changes significance - try switching Elev & Salinity in lm() and observe change in ANOVA; see Zuur pg. 540 (pdf 546)
-
-
-
-```
-
-```{r setup SEEDS summary stats}
-
-d_seed <- read.csv("2021_Seedlings_wider.csv")
-## "Atriplex_patula"             
-## "Agrostis_stolonifera"         
-## "Salicornia_depressa"          
-## "Spergularia_canadensis"       
-## "Cotula_coronopifolia"        
-## "Isolepis_cernua"              
-##"Deschampsia_cespitosa"        
-# "Potentilla_anserina_pacifica" 
-# "Carex_lyngbyei"               
-# "Symphyotrichum_subspicatum"   
-# "Achillea_millefolium"        
-# "Cirsium_sp"                   
-# "Glaux_maritima"   
-
-#long data
-seeds <- d_seed %>% 
-  #filter(!(Estuary == "Englishman")) %>% 
-  pivot_longer(Atriplex_patula:Glaux_maritima, names_to = "Species", values_to = "Seedlings_ct") %>% 
-  filter(Seedlings_ct > 0) %>% 
-  group_by(Estuary, Exclosure_date) %>% 
-   mutate(Fn_gp_seed = ifelse(Species %in% c("Agrostis_stolonifera", "Carex_lyngbyei"), "Perennial graminoid, rhizomatous roots",
-                  ifelse(Species %in% c("Isolepis_cernua"), "Annual graminoid, fibrous roots", 
-                  ifelse(Species %in% c("Deschampsia_cespitosa"), "Perennial graminoid, fibrous roots",
-                  ifelse(Species %in% c("Atriplex_patula", "Salicornia_depressa", "Spergularia_canadensis"), "Annual forb", 
-                  ifelse(Species %in% c("Cotula_coronopifolia", "Cirsium_sp", "Achillea_millefolium"), "Perennial forb, fibrous roots", "Perennial forb, rhizomatous roots")))))) 
-
-sum_fn <- seeds %>% 
-  group_by(Estuary, Exclosure_date, Fn_gp_seed) %>% 
-  dplyr::summarise(Seed_ct = sum(Seedlings_ct))
-
-#Number seedlings per 0.02 m2
-# see http://www.sthda.com/english/wiki/ggplot2-dot-plot-quick-start-guide-r-software-and-data-visualization 
-sum_fn$Exclosure_date <- factor(sum_fn$Exclosure_date, levels = c("Grubbed", "2020", "2016", "Reference"))
-ggplot(sum_fn, aes(x = Exclosure_date, y=Seed_ct, shape = Estuary, color = Fn_gp_seed))+
-  geom_point(size = 8, position =  position_dodge(0.75)) +
-  theme_classic() +           
-  theme(text = element_text(size = 20)) +
-  labs(y="Seedlings (total sum)", x="Disturbance condition", color = "Plant Functional Group", caption = "Pilot germination: sum of seeds by species in 0.02 m2 no-drain trays (n = 6 per age class & estuary)") +
-  scale_color_manual(values = c("#D53E4F", "#FC8D59", "#FEE08B", "#FFFFBF", "#E6F598", "#99D594")) 
-```
-
-```{r setup SALINITY summary stats}
-
-S <- read.csv("2021_salinity.csv")
-avg_S <- S %>%
-  group_by(Unique_plot_ID) %>%
-  summarize(mean_EC_mS = mean(EC_mScm.1, na.rm = TRUE))
-
-#exclude ERE b/c data not representative
-sMIE <- dMIE %>%
-  left_join(avg_S, by = "Unique_plot_ID", na.rm = TRUE)
-#Species presence/absence
-
-
-```
-
-```{r richness & CALY boxplots}
-
-#exclude ERE b/c data not representative
-MIE2 <- d_MIE %>% 
-  filter(!Estuary == "ERE")
-
-MIE2$Exclosure_date <- factor(MIE2$Exclosure_date, levels = c("Grubbed", "2020", "2016", "2010", "Reference"))
-MIE2$Estuary <- factor(MIE2$Estuary, levels = c("LQRE", "NRE"),
-                  labels = c("Little Qualicum", "Nanaimo"))
-
-MIE2_long <- MIE2 %>% pivot_longer(Agropyron_repens:No_cover, names_to = "Species", values_to = "Cover") %>% 
-  mutate(Status = ifelse(Species %in% c("Agropyron_repens", "Agrostis_gigantea", "Atriplex_patula", "Cotula_coronopifolia", "Daucus_carota"), "Non-native",
-                  ifelse(Species %in% "No_cover", "No_cover","Native")))
-
-MIE2_fn_gp <- MIE2_long %>%
-mutate(Functional_groups =
-    ifelse(Species %in% c("Glaux_maritima", "Isolepis_cernua", "Salicornia_depressa", "Spergularia_canadensis"), "Groundcover (< 15 cm tall) - Native",
-    ifelse(Species %in% "Cotula_coronopifolia", "Groundcover (< 15 cm tall) - Non-native",       
-    ifelse(Species %in% c("Carex_lyngbyei", "Deschampsia_cespitosa", "Distichlis_spicata", "Juncus_balticus", "Scirpus_microcarpus"), "Graminoid - Native",
-    ifelse(Species %in% c("Agropyron_repens", "Agrostis_gigantea"), "Graminoid - Non-native",
-    ifelse(Species %in% "No_cover", "No_cover", 
-    ifelse(Species %in% c("Atriplex_patula","Daucus_carota"), "Forb - Non-native", "Forb - Native")))))))
-
-
-MIE2_fn_gp$Functional_groups <- factor(MIE2_fn_gp$Functional_groups,
-                  levels = c("Groundcover (< 15 cm tall) - Native", "Groundcover (< 15 cm tall) - Non-native", "Graminoid - Native",
-                          "Graminoid - Non-native", "Cespitose graminoid - Native", "Forb - Native", "Forb - Non-native", "No_cover"))
-
-#############################
-# Boxplots
-#############################
-#~~~~~~~~~~~~~~~~
-#total richness
-#~~~~~~~~~~~~~~~~
-
-# https://kembellab.ca/r-workshop/biodivR/SK_Biodiversity_R.html
-
-# select just species
-MIE2_pl <- MIE2 %>%  select(Estuary, Exclosure_date, Site_no, Agropyron_repens:Triglochin_maritima)
-
-# calculate richness
-MIE2_pl_rich <- ddply(MIE2_pl, ~Estuary*Exclosure_date*Site_no, function (x) (
-  data.frame(RICHNESS = sum(x [,-c(1:3)]>0))
-))
-
-mean_MIE2_pl_rich <- setNames(aggregate(MIE2_pl_rich[,4], list(MIE2_pl_rich$Estuary, MIE2_pl_rich$Exclosure_date), mean), c("Estuary", "Exclosure_date", "Mean_species_richness"))
-
-ggplot(data = MIE2_pl_rich, 
-    aes(x = Exclosure_date, y = RICHNESS, group = Exclosure_date))+
-    theme(text = element_text(size = 20)) +
-    geom_boxplot(size=1, alpha = 1/10)+ theme_classic()+
-    facet_grid(~Estuary, scales = "free", space = "free")+ 
-    theme(panel.spacing.x = unit(1.25, "lines")) +
-    theme(axis.text.x = element_text(angle=45, margin = margin(t=20, r=100)))+
-    labs(y="Species richness", x="Exclosure status", caption = "n = 4 per exclosure status") 
-ggsave("2021_Sp-richness_box.jpeg")
-
-#~~~~~~~~~~~~~~~~
-# Carex cover
-#~~~~~~~~~~~~~~~~
-CALY2 <- MIE2 %>% 
-  group_by(Estuary, Exclosure_date) %>% 
-  select(CALY_cover = "Carex_lyngbyei")
-
-ggplot(data=CALY2, 
-    aes(x= Exclosure_date,
-    y=CALY_cover, group=Exclosure_date)) +
-    theme(text = element_text(size = 20)) +
-    geom_boxplot(size=1, alpha = 1/10)+ theme_classic()+
-    facet_grid(~Estuary, scales = "free", space = "free")+ 
-    theme(panel.spacing.x = unit(1.25, "lines")) +
-    theme(axis.text.x = element_text(angle=45, margin = margin(t=20, r=100)))+
-    labs(y="Carex lyngbyei cover abundance (%)", x="Exclosure status", caption = "n = 4 per exclosure status 
-         (transplanting not performed in 2010 exclosures at Little Qualicum)") 
-ggsave("2021_CALY_box.jpg")
-
-#############################
-# Stacked barcharts
-#############################
-
-#~~~~~~~~~~~~~~~~
-## Functional groups
-#~~~~~~~~~~~~~~~~
-#brewer.pal(n=12,"Set2")
-
-ggplot(MIE2_fn_gp, aes(fill=Functional_groups, y=Cover, x=Exclosure_date)) + 
-    geom_bar(position="fill", stat="identity") + theme_classic()+
-    facet_grid(~Estuary, scales = "free", space = "free") + 
-    theme(text = element_text(size = 14)) +
-    theme(panel.spacing.x = unit(1.25, "lines")) +
-    theme(axis.text.x = element_text(margin = margin(t=20, r=100), angle = 45))+
-    theme(legend.position = "bottom") +
-    guides(fill = guide_legend(title = "Functional Group & Native Status", title.position = "top")) +
-    labs(y="Relative plot cover abundance", x="Exclosure status", caption = "n = 4 per exclosure status") +
-    scale_fill_brewer(palette = "Paired")  
-  #scale_fill_manual(name = "Functional Group & Native Status", values = c("#B3B3B3", "#66C2A5", "#E5C494", "#A6D854", "#FC8D62", "#E78AC3", "#FFD92F")) 
-ggsave("2021_FnGp_stacked_bar.jpeg", width = 9, height = 7, units = "in")
-
-#~~~~~~~~~~~~~~~~
-## Native vs. Non-native
-#~~~~~~~~~~~~~~~~
-
-ggplot(MIE2_long, aes(fill=Status, y=Cover, x=Exclosure_date)) + 
-  geom_bar(position="fill", stat="identity") + theme_classic()+
-  theme_classic() +
-  theme(axis.text.x = element_text(margin = margin(t=20, r=100), angle = 45))+
-  theme(text = element_text(size = 14)) +
-  theme(panel.spacing.x = unit(1.25, "lines")) +
-  facet_grid(~Estuary, scales = "free", space = "free") +
-  theme(legend.position = "bottom") +
-    guides(fill = guide_legend(title = "Native Status", title.position = "left")) +
-  labs(y="Relative plot cover abundance", x="Exclosure status") +
-  scale_fill_brewer(palette = "Set2")  
-ggsave("2021_Native-status_stacked_bar.jpeg",  width = 7, height = 6, units = "in")
-
-```
-
-```{r CALY LM w/ refined data}
-#abbreviated workflow from Zurr et al, 2009
-
-# omit 10 y/o plots from LM
-CALY_cover2 <- MIE2_long %>% select(Estuary, Yrs_since_disturb, Elev_m_AMLL, Species, Cover, Site_no, Salinity_mS) %>% 
-  group_by(Estuary, Yrs_since_disturb) %>% 
-  mutate(Cover = Cover/100) %>% 
-  filter(Species == "Carex_lyngbyei", !Yrs_since_disturb == 10)
-
-#############################
-# Linear regression, no model testing
-#############################
-library(ggpubr)
-
-formula <- y ~ x
-
-ggplot(CALY_cover2, aes(x = Yrs_since_disturb, y = Cover, color = Estuary, add = "reg.line")) + 
-  geom_jitter() +
-  geom_smooth(method = "lm", formula = formula) +
-  labs(x = "Exclosure status", y = "Avg. plot proportion sedge cover", caption = "geom_jitter + geom_smooth(method = lm)") +
-  stat_regline_equation(aes(label =  paste(..eq.label.., ..adj.rr.label.., sep = "~~~~")),
-    formula = formula) +
-  theme_classic() +
-  theme(axis.text.x = element_text(margin = margin(t=20, r=100), angle = 45))+
-  theme(text = element_text(size = 14)) +
-  scale_x_continuous(breaks = c(0, 1, 5, 15), labels = c("Grubbed", "2020", "2016", "Reference")) 
-ggsave("2021_CALY_LM.png",  width = 9, height = 6, units = "in")
-
-#############################
-# A.2 Data Exploration
-#############################
-# Cleveland dotplots (pdf pg. 532)
-library(graphics)
-data(CALY_cover2)
-CALY_cover2$fYrs_since_disturb <- factor(CALY_cover2$Yrs_since_disturb)
-op <- par(mfrow = c(1, 3), mar = c(3, 3, 3, 1))
-dotchart(CALY_cover2$Elev_m_AMLL, main = "Elevation", group = CALY_cover2$fYrs_since_disturb)
-dotchart(CALY_cover2$Cover, main = "Carex cover", group = CALY_cover2$fYrs_since_disturb)
-dotchart(CALY_cover2$Salinity_mS, main = "Salinity", group = CALY_cover2$fYrs_since_disturb)
-par(op)
-
- #############################
- # A.3 Linear Regression
- #############################
- # Linear regression w/ no interactions
- M1a <- lm(Cover ~ Yrs_since_disturb + Elev_m_AMLL + Salinity_mS, data = CALY_cover2)
- 
-summary(M1a)
-drop1(M1a, test="F")
-anova(M1a)
-
- #############################
- # A.3.2 Model Validation
- #############################
-
-# graphic output of residuals to assess homogeniety, QQ plot of residuals
-M2a <- M1a <- lm(Cover ~ fYrs_since_disturb + Elev_m_AMLL + Salinity_mS, data = CALY_cover2)
-op2a <- par(mfrow = c(2,2))
-plot(M2a) #site ID 15 & 25 appear to be outliers
-
-win.graph(); op <- par(mfrow = c(2, 2))
-#Check for normality
-E2 <- rstandard(M2a)
-list(E2)
-qqnorm(E2)
-#Check for independence and homogeneity: residuals
-#versus individual explanatory variables
-plot(y = E2, x = CALY_cover2$Yrs_since_disturb, xlab = "Exclosure Age",
-ylab = "Residuals")
-abline(0,0)
-plot(E2 ~ CALY_cover2$Elev_m_AMLL, xlab = "Elevation",
-ylab = "Residuals")
-abline(0, 0)
-par(op)
-
-##########################
-# GAM 
-##########################
-library(mgcv)
-
-## http://environmentalcomputing.net/intro-to-gams/
-CALY_GAM2 <- gam(Cover ~ Yrs_since_disturb + s(Elev_m_AMLL, k = 3), data = CALY_cover2, method = "REML")
-
-# residuals
-plot(CALY_GAM2, residuals = TRUE, pch = 1)
-
-par(mfrow = c(2,2))
-gam.check(CALY_GAM2)
-summary(CALY_GAM2)
-
-# plot
-
-ggplot(CALY_cover2, aes(x = Yrs_since_disturb+Elev_m_AMLL, y = Cover, color = Estuary)) +
-  geom_point() +
-  geom_smooth(method = "gam", formula = y~s(x), k = 3) +
-  labs(x = "Exclosure status", y = "Avg. proportion sedge plot cover ",caption = "geom_point() + geom_smooth(method = gam, formula = y~s(x), k = 3))") +
-  theme_classic() +
-  theme(axis.text.x = element_text(margin = margin(t=20, r=100), angle = 45))+
-  theme(text = element_text(size = 14)) 
-  #scale_x_continuous(breaks = c(0, 1, 5, 15), labels = c("Grubbed", "2020", "2016", "Reference")) 
-  # legend.key=element_blank() 
-ggsave("2021_CALY-GAM.png")
-
-```
-
-```{r LM workflow following Zuur et al, 2009}
-
-# Appendix A: Data exploration
-# As with any analysis, before starting the linear regression, we apply a data exploration
-# focussing on the following points:
-# 1. Outliers in the response and explanatory variables.
-# 2. Collinearity of the explanatory variables.
-# 3. Relationships between the response variable and the explanatory variables.
-
-CALY_cover <- MIE_long %>% select(Estuary, Exclosure_age_yr, Plot_elev_m_AMLL, Species, Cover, Site_no, mean_EC_mS) %>% 
-  group_by(Exclosure_age_yr) %>% 
-  mutate(Cover = Cover/100) %>% 
-  mutate(Exclosure_age_yr=ifelse(Exclosure_age_yr==25, 20, Exclosure_age_yr)) %>% 
-  filter(Species == "Carex_lyngbyei")
-
-
-  
-
-#############################
-# A.2 Data Exploration
-#############################
-# Cleveland dotplots (pdf pg. 532)
-library(graphics)
-data(CALY_cover)
-CALY_cover$fExclosure_age_yr <- factor(CALY_cover$Exclosure_age_yr)
-op <- par(mfrow = c(1, 3), mar = c(3, 3, 3, 1))
-dotchart(CALY_cover$Plot_elev_m_AMLL, main = "Elevation", group = CALY_cover$fExclosure_age_yr)
-dotchart(CALY_cover$Cover, main = "Carex cover", group = CALY_cover$fExclosure_age_yr)
-dotchart(CALY_cover$mean_EC_mS, main = "Salinity", group = CALY_cover$fExclosure_age_yr)
-par(op)
-
-# Colinearity
-## To assess collinearity, we will use three tools: Pairwise scatterplots, correlation
-## coefficients, and variance inflation factors (VIF).
-
- Z <- cbind(CALY_cover$Plot_elev_m_AMLL, CALY_cover$Exclosure_age_yr, CALY_cover$Cover, CALY_cover$mean_EC_mS)
- colnames(Z) <- c("Elevation", "Exclosure Age", "Cover", "Salinity")
- pairs(Z)
- 
- ## correlation & variance values
- cor(Z)
- var(Z)
- #VIF won't run on atomic vector - can run on LM output (see Chunk 9 ("Lm"))
- #vif(Z)
- 
- #############################
- # A.3 Linear Regression
- #############################
- # Linear regression w/ no interactions
- M1 <- lm(Cover ~ Exclosure_age_yr + Plot_elev_m_AMLL + mean_EC_mS, data = CALY_cover)
- 
-summary(M1)
-drop1(M1, test="F")
-anova(M1) # order of interaction terms changes significance - try switching Elev & Salinity in lm() and observe change in ANOVA; see Zuur pg. 540 (pdf 546)
-
-
- #############################
- # A.3.2 Model Validation
- #############################
-
-# graphic output of residuals to assess homogeniety, QQ plot of residuals
-M2 <- M1 <- lm(Cover ~ fExclosure_age_yr + Plot_elev_m_AMLL, data = CALY_cover)
-op2 <- par(mfrow = c(2,2))
-plot(M2)
-
-win.graph(); op <- par(mfrow = c(2, 2))
-#Check for normality
-E <- rstandard(M2)
-list(E)
-qqnorm(E)
-#Check for independence and homogeneity: residuals
-#versus individual explanatory variables
-plot(y = E, x = CALY_cover$Exclosure_age_yr, xlab = "Exclosure Age",
-ylab = "Residuals")
-abline(0,0)
-plot(E ~ CALY_cover$Plot_elev_m_AMLL, xlab = "Elevation",
-ylab = "Residuals")
-abline(0, 0)
-par(op)
-
- #############################
- # A.3.3 Model Interpretation
- #############################
-# run from 'plot' to 'lines' 
-plot(CALY_cover$Plot_elev_m_AMLL, CALY_cover$Cover)
-D1 <- data.frame(Plot_elev_m_AMLL = CALY_cover$Plot_elev_m_AMLL[CALY_cover$Exclosure_age_yr==0], 
-    fExclosure_age_yr = "0")
-D2 <- data.frame(Plot_elev_m_AMLL = CALY_cover$Plot_elev_m_AMLL[CALY_cover$Exclosure_age_yr==1],
-    fExclosure_age_yr = "1")
-D3 <- data.frame(Plot_elev_m_AMLL = CALY_cover$Plot_elev_m_AMLL[CALY_cover$Exclosure_age_yr==5],
-    fExclosure_age_yr = "5")
-D4 <- data.frame(Plot_elev_m_AMLL = CALY_cover$Plot_elev_m_AMLL[CALY_cover$Exclosure_age_yr==10],
-    fExclosure_age_yr = "10")
-D5 <- data.frame(Plot_elev_m_AMLL = CALY_cover$Plot_elev_m_AMLL[CALY_cover$Exclosure_age_yr==20],
-    fExclosure_age_yr = "20")
-
-# fitted lines only cover that part of the gradient for which there are observed measurements for that age class
-P1 <- predict(M2, newdata = D1)
-P2 <- predict(M2, newdata = D2)
-P3 <- predict(M2, newdata = D3)
-P4 <- predict(M2, newdata = D4)
-P5 <- predict(M2, newdata = D5)
-
-#last bit of the code draws the lines
-lines(D1$Plot_elev_m_AMLL, P1, lty = 1)
-lines(D2$Plot_elev_m_AMLL, P2, lty = 2)
-lines(D3$Plot_elev_m_AMLL, P3, lty = 3)
-lines(D4$Plot_elev_m_AMLL, P4, lty = 4)
-lines(D5$Plot_elev_m_AMLL, P5, lty = 5)
-
- #############################
- # A.4 Additive Modeling
- #############################
-# If the GAM indicates that the smoother is a straight line, then we know that the linear regression model is correct.
-library(mgcv)
-#fExclosure_age_yr is a factor
-AM1 <- gam(Cover ~ fExclosure_age_yr + s(Plot_elev_m_AMLL) + s(mean_EC_mS), data = CALY_cover)
-anova(AM1) #Note that smoothers are not significant at the 5% level; this means that we are back to the data selection process
-
-# The hypothesis testing approach is the easiest; just drop the least significant term from the model, refit the model, and repeat this process until all terms are significant.
-
-#smoother bs = "cs" tells R to use the cubic regression spline with shrinkage. 
-## adding Elev + Salinity w/ cs smoothers yields not significiance of smooth terms. -> Salinity not a strong interaction in the model (drop)
-## Elev w/ cs smoother yields significance of Elev as a smooth therm
-AM2 <- gam(Cover ~ fExclosure_age_yr + s(Plot_elev_m_AMLL, bs = "cs"), data = CALY_cover)
-anova(AM2)
-plot(AM2, residuals = TRUE, pch = 1)
-summary(AM2)
-
-ggplot(CALY_cover, aes(x = Exclosure_age_yr + Plot_elev_m_AMLL, y = Cover, color = Estuary)) + 
-  geom_point() + 
-  geom_smooth(method = "gam", formula = y ~ x + s(x, bs = "cs")) +
-  labs(x = "Time since exclosure (years)", y = "Avg. proportion sedge cover",caption = "gam(Sedge_Cover ~ Exclosure_age_yr + s(Plot_elev_m_AMLL, bs = cs),
-       geom_point() + geom_smooth(method = gam)") +
-  theme(axis.text.y = element_text(colour = "black", size = 14, face = "bold"),
-    axis.text.x = element_text(colour = "black", face = "bold", size = 14),
-    legend.text = element_text(size = 14, face ="bold", colour ="black"),
-    legend.position = "bottom", axis.title.y = element_text(face = "bold", size = 14),
-    axis.title.x = element_text(face = "bold", size = 14, colour = "black"),
-    legend.title = element_text(size = 14, colour = "black", face = "bold"),
-    panel.background = element_blank(), panel.border = element_rect(colour = "black", fill = NA, size = 1.2),
-  legend.key=element_blank()) +
-    scale_x_continuous(breaks = c(0,5,10,15,20), labels = c("0", "5", "10", "15", ">20")) 
-
-
-
-# model validation
-E.AM2 <- resid(AM2)
-Fit.AM2 <- fitted(AM2)
-plot(x = Fit.AM2, y = E.AM2, xlab = "Fitted values", ylab = "Residuals")
-
-M3 <- lm(Cover ~ Plot_elev_m_AMLL + fExclosure_age_yr, data = CALY_cover)
-anova(M3, AM2, test ="F")
-
-# The underlying null-hypothesis is that both models are the same or formulated
-# more mathematically that the smoother is a straight line (1 df). In this case, we
-# can reject this null hypothesis as the more complicated model from the GAM; it is
-# significantly better at the 5% level
-
-```
-
-``` {r GAM}
-# http://environmentalcomputing.net/intro-to-gams/
-library(mgcv)
-
-CALY_prop_GAM <- MIE %>% select(Estuary, Exclosure_age_yr, Plot_elev_m_AMLL, Agropyron_repens:Triglochin_maritima) %>% pivot_longer(Agropyron_repens:Triglochin_maritima, names_to = "Species", values_to = "Cover") %>% 
-  group_by(Estuary) %>% 
-  #mutate(Sedge_Cover = Cover/100) %>% 
-  mutate(Exclosure_age_yr=ifelse(Exclosure_age_yr=="25", "20", Exclosure_age_yr)) %>% 
-  filter(Species == "Carex_lyngbyei")
-
-CALY_prop_GAM$Exclosure_age_yr <- as.integer(CALY_prop_GAM$Exclosure_age_yr)
- 
-gam_CALY <- gam(Cover ~ s(Exclosure_age_yr, k = 3) + s(Plot_elev_m_AMLL, k = 3), data = CALY_prop_GAM, method = "REML")
-# Limit max df w/ k parameter; see https://www.r-bloggers.com/2021/03/how-to-solve-common-problems-with-gams/ 
-
-# residuals
-plot(gam_CALY, residuals = TRUE, pch = 1)
-
-ggplot(CALY_prop_GAM, aes(x = Exclosure_age_yr+Plot_elev_m_AMLL, y = Cover, color = Estuary)) + 
-  geom_point() + 
-  geom_smooth(method = "gam", formula = y~s(x, k = 3)) +
-  labs(x = "Time since exclosure (years)", y = "Avg. sedge cover (%)",caption = "gam(Sedge_Cover ~ s(Exclosure_age_yr, k = 3) + s(Plot_elev_m_AMLL, k = 3), method = REML,
-       geom_point() + geom_smooth(method = gam)") +
-  theme(axis.text.y = element_text(colour = "black", size = 12, face = "bold"),
-    axis.text.x = element_text(colour = "black", face = "bold", size = 12),
-    legend.text = element_text(size = 14, face ="bold", colour ="black"),
-    legend.position = "bottom", axis.title.y = element_text(face = "bold", size = 14),
-    axis.title.x = element_text(face = "bold", size = 14, colour = "black"),
-    legend.title = element_text(size = 14, colour = "black", face = "bold"),
-    panel.background = element_blank(), panel.border = element_rect(colour = "black", fill = NA, size = 1.2),
-  legend.key=element_blank()) +
-    scale_x_continuous(breaks = c(0,5,10,15,20), labels = c("0", "5", "10", "15", ">20")) 
-#ggsave("MIE_gam.svg")
-
-
-par(mfrow = c(2,2))
-gam.check(gam_CALY)
-summary(gam_CALY)
-
-```
-
-
-```{r What are the changes in total richness over time?}
-# https://www.flutterbys.com.au/stats/tut/tut13.2.html
-# see also
-# https://kembellab.ca/r-workshop/biodivR/SK_Biodiversity_R.html
-
-# compare species richness between estuaries & exclosure dates 
-
-MIE_pl <- MIE %>%  select(Estuary, Exclosure_date, Site_no, Agropyron_repens:Triglochin_maritima)
-
-#uses library(plyr)
-
-#####################################
-# Species richness per exclosure age
-#####################################
-
-MIE_pl_rich <- ddply(MIE_pl, ~Estuary*Exclosure_date*Site_no, function (x) (
-  data.frame(RICHNESS = sum(x [,-c(1:3)]>0))
-))
-
-mean_MIE_pl_rich <- setNames(aggregate(MIE_pl_rich[,4], list(MIE_pl_rich$Estuary, MIE_pl_rich$Exclosure_date), mean), c("Estuary", "Exclosure_date", "Mean_species_richness"))
-
-# Englishman	Grubbed	3.625		
-# Little Qualicum	Grubbed	6.500		
-# Nanaimo	Grubbed	4.750		
-# Englishman	2020	5.250		
-# Little Qualicum	2020	7.000		
-# Nanaimo	2020	5.000		
-# Little Qualicum	2016	3.625		
-# Little Qualicum	2010	4.625		
-# Englishman	Reference	6.125		
-# Little Qualicum	Reference	4.375	
-# Nanaimo	Reference	5.625
-
-
-#####################################
-# Species abundance per exclosure age
-#####################################
-
-MIE_pl_abund <- MIE_pl_rich <- ddply(MIE_pl, ~Estuary*Exclosure_date*Site_no, function (x) (
-  data.frame(ABUNDANCE = sum(x [,-c(1:3)]))
-))
-  
-mean_MIE_pl_abund <- setNames(aggregate(MIE_pl_rich[,4], list(MIE_pl_rich$Estuary, MIE_pl_rich$Exclosure_date), mean), c("Estuary", "Exclosure_date", "Mean_species_abundance"))
-# why is abundance > 100%??
-Abund_box <- ggplot(data = MIE_pl_abund, 
-    aes(x = Exclosure_date, y = ABUNDANCE, group = Exclosure_date))+
-    theme(text = element_text(size = 20)) +
-    geom_boxplot(size=1, alpha = 1/10)+ theme_classic()+
-    facet_grid(~Estuary, scales = "free", space = "free")+ 
-    theme(panel.spacing.x = unit(1.25, "lines")) +
-    #theme(axis.text.x = element_text(angle=45, margin = margin(t=20, r=100)))+
-    labs(title="Abundance (% cover) over time", y="Abundance (% cover)", x="Time since exclosure (years)") +
-    scale_x_discrete(labels=c("Grubbed" = "0", "2020" = "1", "2016" = "5", "2010" = "10", "Reference" = "> 20"))
-Abund_box
-
-# Englishman	Grubbed	55.69750		
-# Little Qualicum	Grubbed	94.10875		
-# Nanaimo	Grubbed	45.12000		
-# Englishman	2020	96.55875		
-# Little Qualicum	2020	98.24625		
-# Nanaimo	2020	67.90250		
-# Little Qualicum	2016	91.87750		
-# Little Qualicum	2010	115.94875		
-# Englishman	Reference	90.09875		
-# Little Qualicum	Reference	103.75875
-# Nanaimo	Reference	94.11625	
-
-```
-
-```{r species richness & abundance boxplots}
-
-MIE %>% 
-  group_by(Estuary, Exclosure_date)
-
-MIE_box <-ggplot(data=MIE, 
-    aes(x= Exclosure_date,
-    y=Richness, group=Exclosure_date)) +
-    theme(text = element_text(size = 20)) +
-    geom_boxplot(size=1, alpha = 1/10)+ theme_classic()+
-    facet_grid(~Estuary, scales = "free", space = "free")+ 
-    theme(panel.spacing.x = unit(1.25, "lines")) +
-    #theme(axis.text.x = element_text(angle=45, margin = margin(t=20, r=100)))+
-    labs(title="Total richness over time", y="Species Richness", x="Time since exclosure (years)") +
-    scale_x_discrete(labels=c("Grubbed" = "0", "2020" = "1", "2016" = "5", "2010" = "10", "Reference" = "> 20"))
-MIE_box
-#ggsave("MIE_TotalRichness_boxplot.svg")
-
-#########################################
-# native richness 
-#########################################
-
-
-MIE_native <-ggplot(data=MIE, 
-    aes(x= Exclosure_date,
-    y=Native_richness, group=Exclosure_date)) +
-    geom_boxplot(size=1, alpha = 1/10)+ theme_classic()+
-    facet_grid(~Estuary, scales = "free", space = "free")+ 
-    theme(panel.spacing.x = unit(1.25, "lines")) +
-    theme(axis.text.x = element_text(angle=45, margin = margin(t=20, r=100)))+
-    labs(title="Native richness over time", y="Native Species Richness", x="Time since exclosure") 
-MIE_native
-
-#########################################
-# non-native richness 
-#########################################
-
-MIE_invasive <-ggplot(data=MIE, 
-    aes(x= Exclosure_date,
-    y=Non_native_richness, group=Exclosure_date)) +
-    geom_boxplot(size=1, alpha = 1/10)+ theme_classic()+
-    facet_grid(~Estuary, scales = "free", space = "free")+ 
-    theme(panel.spacing.x = unit(1.25, "lines")) +
-    theme(axis.text.x = element_text(angle=45, margin = margin(t=20, r=100)))+
-    labs(title="Non-native richness over time", y="Non-native Species Richness", x="Time since exclosure") 
-MIE_invasive
-
-#########################################
-
-```
-
-``` {r What are the changes in species cover (total, native, invasive) between estuaries over time?}
-
-MIE_long$Exclosure_date <- factor(MIE_long$Exclosure_date, levels = c("Grubbed", "2020", "2016", "2010", "Reference"))
-MIE_long$Estuary <- factor(MIE_long$Estuary, levels = c("Little_Qualicum", "Nanaimo"),
-                  labels = c("Little Qualicum", "Nanaimo"))
-
-# this file uses dplyr and plyr. plyr package is loaded second second, so R defaults to summarize function of the plyr package. Must specify which package (dplyr) to run function 'summarise'
-# MIE_abund <- MIE_long %>% 
-#   group_by(Estuary, Exclosure_date, Species) %>% 
-#   dplyr::summarise(
-#     n = n(),
-#     mean = mean(Cover, na.rm = TRUE),
-#     sd = sd(Cover, na.rm = TRUE),
-#     se = sd/sqrt(n))
-
-#########################################
-# stacked barchart with y-axis showing total % of species cover (position = "fill") 
-#########################################
-
-ggplot(MIE_fn_gp, aes(fill=Functional_groups, y=Cover, x=Exclosure_date)) + 
-    geom_bar(position="fill", stat="identity") + theme_classic()+
-    facet_grid(~Estuary, scales = "free", space = "free") + 
-    theme(text = element_text(size = 14)) +
-    theme(panel.spacing.x = unit(1.25, "lines")) +
-    #theme(axis.text.x = element_text(margin = margin(t=20, r=100)))+
-    labs(y="Relative Abundance 
-         (% cover)", x="Time since exclosure (years)") +
-    scale_fill_manual(name = "Plant Functional Group", values = c("#80B1D3", "#B3DE69", "#FDB462", "#BC80BD")) +
-    scale_x_discrete(labels=c("Grubbed" = "0", "2020" = "1", "2016" = "5", "2010" = "10", "Reference" = "> 20"))
-ggsave("MIE_FnGp_stacked_bar.svg")
-
-
-
-#########################################
-#native vs. non-native
-#########################################
-
-
-ggplot(MIE_long, aes(fill=Endemic, y=Cover, x=Exclosure_date)) + 
-    geom_bar(position="fill", stat="identity") + theme_classic()+
-  theme_classic() +
-  theme(text = element_text(size = 20)) +
-  theme(panel.spacing.x = unit(1.25, "lines")) +
-  facet_grid(~Estuary, scales = "free", space = "free") +
-  labs(y="Abundance (% cover)", x="Time since exclosure (years)") +
-  scale_x_discrete(labels=c("Grubbed" = "0", "2020" = "1", "2016" = "5", "2010" = "10", "Reference" = "> 20")) 
-ggsave("MIE_RelAbund_endemism_stacked_bar.svg")
-
-
-
-```
-
-``` {r seed bank diversiy}
-
-# see figs at https://www.researchgate.net/figure/Relationship-between-seed-bank-a-species-richness-Yrichness-023Xage-3453-P00001_fig3_260161720
-
-seedling_data <- read.csv("2021_Seedlings_wider.csv", header = TRUE) 
-seedling_data$Estuary <- as.character(seedling_data$Estuary)
-seedling_data$Exclosure_date <- factor(seedling_data$Exclosure_date, levels = c("Grubbed", "2020", "2016", "2010", "Reference"))
-
-seedling_data$Estuary <- factor(seedling_data$Estuary, levels = c("Englishman", "Little_Qualicum", "Nanaimo"),
-                  labels = c("Englishman", "Little_Qualicum", "Nanaimo"))
-
-seedlings <- seedling_data %>%  select(Estuary, Exclosure_date, Replicate, Atriplex_patula:Species_L)
-
-#uses library(plyr)
-
-#####################################
-# Seed species richness per exclosure age
-#####################################
-
-seed_rich <- ddply(seedlings, ~Estuary*Exclosure_date*Replicate, function (x) (
-  data.frame(RICHNESS = sum(x [,-c(1:3)]>0))
-))
-
-mean_seed_rich <- setNames(aggregate(seed_rich[,4], list(seed_rich$Estuary, seed_rich$Exclosure_date), mean), c("Estuary", "Exclosure_date", "Mean_seed_richness"))
-
-# Englishman	Grubbed	3.166667		
-# Little_Qualicum	Grubbed	3.800000		
-# Nanaimo	Grubbed	3.166667		
-# Little_Qualicum	2020	4.333333		
-# Little_Qualicum	2016	4.166667		
-# Englishman	Reference	3.166667		
-# Little_Qualicum	Reference	5.333333		
-# Nanaimo	Reference	3.166667	
-
-#####################################
-# Seedling abundance per exclosure age
-#####################################
-
-seed_abund <- ddply(seedlings, ~Estuary*Exclosure_date*Replicate, function (x) (
-  data.frame(ABUNDANCE = sum(x [,-c(1:3)]))
-))
-
-mean_seed_abund <- setNames(aggregate(seed_abund[,4], list(seed_rich$Estuary, seed_abund$Exclosure_date), mean), c("Estuary", "Exclosure_date", "Mean_seed_abundance"))
-# Englishman	Grubbed	39.000000		
-# Little_Qualicum	Grubbed	45.000000		
-# Nanaimo	Grubbed	21.833333		
-# Little_Qualicum	2020	20.000000		
-# Little_Qualicum	2016	13.000000		
-# Englishman	Reference	6.833333		
-# Little_Qualicum	Reference	18.833333		
-# Nanaimo	Reference	8.666667	
-```
-
-```{r standing:seed richness}
-
-MIE_seed_pl_rich <- inner_join(mean_MIE_pl_rich, mean_seed_rich, by = c("Estuary" = "Estuary", "Exclosure_date" = "Exclosure_date"))
-
-MIE_seed_pl_rich$Exclosure_date <- factor(MIE_seed_pl_rich$Exclosure_date, levels = c("Grubbed", "2020", "2016", "2010", "Reference"))
-MIE_seed_pl_rich$Estuary <- factor(MIE_seed_pl_rich$Estuary, levels = c("Englishman", "Little_Qualicum", "Nanaimo"),
-                  labels = c("Englishman", "Little Qualicum", "Nanaimo"))
-
-ggplot(data = MIE_seed_pl_rich, 
-      aes(x = Mean_species_richness, y = Mean_seed_richness, color = Exclosure_date)) +
-      facet_wrap(~ Estuary) +
-      scale_y_continuous(name = "Mean seed bank species richness", limits = c(2.5, 6.5)) +
-      scale_x_continuous(name = "Mean mature vegetation species richness", limits = c(2.5, 7.5)) +
-      scale_color_discrete(name = "Time since exclosure (years)", labels = c("0", "1", "5", ">20")) +
-      geom_point(size = 6) + theme_classic() +
-      theme(panel.spacing = unit(2, "lines")) +
-      theme(text = element_text(size = 20)) +
-      theme(legend.position = "bottom", legend.box = "horizontal") 
-
-```
-
-```{r LM}
-# tinkering - delete later
-###############################################
-##### https://www.statology.org/variance-inflation-factor-r/
-#fit the regression model
-
-CALY_LM <- MIE_long %>% select(Estuary, Exclosure_age_yr, Plot_elev_m_AMLL, Species, Cover, Site_no) %>% 
-  group_by(Exclosure_age_yr) %>% 
-  mutate(Sedge_Cover = Cover/100) %>% 
-  mutate(Exclosure_age_yr=ifelse(Exclosure_age_yr=="25", "20", Exclosure_age_yr)) %>% 
-  filter(Species == "Carex_lyngbyei")
-
-CALY_LM$Exclosure_age_yr <- as.integer(CALY_LM$Exclosure_age_yr)
-
-LM <- lm(Sedge_Cover ~ Exclosure_age_yr + Plot_elev_m_AMLL + Estuary, data = CALY_LM)
-
-#view the output of the regression model
-summary(LM)
- 
-library(car)
-vif(LM) # Plot elev VIF > 5
-
-# visualize VIF values
-#create vector of VIF values
-vif_values <- vif(LM)
-
-#create horizontal bar chart to display each VIF value
-barplot(vif_values, main = "VIF Values", horiz = TRUE, col = "steelblue")
-
-#add vertical line at 5
-abline(v = 5, lwd = 3, lty = 2)
-
-###############################################
-
-```
-
-```{r LM & GLMM - LQRE & NRE}
-# https://bbolker.github.io/mixedmodels-misc/ecostats_chap.html
-
-# pkgs_CRAN <- c("lme4","MCMCglmm","blme",
-#                "pbkrtest","coda","aods3","bbmle","ggplot2",
-#                "reshape2","plyr","numDeriv","Hmisc",
-#                "plotMCMC","gridExtra","R2admb",
-#                "broom.mixed","dotwhisker")
-# install.packages(pkgs_CRAN)
-# install.packages("glmmTMB")
-# rr <- "http://www.math.mcmaster.ca/bolker/R"
-# install.packages("glmmADMB",type="source",repos=rr)
-library("devtools") 
-library("lme4")
-#library("glmmADMB")      ## (not on CRAN)
-library("glmmTMB")
-
-
-CALY_prop <- MIE_long %>% select(Estuary, Exclosure_age_yr, Plot_elev_m_AMLL, Species, Cover, Site_no) %>% 
-  group_by(Exclosure_age_yr) %>% 
-  mutate(Sedge_Cover = Cover/100) %>% 
-  mutate(Exclosure_age_yr=ifelse(Exclosure_age_yr==25, 20, Exclosure_age_yr)) %>% 
-  filter(Species == "Carex_lyngbyei")
-
-CALY_prop$Exclosure_age_yr <- as.integer(CALY_prop$Exclosure_age_yr)
-
-library(ggpmisc)
-# adding regression eqn/r^2 w/ stat_poly_eq, see https://stackoverflow.com/questions/7549694/add-regression-line-equation-and-r2-on-graph, from Pedro (~1/3 down the page)
-my.formula <- y ~ x
-
-p <- ggplot(CALY_prop,aes(x=Exclosure_age_yr,y=Sedge_Cover,colour=Estuary)) +
-  geom_point()+
-  geom_smooth(method="lm",alpha=0.3) +
-  stat_poly_eq(formula = my.formula, 
-               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
-               parse = TRUE) +
-  labs(x = "Time since exclosure (years)", y = "Avg. proportion sedge cover", colour = "Estuary", caption = "geom_point() + geom_smooth(method = lm, alpha = 0.3)") +
-  theme(axis.text.y = element_text(colour = "black", size = 12, face = "bold"), 
-    axis.text.x = element_text(colour = "black", face = "bold", size = 12), 
-    legend.text = element_text(size = 14, face ="bold", colour ="black"), 
-    legend.position = "bottom", axis.title.y = element_text(face = "bold", size = 14), 
-    axis.title.x = element_text(face = "bold", size = 14, colour = "black"), 
-    legend.title = element_text(size = 14, colour = "black", face = "bold"), 
-    panel.background = element_blank(), panel.border = element_rect(colour = "black", fill = NA, size = 1.2),
-    legend.key=element_blank()) +
-  scale_x_continuous(breaks = c(0,5,10,15,20), labels = c("0", "5", "10", "15", ">20")) +
-  expand_limits(y = c(0, 1))
-p
-ggsave("MIE_lm.svg")
-
-
-# https://cran.r-project.org/web/packages/glmmTMB/vignettes/glmmTMB.pdf
-data("Owls")
-head(Owls)
-
-Owls <- transform(Owls,
-Nest=reorder(Nest,NegPerChick),
-NCalls=SiblingNegotiation,
-FT=FoodTreatment)
-
-fit_zipoisson <- glmmTMB(NCalls~(FT+ArrivalTime)*SexParent+
-offset(log(BroodSize))+(1|Nest),
-data=Owls,
-ziformula=~1,
-family=poisson)
-
-summary(fit_zipoisson)
-
-
-glmmTMB_poisson <- glmmTMB(Sedge_Cover ~ Exclosure_age_yr+Plot_elev_m_AMLL + (1|Estuary),
-                data=CALY_prop,
-                ziformula=~1,
-                family=poisson)
-summary(glmmTMB_poisson)
-
-library(ggeffects)
-glmmTMB_predict <- ggpredict(glmmTMB_poisson, c("Plot_elev_m_AMLL", "Exclosure_age_yr"))
-plot(glmmTMB_predict)
-
-ggplot(CALY_prop,aes(x=Exclosure_age_yr,y=Sedge_Cover,colour=Estuary)) +
-  geom_point()+
-  geom_smooth(method="lm",alpha=0.3) 
-
-
-# see also # https://easystats.github.io/see/articles/performance.html
-
-``` 
-
-```{r GLMM - attempt 2}
-#https://quantdev.ssri.psu.edu/sites/qdev/files/ILD_Ch04_2017_GeneralizedMLM.html
-CALY_GLMM2 <- MIE_long %>% select(Estuary, Exclosure_age_yr, Plot_elev_m_AMLL, Species, Cover) %>% 
-  group_by(Exclosure_age_yr) %>% 
-  mutate(Sedge_Cover = Cover/100) %>% 
-  mutate(Exclosure_age_yr=ifelse(Exclosure_age_yr=="25", "20", Exclosure_age_yr)) %>% 
-  filter(Species == "Carex_lyngbyei")
-
-CALY_GLMM2$Exclosure_age_yr <- as.integer(CALY_GLMM2$Exclosure_age_yr)
-
-#faceted plot
-ggplot(data=CALY_GLMM2, aes(x=Exclosure_age_yr,y=Sedge_Cover)) +
-  geom_point() + #(position=position_jitter(h=.025)) + 
-  xlab("Time since exclosure") + 
-  ylab("Relative sedge abundance") + 
-  scale_x_continuous(labels = c("0", "5", "10", "15", ">20"),breaks=c(0,5,10, 15,20)) + 
-  scale_y_continuous(limits=c(0,1), breaks=c(0,1)) +
-  facet_wrap( ~ Estuary)
-
-# unconditional means model
-um.fit <- glmer(formula = Sedge_Cover ~ 1 + (1|Estuary), 
-              data=CALY_GLMM2,
-              family="binomial",
-              na.action=na.exclude)
-summary(um.fit)
-
-
-# Add predictor 'Exclosure age'
-model1.fit <- glmer(formula = Sedge_Cover ~ 1 + Exclosure_age_yr + 
-                      (1|Estuary), 
-                    data=CALY_GLMM2,
-                    family="binomial",
-                    na.action=na.exclude)
-summary(model1.fit)
-
-# Odds Ratio Estimates
-exp(fixef(model1.fit))
-
-#with confidence intervals 
-exp(cbind(OR = fixef(model1.fit), confint(model1.fit, method="Wald")[-1,]))
-
-# Lets look at predicted scores. This can be done in two ways.
-# 1. We can predict in the link scale (for us that is log odds), or
-# 2. We can predict in the response scale (for us that is probability).
-CALY_GLMM2$pred.m1logit <- predict(model1.fit, type="link")
-CALY_GLMM2$pred.m1prob <- predict(model1.fit, type="response")
-
-#Logit predictions
-ggplot(data=CALY_GLMM2, aes(x=Exclosure_age_yr,y=pred.m1logit, group=Estuary)) +
-  geom_line() + 
-  xlab("Time since exclosure (years)") + 
-  ylab("Sedge Cover") 
-
-#Probability predictions
-ggplot(data=CALY_GLMM2, aes(x=Exclosure_age_yr,y=pred.m1prob, group=Estuary)) +
-  geom_line() + 
-  xlab("Time since exclosure (years)") + 
-  ylab("Sedge Cover") 
-
-# We solve for p, which is easily calculated in R using an inv.logit() function in the gtools package.
-#install.packages("gtools")
-library("gtools")
-inv.logit(fixef(model1.fit)[1])
-
-# expand the model to include all the predcitors and covariates
-model2.fit <- glmer(formula = Sedge_Cover ~ 1 + Exclosure_age_yr + Plot_elev_m_AMLL +
-                      (1|Estuary), 
-                    data=CALY_GLMM2,
-                    family="binomial",
-                    na.action=na.exclude)
-summary(model2.fit)
-
-#Using the glmmTMB function in the glmmTMB package.
-
-model2.check <- glmmTMB(formula = Sedge_Cover ~ 1 + Exclosure_age_yr + Plot_elev_m_AMLL + (1|Estuary),
-                    family = binomial, 
-                    data = CALY_GLMM2
-                    #na.action=na.exclude
-                    )
-summary(model2.check)
-
-# generate predicted scores
-CALY_GLMM2$pred.m2logit <- predict(model2.fit, type="link")
-CALY_GLMM2$pred.m2prob <- predict(model2.fit, type="response")
-
-#Logit predictions
-ggplot(data=CALY_GLMM2, aes(x=Exclosure_age_yr,y=pred.m2logit, group=Estuary)) +
-  geom_line() + 
-  xlab("Time since exclosure (years)") + 
-  ylab("Sedge Cover") 
-
-#Probability predictions
-ggplot(data=CALY_GLMM2, aes(x=Exclosure_age_yr,y=pred.m2prob, group=Estuary)) +
-  geom_line() + 
-  xlab("Time since exclosure (years)") + 
-  ylab("Sedge Cover") 
-
-
-```
-
-```{r GLM - attempt 1)}
-
-# http://r-eco-evo.blogspot.com/2017/05/generalized-linear-models.html 
-## good basic English explanation explains concepts like error; 
-##regular linear models have limits [-oo; oo], but this won't work for data w/ probabilities restricted [0;1] like proportions
-## predictions are made through a predictor function (which is non-linear), which requires a link function (which linearizes the predictor function)
-## "family defines the distribution of the errors and chooses the appropriate link function. In R the two most commonly used families are Poisson and Binomial. Poisson is commonly used for counts, while the Binomial family is used in proportions or dichotomous response variables"
-## "If the data shows a greater variance than expected by the (Poisson/Binomial) distribution, we have overdispersion. When over dispersion occurs the fitted model  and the estimated parameters are biased and should not be used."  
-### Overdispersion usually means that a covariate which has an important effect on the response variable was omitted. 
-
-
-########################################
-# CALY
-########################################
-
-# Select relevant data for glm of just CALY cover, convert cover values % to proportion
-LQRE_CALY_prop <- MIE %>% select(Estuary, Exclosure_date, Plot_elev_m_AMLL, Agropyron_repens:Triglochin_maritima) %>% pivot_longer(Agropyron_repens:Triglochin_maritima, names_to = "Species", values_to = "Cover") %>% 
-  group_by(Exclosure_date) %>% 
-  mutate(Cover = Cover/100) %>% 
-  filter(Species == "Carex_lyngbyei", Estuary == "Little_Qualicum")
-
-# fit model of effect of exclosure age on CALY cover using Poisson distribution, which uses log link function. 
-CALY_glm <- glm(Cover~Exclosure_date*Plot_elev_m_AMLL, data=LQRE_CALY_prop, family=poisson)
-summary(CALY_glm) # all age classes significant - should be compared to Grubbed (?)
-
-# Need to check dispersions
-1-pchisq(CALY_glm$deviance,CALY_glm$df.residual) # 1 ??
-
-# check significance of model by deviance test: 
-anova(CALY_glm, test = "Chisq") #interaction of exclosure age & elevation significant
-
-#recall coefficients
-coef(CALY_glm)
-
-## this thing takes forever 
-# get 95% CIs for coefficients
-#exp(confint(CALY_glm))
-
-# Estimate R^2 as ratio of null and residual deviances. 
-1 - (CALY_glm$dev/ CALY_glm$null) # Approx. 74% of variance in CALY cover is explained by variance in plot age and elev. 
-
-# "In order to plot the observed and the expected curve, we need to calculated predicted values as we did in the post where we calculated confidence intervals for regression lines. "
-xv <- seq(0,30, length=1000)
-su.pre <- predict(CALY_glm, list(area=xv), type="response") # removed argument "se=T"
-plot(Cover~Exclosure_date*Plot_elev_m_AMLL, data=LQRE_CALY_prop, xlim=c(0,30), ylab="Carex cover (proportion)", xlab="Years since exclosure") # can't find object 'Exclosure_age_yr' ??
-lines(su.pre$fit~xv) # get an error here - 'variable lengths differ'
-lines(su.pre$fit+su.pre$se.fit ~ xv, lty=2)
-lines(su.pre$fit-su.pre$se.fit ~xv, lty=2)
-
-# See other tutorials 
-# http://environmentalcomputing.net/linear-regression/
-# https://www.umass.edu/landeco/teaching/ecodata/schedule/methods1.pdf
-
-
-#http://environmentalcomputing.net/generalised-linear-models/
-#http://environmentalcomputing.net/generalised-linear-models-1/
-#http://environmentalcomputing.net/intro-to-gams/
-
-```
-
 
 
 ```{r maps - tutorial}
@@ -4715,268 +2122,6 @@ lines(su.pre$fit-su.pre$se.fit ~xv, lty=2)
 
 
 ```
-
-```{r prep for ANCOVA of Carex cover - test for normality}
-# modified from https://www.rpubs.com/cwoods/ancova
-
-#from example: "epiphyte abundance" = "Carex_lyngbyei" or "Richness"
-#               "tree size" = "Time_since_exclosure"
-#               "location" = "Estuary"
-
-#questions: does the (1) abundance of Carex, (2) species richness vary with time since exclosure and location on the island?
-#response (dependent) variable: Carex abundance (continuous), species richness (continuous)
-#explanatory (covariate) variable 1: time (continuous)
-#explanatory (independent) variable 2: location (categorical)
-#test name: ANCOVA
-
-## untransformed data are not normal. Note that raw data were entered as a proportion, so range of data is 0-1. Sqrt transformation only marginally compresses data distribution, but could be used to transform to test a normal distribution (see chunk 'sqrt transformed')
-
-
-
-
-#create a scatterplot with a line for each group of the categorical variable
-#################
-# CALY cover in all sites 
-#################
-View(MIE)
-p_CALY <- ggplot(MIE, (aes(x=Exclosure_age_yr, y=Carex_lyngbyei, color=Estuary, shape=Estuary))) + theme_classic() +ylab("Carex Abundance") + xlab("Time since exclosure (years)") 
-p_CALY + geom_jitter() + geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
-
-CALY <- MIE %>% 
-  group_by(Estuary, Exclosure_date) %>% 
-  select(CALY_cover = "Carex_lyngbyei")
-
-CALY_box <-ggplot(data=CALY, 
-    aes(x= Exclosure_date,
-    y=CALY_cover, group=Exclosure_date)) +
-    theme(text = element_text(size = 20)) +
-    geom_boxplot(size=1, alpha = 1/10)+ theme_classic()+
-    facet_grid(~Estuary, scales = "free", space = "free")+ 
-    theme(panel.spacing.x = unit(1.25, "lines")) +
-    #theme(axis.text.x = element_text(angle=45, margin = margin(t=20, r=100)))+
-    labs(title = "Carex cover abundance over time", y="Carex lyngbyei cover abundance (%)", x="Time since exclosure (years)") +
-    scale_x_discrete(labels=c("Grubbed" = "0", "2020" = "1", "2016" = "5", "2010" = "10", "Reference" = "> 20"))
-CALY_box
-#ggsave("CALY_abund_box.svg")
-
-#run a 2-way anova for the data to test model assumptions
-ancova_CALY <- lm(Carex_lyngbyei~Exclosure_age_yr*Estuary*Plot_elev_m_AMLL, data=MIE)
-
-#code to create the density plot of residuals
-plot(density(ancova_CALY$residuals))
-
-#library(stats)
-#create a Q-Q plot
-qqnorm(ancova_CALY$residuals)
-qqline(ancova_CALY$residuals, datax = FALSE, distribution = qnorm, probs = c(0.25, 0.75)) 
-
-#create a fitted values vs residuals plot
-plot(ancova_CALY$residuals~ancova_CALY$fitted.values)
-lines(lowess(ancova_CALY$fitted.values,ancova_CALY$residuals), col="blue")
-text(ancova_CALY$fitted.values, ancova_CALY$residuals, row.names(MIE), cex=0.6, pos=4, col="red")
-
-#################
-# Richness
-#################
-
-p_richness <- ggplot(MIE, (aes(x=Exclosure_age_yr, y=Richness, color=Estuary, shape=Estuary))) + theme_classic() +ylab("Species Richness") + xlab("Time since exclosure (years)") 
-p_richness + geom_jitter() + geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
-
-#run a 2-way anova for the data to test model assumptions
-ancova_richness <- lm(Richness~Exclosure_age_yr*Estuary*Plot_elev_m_AMLL, data=MIE)
-
-#code to create the density plot of residuals
-plot(density(ancova_richness$residuals))
-
-#library(stats)
-#create a Q-Q plot
-qqnorm(ancova_richness$residuals)
-qqline(ancova_richness$residuals, datax = FALSE, distribution = qnorm, probs = c(0.25, 0.75)) 
-
-#create a fitted values vs residuals plot
-plot(ancova_richness$residuals~ancova_richness$fitted.values)
-lines(lowess(ancova_richness$fitted.values,ancova_richness$residuals), col="blue")
-text(ancova_richness$fitted.values, ancova_richness$residuals, row.names(MIE), cex=0.6, pos=4, col="red")
-
-anova(ancova_CALY) # very important to note that planting restoration has been done in only the 1-year old plots (2020 exclosures), therefore unsurprising that Exclosure_age_yr is highly significant in ANCOVA results
-
-anova(ancova_richness)
-
-```
-
-``` {r linear regression of ANCOVA - richness }
-
-#https://bookdown.org/ndphillips/YaRrr/linear-regression-with-lm.html 
-
-# Create a linear model of richness given age of exclosure, estuary location, and elevation
-
-MIE_elev <- select(MIE, Plot_elev_m_AMLL, Estuary, Site_no)
-
-MIE_rich_elev <- inner_join(MIE_pl_rich, MIE_elev, by = c("Estuary", "Site_no"))
-
-# MIE_pl_rich must be two objects - RICHNESS changes to ABUNDANCE
-richness_lm <- lm(formula = RICHNESS~Exclosure_date*Estuary*Plot_elev_m_AMLL, data=MIE_rich_elev)
-summary(richness_lm)
-
-
-# The coefficients of richness model
-summary(richness_lm)$coefficients
-
-# Add the fitted values as a new column in the dataframe
-MIE_rich_elev$value_lm <- richness_lm$fitted.values
-
-# Plot the relationship between true estuary richness and linear model fitted values
-
-plot(x = MIE_rich_elev$RICHNESS, 
-     y = richness_lm$fitted.values, 
-     xlab = "Observed Richness",
-     ylab = "Model Fitted Values", 
-     main = "Regression fits of species richness")
-abline(b = 1, a = 0)
-
-
-
-LQRE_richness<-MIE_rich_elev[which(MIE_rich_elev$Estuary=='Little_Qualicum'),]
-#ERE_richness<-MIE_rich_elev[which(MIE_rich_elev$Estuary=='Englishman'),]
-NRE_richness<-MIE_rich_elev[which(MIE_rich_elev$Estuary=='Nanimo'),]
-
-#explore data (look for outliers)
-
-p_LQRE_richness <- ggplot(LQRE_richness, (aes(x=Exclosure_date, y=RICHNESS))) + theme_classic() +ylab("Species Richness") + xlab("Time since exclosure (years)") 
-p_LQRE_richness + geom_smooth(method=lm, se=FALSE, fullrange=TRUE) + geom_abline()
-
-
-attach(LQRE_richness)
-plot(LQRE_richness$Exclosure_date, LQRE_richness$RICHNESS, xlab="Time since exclosure (years)", ylab="Species Richness", pch=19)
-
-
-#run the linear regression
-LQRE_richness_fit<-lm(RICHNESS~Exclosure_date, data=LQRE_richness)
-
-summary(LQRE_richness_fit)$r.squared
-#0.1791
-
-#create a density plot of residuals
-plot(density(LQRE_richness_fit$residuals))
-
-###############################################################################
-# Alternate method from http://www.sthda.com/english/articles/40-regression-analysis/168-multiple-linear-regression-in-r/ 
-###############################################################################
-
-MIE_elev <- select(MIE, Estuary, Site_no, Plot_elev_m_AMLL) 
-
-MIE_rich_elev <- inner_join(MIE_pl_rich, MIE_elev, by = c("Estuary", "Site_no"))
-
-richness_lm <- lm(formula = RICHNESS~Exclosure_date*Estuary*Plot_elev_m_AMLL, data=MIE_rich_elev)
-summary(richness_lm)
-
-
-
-model <- lm(RICHNESS ~ Estuary + Exclosure_date + Plot_elev_m_AMLL, data = MIE_rich_elev)
-# any significant p-value indicates the predictor variable (Estuary, Exclosure_date, Plot_elev) is significantly related to the outcome variable (RICHNESS)
-summary(model)
-
-#For a given the predictor, the t-statistic evaluates whether or not there is significant association between the predictor and the outcome variable, that is whether the beta coefficient of the predictor is significantly different from zero.
-summary(model)$coefficient
-
-
-#confidence interval of the model coefficient can be extracted
-confint(model)
-
-
-
-```
-
-``` {r ANCOVA - sqrt transformed data}
-
-############################################
-# Square root transformation yields (marginally more) normally distributed residuals
-############################################
-
-#square-root transform your response variable Carex_lyngbyei
-sqrtCarex = sqrt(MIE$Carex_lyngbyei)
-
-#run the ancova test on the transformed data
-ancova_sqrt <-lm(sqrtCarex~Exclosure_age_yr*Estuary*Plot_elev_m_AMLL, data=MIE)
-
-
-#create the density plot of residuals
-plot(density(ancova_sqrt$residuals)) 
-
-
-#create a Q-Q plot
-qqnorm(ancova_sqrt$residuals)
-qqline(ancova_sqrt$residuals, datax = FALSE, distribution = qnorm, probs = c(0.25, 0.75)) # better, but not great - residuals don't leap off the top of qq line as far
-
-
-#create a fitted values vs. residuals plot
-plot(ancova_sqrt$residuals~ancova_sqrt$fitted.values)
-lines(lowess(ancova_sqrt$fitted.values,ancova_sqrt$residuals), col="blue")
-text(ancova_sqrt$fitted.values, ancova_sqrt$residuals, row.names(sqrtCarex), cex=0.6, pos=4, col="red")
-
-
-
-############################################
-# Add transformed data to dataset
-############################################
-
-MIE_xform <- mutate(MIE, 
-       Carex_sqrt = sqrtCarex)
-#head(estuaries_xform)
-
-#View(MIE_xform)
-
-
-############################################
-# Interpreting ANCOVA Output
-############################################
-
-anova(ancova_sqrt)
-
-
-
-```
-
-``` {r linear regression of ANCOVA - CALY }
-
-
-#To report the results of each of your explanatory variables (Exclosure_age_yr and Estuary separately), you need to conduct and report the results of separate simple linear regressions for each group individually.
-
-LQRE<-MIE_xform[which(MIE_xform$Estuary=='Little_Qualicum'),]
-#ERE<-MIE_xform[which(MIE_xform$Estuary=='ERE'),]
-NRE<-MIE_xform[which(MIE_xform$Estuary=='Nanaimo'),]
-
-#explore data (look for outliers)
-attach(LQRE)
-plot(LQRE$Exclosure_age_yr, LQRE$Carex_sqrt, xlab="Time since exclosure (years)", ylab="Carex lyngbyei abundance (square root)", pch=19)
-abline(lm(Carex_sqrt~Exclosure_age_yr), col="red")
-
-#run the linear regression
-fit<-lm(Carex_sqrt~Exclosure_age_yr, data=LQRE)
-
-summary(fit)$r.squared
-#0.0785
-
-#create a density plot of residuals
-plot(density(fit$residuals))
-
-#####
-# note - repeat this for each estuary location
-#####
-
-
-############################################
-# plot the sqaure root transformed cover data  
-############################################
-p_sqrt <- ggplot(MIE_xform, (aes(x=Exclosure_age_yr, y=Carex_sqrt, color=Estuary, shape=Estuary))) + theme_classic() +ylab("Carex Abundance (square root)") + xlab("Time since exclosure (years)") 
-p_sqrt + geom_point() + geom_smooth(method=lm, se=FALSE, fullrange=TRUE)
-
-# How to handle/characterize transplanting 
-
-
-
-```
-
 
 
 
