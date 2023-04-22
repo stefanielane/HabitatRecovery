@@ -172,6 +172,7 @@ seed_ra <- seed_tidy %>%
     na.omit()
 # 7 x 266
 #View(seed_ra)
+unique(seed_ra$species)
 
 seed <- seed_ra %>% 
   mutate(obs = "seed", id = (seed_id+100)) %>% 
@@ -261,7 +262,7 @@ pa.join <- pa.join[which(rowSums(pa.join[,7:31]) > 0), ] # remove rows where all
 
 ```
 
-```{r summarize vegetation (veg.sum, seed.sum)}
+```{r summarize vegetation (veg.sum, seed.sum, all.sum)}
 
 veg.sum <- mie %>% 
   filter(cover != 0) %>% 
@@ -282,7 +283,8 @@ veg.sum <- mie %>%
          sedge_prop = sedge_cover/100, 
          total_prop = total_cover/100, 
          culture_prop = cultural_cover/100) %>% 
-  mutate(across(8:13, round, 2))
+  mutate(across(8:13, round, 2)) %>% 
+  mutate(obs = "veg")
 
 
 seed.sum <- seed %>% 
@@ -304,11 +306,25 @@ seed.sum <- seed %>%
          sedge_prop = sedge_relabund/100, 
          total_prop = total_relabund/100, 
          culture_prop = cultural_relabund/100) %>% 
-  mutate(across(8:13, round, 2))
+  mutate(across(8:13, round, 2)) %>% 
+  mutate(obs = "seed")
+
+
+ag.sum <- veg.sum %>% 
+                  select(c(id, disturbance, estuary, graminoid_prop, obs))
+
+bg.sum <- seed.sum %>% 
+                  select(c(id, disturbance, estuary, graminoid_prop, obs))
+
+all.sum <- ag.sum %>% 
+              full_join(bg.sum)
+  
+  
 
 ```
 
 ```{r FIGURE 1 boxplots of native vs exotic tall, perennial graminoids in veg vs seed}
+
 
 obs_fngp <- ra_join %>% 
   filter(!species == c("bare", "elpar")) %>% 
@@ -346,14 +362,14 @@ cover_graminoid$obs = factor(cover_graminoid$obs,
 tpg <- cover_graminoid %>% 
   ggplot(aes(x = estuary, y = cover, fill = endemic, shape = endemic)) +
   geom_boxplot(position = position_dodge2(preserve = "single")) +
-  facet_grid(obs~disturbance, scales = "free") +
+  facet_grid(obs~disturbance, scales = "free_x") +
   geom_jitter(width = 0.1, alpha = 0.2) +
   theme_classic() +
   theme(legend.position = 'bottom') +
-  theme(text = element_text(size = 16),
+  theme(text = element_text(size = 25),
            panel.spacing.y = unit(1.25, "lines"),
            axis.text.x = element_text(angle = 25, hjust = 1)) +  
-  theme(panel.spacing.x = unit(2, "lines")) +
+  theme(panel.spacing.x = unit(1, "lines")) +
   theme(panel.spacing.y = unit(4, "lines")) +
   labs(x = "", 
        y = "Relative abundance (%) \nperennial graminoids (species > 10 cm tall)", 
@@ -364,11 +380,13 @@ tpg <- cover_graminoid %>%
 #ggsave("fig-boxplot_tpg_seed-veg.jpg", tpg, width = 15, height = 10)
 
 
+
 ```
 
 ```{r TABLE 1 -  indicator species analysis by disturbance}
 
 library(indicspecies)
+# see https://cran.r-project.org/web/packages/indicspecies/vignettes/IndicatorSpeciesAnalysis.html#defining-the-classification-of-sites
 
 # VEG
 indsp.ag <- ra_join %>% 
@@ -376,12 +394,19 @@ indsp.ag <- ra_join %>%
           pivot_wider(names_from = species, values_from = relabund) %>% 
           replace(is.na(.), 0)   %>%
           select(-c(obs, id, clade, fngp, cultural))
+
+indsp.ag$disturbance <- factor(indsp.ag$disturbance, levels = c("reference", "excl10", "excl1", "grubbed"))
           
 abund.ag = indsp.ag[,5:ncol(indsp.ag)]
 assoc.ag = indsp.ag$disturbance
 
-inv.ag_r.g = multipatt(abund.ag, assoc.ag, func = "r.g", control = how(nperm=9999))
+inv.ag_r.g = multipatt(abund.ag, assoc.ag, 
+                       func = "r.g", # can you explain why you used this func?
+                       max.order = 1, #restricts groups. use max.order = 1 to only see indicsp for each disturbance type
+                       control = how(nperm=999))
 summary(inv.ag_r.g)
+# summary(inv.ag_r.g, alpha=1)
+# inv.ag_r.g$sign
 
 
 # SEEDS
@@ -390,12 +415,20 @@ indsp.bg <- ra_join %>%
           pivot_wider(names_from = species, values_from = relabund) %>% 
           replace(is.na(.), 0)   %>%
           select(-c(obs, id, clade, fngp, cultural))
+
+indsp.bg$disturbance <- factor(indsp.bg$disturbance, levels = c("reference", "excl10", "excl1", "grubbed"))
+
           
 abund.bg = indsp.bg[,5:ncol(indsp.bg)]
 assoc.bg = indsp.bg$disturbance
 
-inv.bg_r.g = multipatt(abund.bg, assoc.bg, func = "r.g", control = how(nperm=9999))
+inv.bg_r.g = multipatt(abund.bg, assoc.bg, 
+                       func = "r.g", 
+                       max.order = 1,
+                       control = how(nperm=999))
 summary(inv.bg_r.g)
+           
+
            
 
 ```
@@ -453,25 +486,28 @@ ag_model <- ggplot() +
   geom_jitter(data = veg.sum, 
               aes(x = level_order, 
                   y = graminoid_prop,
-                  color = estuary)) + 
-  geom_point(data = veg.sum, 
-             aes(x = level_order, 
-                 y = gram_prop_mean), 
-             size = 2) +
+                  color = estuary),
+              size = 4) + 
   geom_errorbar(data = veg.sum,
                 aes(x = level_order, 
                     ymin = gram_prop_se_min, 
                     ymax = gram_prop_se_max, 
-                    color = estuary)) +
+                    color = estuary),
+                linewidth = 2,
+                width = 0.5) + #position=position_dodge(width=0.5)
+   geom_point(data = veg.sum, 
+             aes(x = level_order, 
+                 y = gram_prop_mean), 
+             size = 4,
+             position=position_dodge(width=0.5)) +
   theme_classic() +
-  theme(text = element_text(size = 20)) +
-  theme(axis.text.x = element_text(angle = 45, 
-                                   hjust = 1)) +
+  theme(text = element_text(size = 25),
+        axis.text.x = element_text(angle = 30, 
+                                   hjust = 1),
+        axis.text.y = element_text(size = 20),
+        legend.position = "none") +
   labs(x = "", 
-       y = "Proportion of tall, perennial graminoids") +
-  scale_color_discrete(name = "Estuary", labels = c("Little Qualicum", "Nanaimo")) #+
- # ggtitle("Actual vs. predicted proportion of tall, perennial graminoid 
-         # above-ground vegetation cover based on disturbance condition")
+       y = "Proportion of tall, perennial graminoids") 
   
 
 
@@ -523,27 +559,134 @@ bg_model <- ggplot() +
   geom_jitter(data = seed.sum, 
               aes(x = level_order, 
                   y = graminoid_prop,
-                  color = estuary)) + 
-  geom_point(data = seed.sum, 
-             aes(x = level_order, 
-                 y = gram_prop_mean), 
-             size = 2) +
-  geom_errorbar(data = seed.sum,
+                  color = estuary),
+              size = 4) + 
+    geom_errorbar(data = seed.sum,
                 aes(x = level_order, 
                     ymin = ifelse(gram_prop_se_min < 0, 0, gram_prop_se_min), 
                     ymax = gram_prop_se_max, 
-                    color = estuary)) +
+                    color = estuary),
+                linewidth = 2,
+                width = 0.5) + # position=position_dodge(width=0.5)
+     geom_point(data = seed.sum, 
+             aes(x = level_order, 
+                 y = gram_prop_mean), 
+             size = 4,
+             position=position_dodge(width=0.5)) +
   theme_classic() +
-  theme(text = element_text(size = 20)) +
-  theme(axis.text.x = element_text(angle = 45, 
+  theme(text = element_text(size = 25)) +
+  theme(axis.text.x = element_text(angle = 30, 
                                    hjust = 1)) +
   labs(x = "", 
        y = "") +
-  scale_color_discrete(name = "Estuary", labels = c("Little Qualicum", "Nanaimo")) #+
-  #ggtitle("Actual vs. predicted proportion of tall, perennial graminoid 
-          #below-ground vegetation cover based on disturbance condition")
+  scale_color_discrete(name = "Estuary", labels = c("Little Qualicum", "Nanaimo"))
+
+
+
 
 ```
+
+```{r glm - AGBG TPG}
+# tpg as proportion of relabund, use all.sum for "obs" as factor
+
+ggplot(all.sum, aes(x = graminoid_prop)) +
+  geom_histogram(position = "dodge", binwidth = 0.1) + 
+  theme_classic()
+
+
+all.sum$disturbance <- factor(all.sum$disturbance, levels = c("reference", "grubbed", "excl1", "excl10"))
+all.sum$estuary <- factor(all.sum$estuary)
+
+all_glm <- glm(graminoid_prop ~ disturbance + estuary + obs, 
+                 family = 'binomial',
+                 data = all.sum) 
+
+summary(all_glm) 
+# NRE has significantly fewer seeds of TPG than LQRE (this may be due to fewer exotic AGST found in seed bank at NRE); grubbed sites have nearly significantly fewer TPG seed than reference. 
+summary(all_glm)$coefficients
+plot(all_glm)
+
+
+# make this into your mean & SE, see how it compares to ggpredict -> can you explain what ggpredict is doing?
+agbg_pred_mean <- predict(all_glm, type = "response") 
+all.sum$gram_prop_mean = agbg_pred_mean
+#View(all.sum)
+
+
+agbg_pred_se <- predict(all_glm, type = c("response"), se.fit = TRUE)$se.fit
+all.sum$se = agbg_pred_se
+
+
+all.sum <- all.sum %>%
+                mutate(gram_prop_se_max = gram_prop_mean+se,
+                       gram_prop_se_min = gram_prop_mean-se)
+
+
+level_order <- factor(all.sum$disturbance, 
+                      level = c("grubbed", "excl1", "excl10", "reference"),
+                      labels = c(grubbed = "Grubbed", excl1 = "Heavily Grazed, \nExclosed 1 year", excl10 = "Heavily Grazed, \nExclosed 10 years", reference = "Undisturbed"))
+
+agbg_model <- ggplot() +
+  geom_jitter(data = all.sum, 
+              aes(x = level_order, 
+                  y = graminoid_prop,
+                  color = estuary, 
+                  shape = obs),
+              size = 4) + 
+    geom_errorbar(data = all.sum,
+                aes(x = level_order, 
+                    ymin = ifelse(gram_prop_se_min < 0, 0, gram_prop_se_min), 
+                    ymax = gram_prop_se_max, 
+                    color = estuary),
+                linewidth = 2,
+                width = 0.5) + # position=position_dodge(width=0.5)
+     geom_point(data = all.sum, 
+             aes(x = level_order, 
+                 y = gram_prop_mean), 
+             size = 4,
+             position=position_dodge(width=0.5)) +
+  theme_classic() +
+  theme(text = element_text(size = 25)) +
+  theme(axis.text.x = element_text(angle = 30, 
+                                   hjust = 1)) +
+  labs(x = "", 
+       y = "") +
+  scale_color_discrete(name = "Estuary", labels = c("Little Qualicum", "Nanaimo"))
+
+
+
+
+```
+
+```{r glm - AG & BG same model}
+# use ra_join from Chunk 6
+
+# https://towardsdatascience.com/random-effects-in-linear-models-15845b2540ac
+# basics of glms https://www.geo.fu-berlin.de/en/v/soga/Basics-of-statistics/Logistic-Regression/Logistic-Regression-in-R---An-Example/index.html 
+
+ggplot(ra_join, aes(x = graminoid_prop)) +
+  geom_histogram(position = "dodge", binwidth = 0.1) + 
+  theme_classic() 
+
+
+veg.sum$disturbance <- factor(veg.sum$disturbance, 
+                              levels = c("reference", "grubbed", "excl1", "excl10"))
+veg.sum$estuary <- factor(veg.sum$estuary)
+
+graminoid_glm <- glm(graminoid_prop ~ disturbance + estuary, # (*can add estuary as a fixed effect (+ estuary); show no influence as supplement
+                 family = 'binomial',
+                 data = veg.sum) # binomial family appropriate for proportional data constrained 0:1. logit link is default.  
+
+summary(graminoid_glm) # transform coefficients? see fn tab_model
+
+summary(graminoid_glm)$coefficients
+
+plot(graminoid_glm)
+
+
+
+```
+
 
 ```{r FIGURE - actual vs. predicted values for AG/BG}
 
@@ -562,7 +705,7 @@ model.panel
 ```{r FIGURE - grouped barchart AG/BG relabund}
 
 
-
+#unique(ra_join$species)
 ra_join$disturbance = factor(ra_join$disturbance,
                             levels = c("grubbed", "excl1", "excl10", "reference"),
                             labels = c("Grubbed", "Heavily Grazed, \nExclosed 1 year", "Heavily Grazed, \nExclosed 10 years", "Undisturbed")) 
@@ -574,7 +717,8 @@ ra_join$estuary = factor(ra_join$estuary,
 
 indic_sp_ag <- ra_join %>% 
               select(estuary, disturbance, species, relabund, obs, id) %>% 
-              filter(species %in% c("agsp", "elpar", "coco", "juba", "caly", "trma", "spca", "glma", "popa", "sade", "juar"), obs == "veg") %>%               group_by(id) %>%             
+              filter(species %in% c("agsp", "elpar", "coco", "juba", "caly", "trma", "spca", "glma", "popa", "sade", "juar"), obs == "veg") %>%               
+              group_by(id) %>%             
               pivot_wider(names_from = species, values_from = relabund) %>% 
               replace(is.na(.), 0) %>% 
               mutate(juar = 0) %>% 
@@ -651,6 +795,103 @@ bg <- ggplot(indic_sp_bg,
   facet_wrap(~estuary) +
   theme(panel.spacing = unit(1, "cm", data = NULL))
 
+```
+
+```{r grouped bar charts - all species}
+
+# need to figure out how to show all species on x axis, but still have seed banks extending down. 
+
+
+
+all_ag <- ra_join %>% 
+              select(estuary, disturbance, species, relabund, obs, id) %>% 
+              filter(obs == "veg") %>%               
+              group_by(id) %>%             
+              pivot_wider(names_from = species, values_from = relabund) %>% 
+              replace(is.na(.), 0) %>% 
+              mutate(juar = 0) %>% 
+              pivot_longer(agsp:juar, names_to = "species", values_to = "relabund")
+              
+
+
+all_bg <- ra_join %>% 
+              select(estuary, disturbance, species, relabund, obs, id) %>% 
+              filter(obs == "seed") %>% 
+              group_by(id) %>%             
+              pivot_wider(names_from = species, values_from = relabund) %>% 
+              replace(is.na(.), 0) %>% 
+              pivot_longer(agsp:juen, names_to = "species", values_to = "relabund") %>% 
+              mutate(relabund = relabund * -1)
+
+all <- all_ag %>% 
+  full_join(all_bg) 
+
+
+
+all_bar <- ggplot(all, 
+         aes (x = species, 
+              y = relabund, 
+              fill = disturbance)) +
+  geom_bar(stat="identity",
+           position = position_dodge(width = 0.5)) +
+  geom_hline(yintercept=0) +
+  theme_classic() +
+  labs(y = "Relative abundance (%)", 
+       x = "", 
+       fill = "Disturbance") +
+  theme(axis.text.x = element_text(size = 16, 
+                                   angle = 30, 
+                                   hjust = 1),
+        strip.text = element_text(size = 16)) +
+  scale_fill_brewer(palette = "PRGn") +
+  scale_y_continuous(breaks = seq(0, 100, by=25), limits=c(0,100)) +
+  facet_grid(~estuary, scale = "free_x") +
+  theme(panel.spacing = unit(1, "cm", data = NULL))
+
+
+
+#~#~#~#~#~#~#~#~#~#~#~#~#~#~#
+
+ag_bar <- ggplot(all_ag, 
+         aes (x = species, 
+              y = relabund, 
+              fill = disturbance)) +
+  geom_bar(stat="identity",
+           position = position_dodge(width = 0.5)) +
+  theme_classic() +
+  labs(y = "ABOVE GROUND VEGETATION \nRelative abundance (%)", 
+       x = "", 
+       fill = "Disturbance") +
+  theme(axis.text.x = element_text(size = 16, 
+                                   angle = 30, 
+                                   hjust = 1),
+        strip.text = element_text(size = 16)) +
+  scale_fill_brewer(palette = "PRGn") +
+  #facet_grid(cols = vars(estuary), scales = "free_x", space = "free_x")
+  facet_wrap(~estuary, scales = "free_x") +
+  scale_y_continuous(breaks = seq(0, 100, by=25), limits=c(0,100)) +
+  theme(panel.spacing = unit(1, "cm", data = NULL))
+
+
+
+bg_bar <- ggplot(all_bg, 
+         aes (x = species, 
+              y = neg_relabund, 
+              fill = disturbance)) +
+      geom_bar(stat="identity", 
+               position = position_dodge(width = 0.5)) + 
+    #scale_y_reverse() +
+    theme_classic() +
+    labs(y = "SURFACE SEED BANK \nRelative abundance (%)", x = "", fill = "Disturbance") +
+    theme(axis.text.x = element_text(size = 16, 
+                                     angle = 30, 
+                                     hjust = 1),
+          strip.text = element_text(size = 16)) +
+   scale_fill_brewer(palette = "PRGn") +
+  facet_wrap(~estuary, scales = "free_x") +
+  scale_y_continuous(breaks = seq(0, 100, by=25), limits=c(0,100)) +
+  theme(panel.spacing = unit(1, "cm", data = NULL))
+
 
 ```
 
@@ -709,6 +950,54 @@ ggplot(data = freq_, aes(y = prop,
 
 ```
 
+```{r SUPPLEMENTAL AG/BG diversity}
+
+agDiv <- mie %>% 
+          filter(!cover == 0 & !species == "bare") %>% 
+          select(c("estuary", "disturbance", "id", "species", "obs"))
+
+bgDiv <- seed %>% 
+          select(c("estuary", "disturbance", "id", "species", "obs"))
+
+div <- rbind(agDiv, bgDiv) %>% 
+        group_by(estuary, disturbance, obs) %>% 
+        dplyr::summarise(div = n_distinct(species))
+#View(div)
+
+
+
+div$disturbance = factor(div$disturbance,
+                            levels = c("grubbed", "excl1", "excl10", "reference"),
+                            labels = c("Grubbed", "Heavily Grazed, \nExclosed 1 year", "Heavily Grazed, \nExclosed 10 years", "Undisturbed")) 
+
+div$estuary = factor(div$estuary,
+                            levels = c("nre", "lqre"),
+                            labels = c("Nanaimo", "Little Qualicum")) 
+
+div$obs = factor(div$obs, 
+                      levels = c("veg", "seed"),
+                      labels = c("Above-ground vegetation", "Surface seed bank"))
+
+
+div %>% 
+  ggplot(aes (x = disturbance, 
+              y = div, 
+              fill = disturbance)) +
+  geom_bar(stat="identity") +
+  geom_hline(yintercept=0) +
+  theme_classic() +
+  labs(y = "total species diversity", 
+       x = "", 
+       fill = "Disturbance") +
+  theme(axis.text.x = element_blank()) +
+  scale_fill_brewer(palette = "PRGn") +
+  facet_grid(obs~estuary, scales = "free_x") +
+  theme(panel.spacing = unit(1, "cm", data = NULL))
+
+
+```
+
+
 ```{r SUPPLEMENTAL boxplots - veg richness & abundance: native vs exotic}
 
 #View(veg.sum)
@@ -755,28 +1044,30 @@ agbg_box$disturbance = factor(agbg_box$disturbance,
 
 agbg_box$richness = factor(agbg_box$richness,
                             levels = c("native_rich", "exotic_rich"),
-                            labels = c("Native", "Exotic"))
+                            labels = c("Native", "Non-native"))
 
 agbg_box$abund = factor(agbg_box$abund,
                             levels = c("native_abund", "exotic_abund"),
-                            labels = c("Native", "Exotic"))
+                            labels = c("Native", "Non-native"))
 
 pd <- position_dodge(0.75)
 
 rich_box <- agbg_box %>%
   ggplot(aes(x = disturbance, y = rich_val, fill = richness)) +
-  geom_boxplot() + 
+  geom_boxplot(outlier.shape = NA) + 
+  geom_point(position = position_jitterdodge(), 
+              alpha = 0.5) +
   theme_classic() +
-  facet_grid(obs ~ estuary, scales = "free") + 
+  facet_grid(obs ~ estuary, scales = "free_x") + 
   theme(panel.spacing = unit(3, "cm")) +
-  labs(x = "Disturbance condition", y = "Species Richness", fill = "Endemism") +
-  scale_y_continuous(breaks = seq(0, 12, by = 2)) +
-  theme(text = element_text(size = 20),
+  labs(x = "Disturbance condition", y = "Total Species Richness", fill = "Endemism") +
+  scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, 2)) +
+  theme(text = element_text(size = 18),
         panel.spacing.x = unit(1.25, "lines"),
         axis.text.x = element_text(angle = 25, hjust = 1)) +
   scale_fill_brewer(palette = "Dark2") 
 
-#ggsave("fig-box-agbg-richness.jpg", rich_box, width = 8, height = 6)
+#ggsave("fig-box-agbg-richness.jpg", rich_box, width = 10, height = 8)
 
 
 
