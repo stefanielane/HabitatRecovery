@@ -176,20 +176,20 @@ unique(seed_ra$species)
 
 seed <- seed_ra %>% 
   mutate(obs = "seed", id = (seed_id+100)) %>% 
-  mutate(endemic = ifelse(species %in% c("agsp", "atpa", "coco", "cirsp", "poasp"), "Invasive", "Native")) %>% 
+  mutate(endemic = ifelse(species %in% c("agsp", "atpa", "coco", "cirsp", "juge", "poasp"), "Invasive", "Native")) %>% 
   mutate(life = ifelse(species %in% c("atpa", "isce","jubu", "sade", "spca", "poasp"), "Annual", "Perennial")) %>% 
-  mutate(root = ifelse(species %in% c("atpa", "cirsp", "coco", "dece", "grsp", "isce", "jute", "sade", "sama","poasp"), "Fibrous", "Rhizomatous")) %>%
-  mutate(clade = ifelse(species %in% c("agsp", "caly", "dece", "juar", "juba", "juen", "jute", "poasp"), "Select Graminoid",
-                        ifelse(species %in% c("agsp", "caly", "dece", "elpar", "isce", "juar", "juba", "juen", "jute", "poasp"), "All Graminoid", "Forb"))) %>% 
-  mutate(fngp = ifelse(species %in% c("agsp", "caly", "elpar", "juar", "juba", "juen"), "Perennial graminoid, rhizomatous roots",                  
-                       ifelse(species %in% c("dece", "jute"), "Perennial graminoid,  fibrous roots",
+  mutate(root = ifelse(species %in% c("atpa", "cirsp", "coco", "dece", "grsp", "isce", "sade", "sama","poasp"), "Fibrous", "Rhizomatous")) %>%
+  mutate(clade = ifelse(species %in% c("agsp", "caly", "dece", "juar", "juba", "juen", "juge", "poasp"), "Select Graminoid",
+                        ifelse(species %in% c("agsp", "caly", "dece", "elpar", "isce", "juar", "juba", "juen", "juge", "poasp"), "All Graminoid", "Forb"))) %>% 
+  mutate(fngp = ifelse(species %in% c("agsp", "caly", "elpar", "juar", "juba", "juen", "juge"), "Perennial graminoid, rhizomatous roots",                  
+                       ifelse(species %in% c("dece"), "Perennial graminoid,  fibrous roots",
                        ifelse(species %in% c("atpa", "sade", "spca"), "Annual forb", "Perennial forb")))) %>% 
-   mutate(fngp2 = ifelse(species %in% c("agsp", "caly", "juar", "juen", "juba", "jute", "dece"), "Perennial graminoid (> 10 cm)",
+   mutate(fngp2 = ifelse(species %in% c("agsp", "caly", "juar", "juen", "juba", "juge", "dece"), "Perennial graminoid (> 10 cm)",
                          ifelse(species %in% c("elpar"), "Perennial graminoid (< 10 cm)",
                          ifelse(species %in% c("isce", "jubu"), "Annual graminoid", 
                          ifelse(species %in% c("atpa", "sade", "spca"), "Annual forb", "Perennial forb"))))) %>% 
   mutate(cultural = ifelse(species %in% c("achmi", "popa", "sade", "trma", "grsp"), "cultural", "not")) %>%  # achmi, sade, trma, grsp from Luschiim's plants
-  mutate(structure = ifelse(species %in% c("coco", "isce" , "glma", "elpar", "jute", "popa", "sade", "sama", "spca"), "short", 
+  mutate(structure = ifelse(species %in% c("coco", "isce" , "glma", "elpar", "juge", "popa", "sade", "sama", "spca"), "short", 
                   ifelse (species %in% c("achmi", "agsp", "atpa", "epgl", "grsp", "juar", "juba", "juen", "sysu", "trma"), "med", "tall")))  # short = < 50 cm; med = 50 - 1 m, tall = > 1 m, per eflora BC
  
 #which(is.na(seed))
@@ -352,7 +352,7 @@ cover_graminoid$disturbance = factor(cover_graminoid$disturbance,
                             labels = c("Grubbed", "Heavily Grazed, \nExclosed 1 year", "Heavily Grazed, \nExclosed 10 years", "Undisturbed")) 
 cover_graminoid$endemic = factor(cover_graminoid$endemic, 
                           levels = c("Native", "Invasive"), 
-                          labels = c("Native", "Exotic"))
+                          labels = c("Native", "Non-native"))
 cover_graminoid$obs = factor(cover_graminoid$obs, 
                       levels = c("veg", "seed"),
                       labels = c("Above-ground vegetation", "Surface seed bank"))
@@ -826,71 +826,75 @@ all_bg <- ra_join %>%
 all <- all_ag %>% 
   full_join(all_bg) 
 
+View(all)
 
 
-all_bar <- ggplot(all, 
-         aes (x = species, 
-              y = relabund, 
+# 
+all_bar <- ggplot(all,
+         aes (x = species,
+              y = relabund,
               fill = disturbance)) +
-  geom_bar(stat="identity",
-           position = position_dodge(width = 0.5)) +
+  geom_col(position = position_dodge(width = 0.5)) +
   geom_hline(yintercept=0) +
   theme_classic() +
-  labs(y = "Relative abundance (%)", 
-       x = "", 
+  labs(y = "Relative abundance (%)",
+       x = "",
        fill = "Disturbance") +
-  theme(axis.text.x = element_text(size = 16, 
-                                   angle = 30, 
+  theme(axis.text.x = element_text(size = 18,
+                                   angle = 90,
                                    hjust = 1),
-        strip.text = element_text(size = 16)) +
+        text = element_text(size = 18),
+        legend.position = "bottom") +
   scale_fill_brewer(palette = "PRGn") +
-  scale_y_continuous(breaks = seq(0, 100, by=25), limits=c(0,100)) +
-  facet_grid(~estuary, scale = "free_x") +
+  scale_y_continuous(breaks = seq(-100, 100, by=25), limits=c(-100,100)) +
+  facet_wrap(.~estuary, scales = "free_x") +
   theme(panel.spacing = unit(1, "cm", data = NULL))
 
+
+#ggsave("fig-bar-agbg-relabund.jpg", all_bar, width = 15, height = 8)
 
 
 #~#~#~#~#~#~#~#~#~#~#~#~#~#~#
 
-ag_bar <- ggplot(all_ag, 
-         aes (x = species, 
-              y = relabund, 
-              fill = disturbance)) +
-  geom_bar(stat="identity",
-           position = position_dodge(width = 0.5)) +
-  theme_classic() +
-  labs(y = "ABOVE GROUND VEGETATION \nRelative abundance (%)", 
-       x = "", 
-       fill = "Disturbance") +
-  theme(axis.text.x = element_text(size = 16, 
-                                   angle = 30, 
-                                   hjust = 1),
-        strip.text = element_text(size = 16)) +
-  scale_fill_brewer(palette = "PRGn") +
-  #facet_grid(cols = vars(estuary), scales = "free_x", space = "free_x")
-  facet_wrap(~estuary, scales = "free_x") +
-  scale_y_continuous(breaks = seq(0, 100, by=25), limits=c(0,100)) +
-  theme(panel.spacing = unit(1, "cm", data = NULL))
-
-
-
-bg_bar <- ggplot(all_bg, 
-         aes (x = species, 
-              y = neg_relabund, 
-              fill = disturbance)) +
-      geom_bar(stat="identity", 
-               position = position_dodge(width = 0.5)) + 
-    #scale_y_reverse() +
-    theme_classic() +
-    labs(y = "SURFACE SEED BANK \nRelative abundance (%)", x = "", fill = "Disturbance") +
-    theme(axis.text.x = element_text(size = 16, 
-                                     angle = 30, 
-                                     hjust = 1),
-          strip.text = element_text(size = 16)) +
-   scale_fill_brewer(palette = "PRGn") +
-  facet_wrap(~estuary, scales = "free_x") +
-  scale_y_continuous(breaks = seq(0, 100, by=25), limits=c(0,100)) +
-  theme(panel.spacing = unit(1, "cm", data = NULL))
+# ag_bar <- ggplot(all_ag, 
+#          aes (x = species, 
+#               y = relabund, 
+#               fill = disturbance)) +
+#   geom_bar(stat="identity",
+#            position = position_dodge(width = 0.5)) +
+#   theme_classic() +
+#   labs(y = "ABOVE GROUND VEGETATION \nRelative abundance (%)", 
+#        x = "", 
+#        fill = "Disturbance") +
+#   theme(axis.text.x = element_text(size = 16, 
+#                                    angle = 90, 
+#                                    hjust = 1),
+#         strip.text = element_text(size = 16)) +
+#   scale_fill_brewer(palette = "PRGn") +
+#   #facet_grid(cols = vars(estuary), scales = "free_x", space = "free_x")
+#   facet_wrap(~estuary, scales = "free_x") +
+#   scale_y_continuous(breaks = seq(0, 100, by=25), limits=c(0,100)) +
+#   theme(panel.spacing = unit(1, "cm", data = NULL))
+# 
+# 
+# 
+# bg_bar <- ggplot(all_bg, 
+#          aes (x = species, 
+#               y = relabund, 
+#               fill = disturbance)) +
+#       geom_bar(stat="identity", 
+#                position = position_dodge(width = 0.5)) + 
+#     #scale_y_reverse() +
+#     theme_classic() +
+#     labs(y = "SURFACE SEED BANK \nRelative abundance (%)", x = "", fill = "Disturbance") +
+#     theme(axis.text.x = element_text(size = 16, 
+#                                      angle = 90, 
+#                                      hjust = 1),
+#           strip.text = element_text(size = 16)) +
+#    scale_fill_brewer(palette = "PRGn") +
+#   facet_wrap(~estuary, scales = "free_x") +
+#   scale_y_continuous(breaks = seq(-100, 0, by=25), limits=c(-100, 0)) +
+#   theme(panel.spacing = unit(1, "cm", data = NULL))
 
 
 ```
