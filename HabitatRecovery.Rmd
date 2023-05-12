@@ -196,7 +196,6 @@ seed <- seed_ra %>%
 #colnames(seed)
 #"estuary","disturbance","seed_id","species","sum_seed","sum_abund.m2", "relabund","obs","id","endemic", "life","root","clade","fngp","fngp2","cultural","structure" 
 
-
 ```
 
 ```{r join seed & veg by pa and ra}
@@ -323,7 +322,131 @@ all.sum <- ag.sum %>%
 
 ```
 
-```{r FIGURE 1 boxplots of native vs exotic tall, perennial graminoids in veg vs seed}
+```{r FIG. 3. boxplots - veg richness & abundance: native vs exotic}
+
+#View(veg.sum)
+
+
+#which(is.na(veg))
+
+agveg <- veg.sum %>% 
+        select(id, disturbance, estuary, native_rich, exotic_rich, native_cover, exotic_cover) %>% 
+        dplyr::rename(native_abund = native_cover, 
+               exotic_abund = exotic_cover) %>% 
+        mutate(obs = "veg")
+
+bgssb <- seed.sum %>% 
+        select(id, disturbance, estuary, native_rich, exotic_rich, native_relabund, exotic_relabund) %>% 
+        dplyr::rename(native_abund = native_relabund, 
+                      exotic_abund = exotic_relabund) %>% 
+        mutate(obs = "seed")
+
+agbg <- agveg %>% 
+        full_join(bgssb)
+
+
+agbg_box <- agbg %>%
+  pivot_longer(native_rich:exotic_rich,
+               names_to = "richness",
+               values_to = "rich_val") %>%
+  pivot_longer(native_abund:exotic_abund,
+               names_to = "abund",
+               values_to = "abund_val")
+
+
+agbg_box$estuary = factor(agbg_box$estuary, 
+                         levels = c("nre", "lqre"), 
+                         labels = c("Nanaimo", "Little Qualicum"))
+
+agbg_box$obs = factor(agbg_box$obs, 
+                         levels = c("veg", "seed"), 
+                         labels = c("Above-ground Vegetation", "Surface Seed Bank"))
+
+agbg_box$disturbance = factor(agbg_box$disturbance,
+                            levels = c("grubbed", "excl1", "excl10", "reference"),
+                            labels = c("Grubbed", "Heavily Grazed, \nExclosed 1 year", "Heavily Grazed, \nExclosed 10 years", "Undisturbed"))
+
+agbg_box$richness = factor(agbg_box$richness,
+                            levels = c("native_rich", "exotic_rich"),
+                            labels = c("Native", "Non-native"))
+
+agbg_box$abund = factor(agbg_box$abund,
+                            levels = c("native_abund", "exotic_abund"),
+                            labels = c("Native", "Non-native"))
+
+pd <- position_dodge(0.75)
+
+rich_box <- agbg_box %>%
+  ggplot(aes(x = estuary, y = rich_val, fill = richness)) +
+  geom_boxplot(outlier.shape = NA) + 
+  geom_point(position = position_jitterdodge(), 
+              alpha = 0.5) +
+  theme_classic() +
+  facet_grid(obs ~ disturbance, scales = "free_x") + 
+  theme(legend.position = 'bottom') +
+  theme(text = element_text(size = 25),
+           panel.spacing.y = unit(1.25, "lines"),
+           axis.text.x = element_text(angle = 25, hjust = 1)) +  
+  theme(panel.spacing.x = unit(1, "lines")) +
+  theme(panel.spacing.y = unit(4, "lines")) +
+  labs(x = "", y = "Total Species Richness", fill = "Endemism") +
+  scale_y_continuous(limits = c(0, 8), breaks = seq(0, 8, 2)) +
+  theme(text = element_text(size = 18),
+        panel.spacing.x = unit(1.25, "lines"),
+        axis.text.x = element_text(angle = 25, hjust = 1)) +
+  scale_fill_manual(values = c("#00AFBB", "#E7B800"))  
+
+#ggsave("fig-box-agbg-richness.jpg", rich_box, width = 10, height = 8)
+
+#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~
+# richness boxplots with shaded panel background
+#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~
+
+# veg_box <- agbg_box %>%
+#   filter(obs == "Above-ground Vegetation") %>% 
+#   ggplot(aes(x = disturbance, y = rich_val, fill = richness)) +
+#   geom_boxplot(outlier.shape = NA) + 
+#   geom_point(position = position_jitterdodge(), 
+#               alpha = 0.5) +
+#   # geom_rect(aes(fill = obs),
+#   #           colour = "darkseagreen1",
+#   #           xmin = -Inf,xmax = Inf,
+#   #           ymin = -Inf,ymax = Inf,
+#   #           alpha = 0.5) +
+#   theme_classic() +
+#   facet_wrap( ~ estuary, scales = "free_x") + 
+#   theme(panel.spacing = unit(1, "cm")) +
+#   labs(x = "Disturbance condition", y = "Total Species Richness", fill = "Endemism") +
+#   scale_y_continuous(limits = c(0, 8), breaks = seq(0, 8, 2)) +
+#   theme(text = element_text(size = 18),
+#         panel.spacing.x = unit(1.25, "lines"),
+#         axis.text.x = element_text(angle = 25, hjust = 1)) +
+#   scale_fill_manual(values = c("#00AFBB", "#E7B800")) 
+
+
+#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~
+# native/non-native abundance boxplots (all species)
+#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~
+
+abund_box <- agbg_box %>%
+  ggplot(aes(x = disturbance, y = abund_val, fill = abund)) +
+  geom_boxplot() +
+  theme_classic() +
+  facet_grid(obs ~ estuary, scales = "free") +
+  theme(panel.spacing = unit(3, "cm")) +
+  labs(x = "Disturbance condition", y = "Relative Abundance (%)", fill = "Endemism") +
+  theme(text = element_text(size = 20),
+        panel.spacing.x = unit(1.25, "lines"),
+        axis.text.x = element_text(angle = 25, hjust = 1)) +
+  scale_fill_brewer(palette = "Dark2")
+
+#ggsave("fig-box-agbg-cover.jpg", cover_box, width = 8, height = 6)
+
+
+
+```
+
+```{r FIG. 4. boxplots of native vs exotic tall, perennial graminoids in veg vs seed}
 
 
 obs_fngp <- ra_join %>% 
@@ -383,7 +506,7 @@ tpg <- cover_graminoid %>%
 
 ```
 
-```{r TABLE 1 -  indicator species analysis by disturbance}
+```{r TABLE 2. indicator species analysis by disturbance}
 
 library(indicspecies)
 # see https://cran.r-project.org/web/packages/indicspecies/vignettes/IndicatorSpeciesAnalysis.html#defining-the-classification-of-sites
@@ -432,6 +555,8 @@ summary(inv.bg_r.g)
            
 
 ```
+
+
 
 MODELS
 
@@ -902,6 +1027,27 @@ all_bar <- ggplot(all,
 SUPPLEMENTS
 
 ```{r SUPPLEMENTAL TABLE table of relabund by disturbance}
+
+nomenclature <- read.csv("species.csv") %>% 
+                select(species, code) %>% 
+                dplyr::rename(Latin = species)
+
+allsp_table <- ra_join %>% 
+              filter(!species == "bare") %>% 
+              left_join(nomenclature, by = c("species" = "code")) %>% 
+              select(estuary, obs, species, relabund, Latin) %>% 
+              group_by(estuary, obs, Latin) %>% 
+              dplyr::summarize(mean_relabund = mean(relabund)) %>% 
+              pivot_wider(names_from = obs, values_from = mean_relabund)
+View(allsp_table)
+
+library(writexl)
+write_xlsx(allsp_table, "table_species-relabund.xlsx", col_names = TRUE)
+
+#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~
+## Table by frequency
+#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~
+
 freq_df <- ra_join
 
 freq <- freq_df %>% 
@@ -931,7 +1077,7 @@ ggplot(data = freq, aes(y = freq,
     scale_color_brewer(palette = "Dark2") +
     theme(text = element_text(size = 14),
            panel.spacing.y = unit(1.25, "lines"),
-           axis.text.x = element_text(angle = 25, hjust = 1)) 
+           axis.text.x = element_text(angle = 90, hjust = 1)) 
 
 library(writexl)
 write_xlsx(freq, "freq.xlsx", col_names = TRUE)
@@ -953,6 +1099,10 @@ ggplot(data = freq_, aes(y = prop,
 
 
 ```
+
+
+
+LIEKLY REDUNDANT/UNNECESSARY 
 
 ```{r SUPPLEMENTAL AG/BG diversity}
 
@@ -1001,97 +1151,6 @@ div %>%
 
 ```
 
-
-```{r SUPPLEMENTAL boxplots - veg richness & abundance: native vs exotic}
-
-#View(veg.sum)
-
-
-#which(is.na(veg))
-
-agveg <- veg.sum %>% 
-        select(id, disturbance, estuary, native_rich, exotic_rich, native_cover, exotic_cover) %>% 
-        dplyr::rename(native_abund = native_cover, 
-               exotic_abund = exotic_cover) %>% 
-        mutate(obs = "veg")
-
-bgssb <- seed.sum %>% 
-        select(id, disturbance, estuary, native_rich, exotic_rich, native_relabund, exotic_relabund) %>% 
-        dplyr::rename(native_abund = native_relabund, 
-                      exotic_abund = exotic_relabund) %>% 
-        mutate(obs = "seed")
-
-agbg <- agveg %>% 
-        full_join(bgssb)
-
-
-agbg_box <- agbg %>%
-  pivot_longer(native_rich:exotic_rich,
-               names_to = "richness",
-               values_to = "rich_val") %>%
-  pivot_longer(native_abund:exotic_abund,
-               names_to = "abund",
-               values_to = "abund_val")
-
-
-agbg_box$estuary = factor(agbg_box$estuary, 
-                         levels = c("nre", "lqre"), 
-                         labels = c("Nanaimo", "Little Qualicum"))
-
-agbg_box$obs = factor(agbg_box$obs, 
-                         levels = c("veg", "seed"), 
-                         labels = c("Above-ground Vegetation", "Surface Seed Bank"))
-
-agbg_box$disturbance = factor(agbg_box$disturbance,
-                            levels = c("grubbed", "excl1", "excl10", "reference"),
-                            labels = c("Grubbed", "Heavily Grazed, \nExclosed 1 year", "Heavily Grazed, \nExclosed 10 years", "Undisturbed"))
-
-agbg_box$richness = factor(agbg_box$richness,
-                            levels = c("native_rich", "exotic_rich"),
-                            labels = c("Native", "Non-native"))
-
-agbg_box$abund = factor(agbg_box$abund,
-                            levels = c("native_abund", "exotic_abund"),
-                            labels = c("Native", "Non-native"))
-
-pd <- position_dodge(0.75)
-
-rich_box <- agbg_box %>%
-  ggplot(aes(x = disturbance, y = rich_val, fill = richness)) +
-  geom_boxplot(outlier.shape = NA) + 
-  geom_point(position = position_jitterdodge(), 
-              alpha = 0.5) +
-  theme_classic() +
-  facet_grid(obs ~ estuary, scales = "free_x") + 
-  theme(panel.spacing = unit(3, "cm")) +
-  labs(x = "Disturbance condition", y = "Total Species Richness", fill = "Endemism") +
-  scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, 2)) +
-  theme(text = element_text(size = 18),
-        panel.spacing.x = unit(1.25, "lines"),
-        axis.text.x = element_text(angle = 25, hjust = 1)) +
-  scale_fill_brewer(palette = "Dark2") 
-
-#ggsave("fig-box-agbg-richness.jpg", rich_box, width = 10, height = 8)
-
-
-
-abund_box <- agbg_box %>%
-  ggplot(aes(x = disturbance, y = abund_val, fill = abund)) +
-  geom_boxplot() +
-  theme_classic() +
-  facet_grid(obs ~ estuary, scales = "free") +
-  theme(panel.spacing = unit(3, "cm")) +
-  labs(x = "Disturbance condition", y = "Relative Abundance (%)", fill = "Endemism") +
-  theme(text = element_text(size = 20),
-        panel.spacing.x = unit(1.25, "lines"),
-        axis.text.x = element_text(angle = 25, hjust = 1)) +
-  scale_fill_brewer(palette = "Dark2")
-
-#ggsave("fig-box-agbg-cover.jpg", cover_box, width = 8, height = 6)
-
-
-
-```
 
 ```{r SUPPLEMENTAL boxplots of all fngp by obs}
 
@@ -1472,8 +1531,6 @@ tpg_indsp %>%
         axis.text.x = element_text(angle = 25, hjust = 1))
 
 ```
-
-LIEKLY REDUNDANT/UNNECESSARY 
 
 ```{r REVISIT - GET DISTURBANCE AS MEANINGFUL CENTROIDS/VECTORS ON PLOT for nmds relabund}
 #  using envfit to make vector & factor ecological coordinates per https://jkzorz.github.io/2020/04/04/NMDS-extras.html

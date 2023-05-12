@@ -1,0 +1,29 @@
+species,code,found as ,endemic,life,root,clade
+Achillea millefolium,achmi,seed,Native,perennial,rhizomatous,forb
+Agropyron repens,agre,vegetation,Non-native,perennial,rhizomatous,graminoid
+Agrostis stolonifera,agsp,both,Non-native,perennial,rhizomatous,graminoid
+Atriplex patula,atpa,both,Non-native,annual,taproot,forb
+Carex lyngbyei,caly,both,Native,perennial,rhizomatous,graminoid
+Cirsium arvense,cirsp,seed,Non-native,perennial,taproot,forb
+Cotula coronopifolia,coco,both,Non-native,perennial,fibrous,forb
+Daucus carota,daca,vegetation,Non-native,perennial,taproot,forb
+Deschampsia cespitosa,dece,both,Native,perennial,fibrous,graminoid
+Distichlis spicata,disp,vegetation,Native,perennial,rhizomatous,graminoid
+Eleocharis parvula,elpar,both,Native,perennial,rhizomatous,graminoid
+Epilobium ciliatum,epci,seed,Native,perennial,rhizomatous,forb
+Glaux maritima,glma,both,Native,perennial,rhizomatous,forb
+Isolepis cernua,isce,seed,Native,annual,fibrous,graminoid
+Juncus articulatus,juar,seed,Native,perennial,rhizomatous,graminoid
+Juncus balticus,juba,both,Native,perennial,rhizomatous,forb
+Juncus ensifolius,juen,seed,Native,perennial,rhizomatous,graminoid
+Juncus gerardii,juge,seed,Non-native,perennial,rhizomatous,graminoid
+Polygonum fowlerii,pofo,vegetation,Native,annual,taproot,forb
+Potentilla anserina pacifica,popa,vegetation,Native,perennial,rhizomatous,forb
+Salicornia depressa,sade,both,Native,annual,fibrous,forb
+Spergularia canadensis,spca,both,Native,annual,rhizomatous,forb
+Symphotrichium subspicatum,sysu,both,Native,perennial,rhizomatous,forb
+Triglochin maritima,trma,vegetation,Native,perennial,rhizomatous,forb
+Trifolium wormskioldii,trwo,vegetation,Native,perennial,taproot,forb
+Epilobium glaberrimum,epgl,,,,,
+Grindellia integrifolia,grsp,,,,,
+Poa palustris,poasp,,,,,
