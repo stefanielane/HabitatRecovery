@@ -1,4 +1,4 @@
-species,code,found as ,endemic,life,root,clade
+species,code,found_as ,endemic,life,root,clade
 Achillea millefolium,achmi,seed,Native,perennial,rhizomatous,forb
 Agropyron repens,agre,vegetation,Non-native,perennial,rhizomatous,graminoid
 Agrostis stolonifera,agsp,both,Non-native,perennial,rhizomatous,graminoid
@@ -16,7 +16,7 @@ Isolepis cernua,isce,seed,Native,annual,fibrous,graminoid
 Juncus articulatus,juar,seed,Native,perennial,rhizomatous,graminoid
 Juncus balticus,juba,both,Native,perennial,rhizomatous,forb
 Juncus ensifolius,juen,seed,Native,perennial,rhizomatous,graminoid
-Juncus gerardii,juge,seed,Non-native,perennial,rhizomatous,graminoid
+Juncus tenuis,jute,seed,Native,perennial,fibrous,graminoid
 Polygonum fowlerii,pofo,vegetation,Native,annual,taproot,forb
 Potentilla anserina pacifica,popa,vegetation,Native,perennial,rhizomatous,forb
 Salicornia depressa,sade,both,Native,annual,fibrous,forb
@@ -24,6 +24,6 @@ Spergularia canadensis,spca,both,Native,annual,rhizomatous,forb
 Symphotrichium subspicatum,sysu,both,Native,perennial,rhizomatous,forb
 Triglochin maritima,trma,vegetation,Native,perennial,rhizomatous,forb
 Trifolium wormskioldii,trwo,vegetation,Native,perennial,taproot,forb
-Epilobium glaberrimum,epgl,,,,,
-Grindellia integrifolia,grsp,,,,,
-Poa palustris,poasp,,,,,
+Epilobium glaberrimum,epgl,seed,Native,perennial,rhizomatous,forb
+Grindelia integrifolia,grsp,seed,Native,perennial,taproot,forb
+Poa palustris,poasp,seed,Native,perennial,fibrous,graminoid

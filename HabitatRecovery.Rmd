@@ -177,21 +177,21 @@ unique(seed_ra$species)
 
 seed <- seed_ra %>% 
   mutate(obs = "seed", id = (seed_id+100)) %>% 
-  mutate(endemic = ifelse(species %in% c("agsp", "atpa", "coco", "cirsp", "juge", "poasp"), "Invasive", "Native")) %>% 
+  mutate(endemic = ifelse(species %in% c("agsp", "atpa", "coco", "cirsp", "poasp"), "Invasive", "Native")) %>% 
   mutate(life = ifelse(species %in% c("atpa", "isce","jubu", "sade", "spca", "poasp"), "Annual", "Perennial")) %>% 
-  mutate(root = ifelse(species %in% c("atpa", "cirsp", "coco", "dece", "grsp", "isce", "sade", "sama","poasp"), "Fibrous", "Rhizomatous")) %>%
-  mutate(clade = ifelse(species %in% c("agsp", "caly", "dece", "juar", "juba", "juen", "juge", "poasp"), "Select Graminoid",
-                        ifelse(species %in% c("agsp", "caly", "dece", "elpar", "isce", "juar", "juba", "juen", "juge", "poasp"), "All Graminoid", "Forb"))) %>% 
-  mutate(fngp = ifelse(species %in% c("agsp", "caly", "elpar", "juar", "juba", "juen", "juge"), "Perennial graminoid, rhizomatous roots",                  
-                       ifelse(species %in% c("dece"), "Perennial graminoid,  fibrous roots",
+  mutate(root = ifelse(species %in% c("atpa", "cirsp", "coco", "dece", "grsp", "jute", "isce", "sade", "sama","poasp"), "Fibrous", "Rhizomatous")) %>%
+  mutate(clade = ifelse(species %in% c("agsp", "caly", "dece", "juar", "juba", "juen", "jute", "poasp"), "Select Graminoid",
+                        ifelse(species %in% c("agsp", "caly", "dece", "elpar", "isce", "juar", "juba", "juen", "jute", "poasp"), "All Graminoid", "Forb"))) %>% 
+  mutate(fngp = ifelse(species %in% c("agsp", "caly", "elpar", "juar", "juba", "juen"), "Perennial graminoid, rhizomatous roots",                  
+                       ifelse(species %in% c("dece", "jute"), "Perennial graminoid,  fibrous roots",
                        ifelse(species %in% c("atpa", "sade", "spca"), "Annual forb", "Perennial forb")))) %>% 
-   mutate(fngp2 = ifelse(species %in% c("agsp", "caly", "juar", "juen", "juba", "juge", "dece"), "Perennial graminoid (> 10 cm)",
+   mutate(fngp2 = ifelse(species %in% c("agsp", "caly", "juar", "juen", "juba", "jute", "dece"), "Perennial graminoid (> 10 cm)",
                          ifelse(species %in% c("elpar"), "Perennial graminoid (< 10 cm)",
                          ifelse(species %in% c("isce", "jubu"), "Annual graminoid", 
                          ifelse(species %in% c("atpa", "sade", "spca"), "Annual forb", "Perennial forb"))))) %>% 
   mutate(cultural = ifelse(species %in% c("achmi", "popa", "sade", "trma", "grsp"), "cultural", "not")) %>%  # achmi, sade, trma, grsp from Luschiim's plants
-  mutate(structure = ifelse(species %in% c("coco", "isce" , "glma", "elpar", "juge", "popa", "sade", "sama", "spca"), "short", 
-                  ifelse (species %in% c("achmi", "agsp", "atpa", "epgl", "grsp", "juar", "juba", "juen", "sysu", "trma"), "med", "tall")))  # short = < 50 cm; med = 50 - 1 m, tall = > 1 m, per eflora BC
+  mutate(structure = ifelse(species %in% c("coco", "isce" , "glma", "elpar", "popa", "sade", "sama", "spca"), "short", 
+                  ifelse (species %in% c("achmi", "agsp", "atpa", "epgl", "grsp", "juar", "juba", "juen", "jute", "sysu", "trma"), "med", "tall")))  # short = < 50 cm; med = 50 - 1 m, tall = > 1 m, per eflora BC
  
 #which(is.na(seed))
 #colnames(seed)
@@ -368,7 +368,7 @@ inv.bg_r.g = multipatt(abund.bg, assoc.bg,
                        control = how(nperm=999))
 summary(inv.bg_r.g)
            
-
+View(indsp.bg)
            
 
 ```
@@ -710,7 +710,7 @@ stacked.bar.panel <- ggarrange(ag, bg,
                           heights = c(1.25, 0.75)) 
 
 
-annotate_figure(stacked.bar.panel, 
+stacked.bar.panel <- annotate_figure(stacked.bar.panel, 
                 left = text_grob("Relative abundance (%)", 
                                  size = 25, 
                                  rot = 90))
@@ -718,10 +718,6 @@ annotate_figure(stacked.bar.panel,
 ggsave("fig-stacked-relabund.jpg", stacked.bar.panel, width = 25, height = 15)
 
 ```
-
-
-
-
 
 
 
